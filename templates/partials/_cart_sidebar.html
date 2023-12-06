@@ -1,0 +1,257 @@
+<style>
+    /* style.css */
+.cart-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 450px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 100000;
+}
+
+
+
+@media only screen and (min-width: 457px) and (max-width: 991px) {
+  .cart-sidebar {
+    width: 50%;
+  }
+}
+
+@media screen and (max-width: 456px) {
+  .cart-sidebar {
+    width: 100%;
+  }
+}
+
+
+
+.cart-header {
+  background: #dc3545;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-content {
+  max-height: 78%;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Estiliza a barra de rolagem (scrollbar) */
+.cart-content::-webkit-scrollbar {
+  width: 10px; /* Largura da barra de rolagem */
+}
+
+/* Estiliza a trilha da barra de rolagem */
+.cart-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1); /* Cor de fundo da trilha */
+  border-radius: 10px; /* Borda arredondada */
+}
+
+/* Estiliza o manipulador da barra de rolagem */
+.cart-content::-webkit-scrollbar-thumb {
+  background-color: #dc3545; /* Cor do manipulador */
+  border-radius: 10px; /* Borda arredondada */
+  border: 3px solid rgba(0, 0, 0, 0); /* Cor da borda do manipulador */
+}
+
+/* Estiliza o manipulador da barra de rolagem em hover */
+.cart-content::-webkit-scrollbar-thumb:hover {
+  background-color: #a1232d; /* Cor do manipulador no hover */
+}
+
+.cart-item {
+  display: flex;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.cart-item-end:after {
+    display: flex;
+    position: relative;
+    left: 0;
+    bottom: 0px;
+    right: 0;
+    height: 1px;
+    width: 100%;
+    background: #dc3545;
+    content: "";
+    margin: 10px auto;
+}
+
+
+.cart-item-img {
+  width: 33%;
+  margin-right: 10px;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.item-name {
+  font-size: 1.1em;
+  margin: 0;
+}
+
+.item-price {
+  margin: 5px 0;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-btn {
+<!--  background: #dc3545;-->
+  border-radius: 41%;
+  border: 1px solid #ccc;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.quantity-btn:hover {
+  background: #e1e1e1;
+  color: #000;
+}
+.quantity-selector input {
+  width: 50px;
+  text-align: center;
+  margin: 0 5px;
+  }
+
+
+.quantity-input {
+  text-align: center;
+  margin: 0 5px;
+  width: 40px;
+}
+
+.remove-item-btn {
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.remove-item-btn i {
+color: #ff5151a6;
+}
+
+
+.remove-item-btn:hover {
+}
+
+.remove-item-btn:hover i{
+    color: #ff4d4d;
+}
+
+/* Ícones do FontAwesome */
+.fa {
+  margin-right: 5px;
+}
+
+.cart-footer {
+  max-height: 100%;
+  width: 100%;
+  background: #333;
+  color: #fff;
+  padding: 20px;
+  position: absolute;
+  bottom: 0;
+}
+ .risca-price {
+    font-size: 1rem;
+    font-weight: 400;
+    text-decoration: line-through;
+    margin-left: 10px;
+    }
+
+.checkout-btn {
+  background: #e44d26;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+/* Class to toggle for showing the cart sidebar */
+.cart-sidebar.visible {
+  transform: translateX(0);
+}
+
+</style>
+
+<!-- sidebar.html -->
+<div id="cart-sidebar" class="cart-sidebar">
+  <div class="cart-header">
+    <h2>Shopping Cart</h2>
+    <button onclick="toggleCartSidebar()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i> </button>
+  </div>
+  <div class="cart-content">
+    {% for item in cart.items.all %}
+      <div class="cart-item">
+        <img src="{{ item.product.images.first.image.url}}" alt="{{ item.product_or_variation.name }}" class="cart-item-img">
+        <div class="item-details">
+          {% autoescape on %}
+          <p class="item-name">{{ item.product_or_variation.name|escape|linebreaksbr}}</p>
+            {% endautoescape %}
+          <p class="item-price">
+
+              <span class="original-price">R${{ item.total_price_or_promotional_price }}</span>
+            {% if item.product_or_variation.promocao_ativa %}
+            <span class="risca-price">R${{ item.total }}</span>
+            {% endif %}
+          </p>
+          <div class="quantity-selector">
+            <button class="quantity-btn" onclick="decreaseQuantity({{ forloop.counter }})">-</i></button>
+            <input type="text" value="{{ item.quantity }}" id="quantity-{{ forloop.counter }}">
+            <button class="quantity-btn" onclick="increaseQuantity({{ forloop.counter }})">+</button>
+          </div>
+        </div>
+                  <a onclick="removeItem({{ item.id}})" class="remove-item-btn"><i class="fa-solid fa-trash-can"></i></a>
+
+
+
+      </div>
+    <div class="cart-item-end"></div>
+    {% empty %}
+      <p>Seu carrinho esta vazio!</p>
+    {% endfor %}
+  </div>
+  <div class="cart-footer">
+    <p>Total: <span id="total-price">R${{ cart.total }}</span></p>
+    <a href="{% url 'checkout' %}" class="checkout-btn">CHECKOUT</a>
+    <a href="{% url 'cart' %}" class="checkout-btn">CARRINHO</a>
+  </div>
+</div>
+
+<script>
+    // script.js
+
+
+function increaseQuantity(index) {
+  // Increase the quantity of the item in the cart
+}
+
+function decreaseQuantity(index) {
+  // Decrease the quantity of the item in the cart
+}
+
+
+
+
+</script>

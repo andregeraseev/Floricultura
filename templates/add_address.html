@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container p-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Cadastro de Endereco</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    function createErrorSpan(message,cep,cepField,errorContainerId,errorContainer) {
+            if (!errorContainer) {
+                errorContainer = document.createElement('span');
+                errorContainer.id = errorContainerId;
+                errorContainer.className = 'invalid-feedback';
+                errorContainer.style.display = 'none';
+                cepField.parentNode.appendChild(errorContainer);
+            }
+
+            // Limpa o conteúdo anterior e adiciona o novo conteúdo com <strong>
+            errorContainer.innerHTML = '';
+            var strongMessage = document.createElement('strong');
+            strongMessage.textContent = message;
+            errorContainer.appendChild(strongMessage);
+
+            errorContainer.style.display = 'block';
+        }
+
+        function validacep_submit(valorCep) {
+    var cep = valorCep.replace(/\D/g, '');
+    if (cep.length === 8) {
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    // CEP válido, atualiza os outros campos
+                    // Exemplo: document.getElementById('id_rua').value = data.logradouro;
+                } else {
+                    // CEP inválido, você pode definir novamente uma mensagem de validação
+                    document.getElementById('id_cep').setCustomValidity('CEP não encontrado.');
+                }
+            })
+            .catch(error => {
+                // Tratar o erro de conexão ou problemas com o fetch
+                console.error('Erro ao buscar o CEP:', error);
+            });
+    } else {
+        // Se o CEP não tiver 8 dígitos, defina uma mensagem de validação
+        document.getElementById('id_cep').setCustomValidity('CEP deve ter 8 dígitos.');
+    }
+}
+
+
+
+        function valida_cep(cep,cepField,errorContainerId,errorContainer){
+
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    cepField.classList.remove("is-invalid");
+                    cepField.classList.add("is-valid");
+                    if (errorContainer) errorContainer.style.display = 'none';
+
+                    document.getElementById('id_rua').value = data.logradouro;
+                    document.getElementById('id_bairro').value = data.bairro;
+                    document.getElementById('id_cidade').value = data.localidade;
+                    document.getElementById('id_estado').value = data.uf;
+                }
+                else {
+                    cepField.classList.remove("is-valid");
+                    cepField.classList.add("is-invalid");
+                    document.getElementById('id_rua').value = '';
+                    document.getElementById('id_bairro').value = '';
+                    document.getElementById('id_cidade').value = '';
+                    document.getElementById('id_estado').value = '';
+                    createErrorSpan('CEP inválido ou não encontrado.',cep,cepField,errorContainerId,errorContainer);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                createErrorSpan('Erro ao buscar o CEP.',cep,cepField,errorContainerId,errorContainer);
+            });
+        }
+        else {
+            cepField.classList.remove("is-valid");
+            cepField.classList.add("is-invalid");
+            createErrorSpan('CEP inválido.',cep,cepField,errorContainerId,errorContainer);
+        }
+        }
+
+    document.getElementById('id_cep').addEventListener('change', function() {
+        var cep = this.value.replace(/\D/g, '');
+        var cepField = document.getElementById('id_cep');
+        var errorContainerId = 'error_1_id_cep';
+        var errorContainer = document.getElementById(errorContainerId);
+        valida_cep(cep,cepField,errorContainerId,errorContainer)
+
+
+
+    });
+</script>
+
+
+{% endblock %}

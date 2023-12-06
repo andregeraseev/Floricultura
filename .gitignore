@@ -1,0 +1,22 @@
+# created by virtualenv automatically
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.sqlite3
+*.pyc
+db.sqlite3
+/media
+/static
+.DS_Store
+.env
+
+/Lib/
+/Lib/site-packages/fontawesomefree-6.4.2.dist-info/

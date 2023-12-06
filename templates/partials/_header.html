@@ -1,0 +1,82 @@
+{% load static %}
+<!-- Header Section Begin -->
+<header class="header">
+    <div class="header__top">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <div class="header__top__left">
+                        <ul>
+                            <li><i class="fa fa-envelope"></i> {{footer_info.email}}</li>
+                            <li>{{ footer_info.mensagem }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="header__top__right">
+                        <div class="header__top__right__social">
+                            {% for link in social_links %}
+                            <a href="{{ link.url }}"><i class="fa {{ link.icon_class }}"></i></a>
+                            {% endfor %}
+                        </div>
+                        <div class="header__top__right__auth">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}"><i class="fa fa-dashboard"></i> {{user.username}}</a>
+                            {% else %}
+                            <a href="{% url 'cadastro' %}"><i class="fa fa-user"></i> Cadastrar</a>
+                            {% endif %}
+                        </div>
+<!--                        <div class="header__top__right__language">-->
+<!--                            <img src="{% static 'img/language.png' %}" alt="">-->
+<!--                            <div>English</div>-->
+<!--                            <span class="arrow_carrot-down"></span>-->
+<!--                            <ul>-->
+<!--                                <li><a href="{% static '#' %}">Spanis</a></li>-->
+<!--                                <li><a href="{% static '#' %}">English</a></li>-->
+<!--                            </ul>-->
+<!--                        </div>-->
+                        <div class="header__top__right__auth">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}"><i class="fa fa-user"></i> Logout</a>
+                            {% else %}
+                            <a href="{% url 'login' %}"><i class="fa fa-user"></i> Login</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row header__align">
+            <div class="col-5 col-6 col-sm-5">
+                <div class="header__logo">
+                    <a href="{% url 'home' %}"><img src="{{site_setting.logo.url}}" alt=""></a>
+                </div>
+            </div>
+            <div class="col-1 col-sm-1 col-md-2 col-lg-3">
+                <nav class="header__menu">
+                    <ul>
+                        {% for link in navigation_links %}
+                        <li class="{% if link.is_active %}active{% endif %}"><a href="{{ link.url }}">
+                            {{ link.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-4 col-md-4 col-lg-4 col-sm-5" >
+                <div class="header__cart">
+                    <ul>
+                        <li><a href="{% static '#' %}"><i class="fa fa-heart"></i> <span>1</span></a></li>
+                        <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter">{{cart.count_items_quantity}}</span></a></li>
+                    </ul>
+                    <div class="header__cart__price">Total:R$<span id="cart-total">{{cart.total}}</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="humberger__open">
+            <i class="fa fa-bars"></i>
+        </div>
+    </div>
+</header>
+<!-- Header Section End -->

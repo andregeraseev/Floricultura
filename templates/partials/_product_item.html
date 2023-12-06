@@ -1,0 +1,78 @@
+<div class="product__item" id="product-item">
+    <div class="product__item__pic set-bg" data-setbg="{{product.images.first.image.url}}">
+        {% if product.variations.all %}
+        {% if product.variations.first.promotional_price %}
+        <div class="product__discount__percent" id="discont-percent-{{product.id}}">
+            -{{ product.variations.first.porcentagem_de_desconto}}%
+        </div>
+        {% endif %}
+
+        {% elif product.porcentagem_de_desconto %}
+        <div class="product__discount__percent">
+            -{{ product.porcentagem_de_desconto }}%
+        </div>
+        {% endif %}
+
+        <ul class="product__item__pic__hover">
+            <li><a href="#"><i class="fa fa-heart"></i></a></li>
+            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+            <li><a class="show-options" onclick="showOptions(this)"
+                   data-product-id="{{ product.id }}"><i class="fa fa-shopping-cart"></i></a></li>
+        </ul>
+        <div class="product-options" id="options-{{ product.id }}" style="display: none;">
+            <div class="options-container">
+                {% if product.variations.all %}
+                <select class="variation-select" onchange="updatePrice(this)" >
+                    {% for variation in product.variations.all %}
+
+                    <option value="{{ variation.id }}" data-desconto="{{ variation.porcentagem_de_desconto }}"
+                            data-price="{{ variation.promotional_price | default:variation.price }}
+                            {%if variation.promotional_price%}<span>R${{ variation.price }}</span>{%endif%}"
+                            data-produto-id="{{product.id}}">
+                        {% if not variation.has_stock %}
+                        Esgotado -
+                        {% endif %}
+                        {% for item in variation.get_grade %}
+                        {{ item.chave }}: {{ item.valor }}{% if not forloop.last %} / {% endif%}
+                        {% endfor %}
+                    </option>
+
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+                <form onsubmit="event.preventDefault(); addToCart(this); ">
+                  <!-- Campo de id produto -->
+                  <input type="hidden" name="productId" class="productId" value="{{ product.id }}">
+                  <!-- Campo de id variável -->
+                  <input type="hidden" name="variationId" class="variationId" value="">
+                  <!-- Campo de quantidade -->
+                  <input type="number" name="quantity" class="quantity-input" min="1" value="1">
+                  <!-- Adicionar ao carrinho -->
+                  <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Adicionar ao Carrinho</button>
+                </form>
+
+
+                <!-- fechar options -->
+                <button class="close-btn" onclick="closeOptions(this)" data-product-id="{{ product.id }}"><i
+                        class="fa-regular fa-circle-xmark fa-2x"></i>
+                </button>
+
+            </div>
+        </div>
+    </div>
+        <div class="product__item__text">
+        <div class="product__item__marca">{{product.marca | default_if_none:"-"}}</div>
+        <h5><a href={{ product.get_absolute_url }}>{{ product.name }}</a></h5>
+        <span class="product__item__descripition" ><h6>lalala{{product.descricao}}</h6></span>
+
+        {% if product.variations.all %}
+        <div class="product__item__price" id="variation-price-{{ product.id }}">R${{ product.variations.first.promotional_price | default:product.variations.first.price }}
+        {%if product.variations.first.promotional_price%}<span>R${{ product.variations.first.price }}</span>{%endif%}</div>
+        <!-- Inicialize com o preço da primeira variação -->
+        {% else %}
+        <div class="product__item__price">R${{ product.promotional_price | default:product.price }}
+            {%if product.promotional_price%}<span>R${{ product.price }}</span>{%endif%}</div>
+        {% endif %}
+    </div>
+</div>

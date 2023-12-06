@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+<style>
+
+</style>
+
+{% block content %}
+{%if site_setting.carrocel_departamentos %}
+<!-- Categories Section Begin -->
+<section class="categories">
+    <div class="container">
+        <div class="row">
+            <div class="categories__slider owl-carousel">
+                {% for departement in departements %}
+                {% if departement.image_department %}
+                <div class="col-lg-3">
+                    <div class="categories__item set-bg-cover" data-setbg="{{departement.image_department.url}}">
+                        <h5><a href="{% static '#' %}">{{departement.name}}</a></h5>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Categories Section End -->
+{% endif %}
+
+
+<!-- Featured Section Begin -->
+{% if site_setting.carrocel_produtos %}
+<section class="product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 ">
+                <div class="section-title ">
+                    <h2>Produtos em Destaque</h2>
+                </div>
+                <div class="product__controls ">
+                    <ul>
+                        <li class="active" data-filter="*">All</li>
+                        {% regroup featured_products by category as category_list %}
+                        {% for category in category_list %}
+
+                        <li data-filter=".{{ category.grouper.name|slugify }}">{{ category.grouper.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row product__filter">
+            <div class=" owl-carousel product__slider">
+
+                {% for product in featured_products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mix {{ product.category.name|slugify }} ">
+                    {% include 'partials/_product_item.html' %}
+                </div>
+                {% endfor %}
+
+                </div>
+            </div>
+    </div>
+</section>
+{% endif %}
+<!-- Featured Section End -->
+
+
+<!-- Banner Begin -->
+{% if site_setting.banners_secundarios %}
+<div class="banner ">
+    <div class="container ">
+
+        <div class=" secundary_banner__slider owl-carousel">
+
+            {% for banner in secondary_banners %}
+
+            {% if banner.is_displayed %}
+
+                    <div class="banner__pic">
+                        {% if banner.link %}
+                            <a href="{% url 'track-click' banner.id 'secondary' %}"><img src={{ banner.image.url }} alt="{{ banner.title }}"></a>
+                        {% else %}
+                            <img src={{ banner.image.url }} alt="">
+                        {% endif %}
+                        {% if banner.title_active %}
+                            <span>{{banner.title}}</span>
+                        {% endif %}
+                        {% if banner.description_active %}
+                            <h2>{{banner.description}}</h2>
+                        {% endif %}
+                    </div>
+
+
+            {% endif %}
+            {% endfor %}
+
+
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- Banner End -->
+
+<!-- Latest Product Section Begin -->
+{% if site_setting.carrocel_triplo %}
+<section class="latest-product spad">
+    <div class="container">
+        <div class="row">
+            <!-- Latest Products -->
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Latest Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        {% for product in latest_products %}
+                        <div class="latest-prdouct__slider__item">
+                            <a href="#" class="latest-product__item">
+                                <div class="latest-product__item__pic">
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                                </div>
+                                <div class="latest-product__item__text">
+                                    <h6>{{ product.name }}</h6>
+                                    <span>${{ product.price }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div> <!-- Fim da seção Latest Products -->
+
+            <!-- Top Rated Products -->
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Top Rated Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        {% for product in best_sellers_products %}
+                        <div class="latest-prdouct__slider__item">
+                            <a href="#" class="latest-product__item">
+                                <div class="latest-product__item__pic">
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                                </div>
+                                <div class="latest-product__item__text">
+                                    <h6>{{ product.name }}</h6>
+                                    <span>${{ product.price }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Products -->
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Review Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        {% for product in review_products %}
+                        <div class="latest-prdouct__slider__item">
+                            <a href="#" class="latest-product__item">
+                                <div class="latest-product__item__pic">
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                                </div>
+                                <div class="latest-product__item__text">
+                                    <h6>{{ product.name }}</h6>
+                                    <span>${{ product.price }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+<!-- Latest Product Section End -->
+
+<!-- Blog Section Begin -->
+{% if site_setting.blog %}
+<section class="from-blog spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title from-blog__title">
+                    <h2>From The Blog</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {% for post in posts %}
+            <div class="col-lg-4 col-md-4 col-sm-6">
+                <div class="blog__item">
+                    <div class="blog__item__pic">
+                        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+                    </div>
+                    <div class="blog__item__text">
+                        <ul>
+                            <li><i class="fa fa-calendar-o"></i> {{ post.pub_date|date:"M d,Y" }}</li>
+                            <li><i class="fa fa-comment-o"></i> {{ post.comments_count }}</li>
+                        </ul>
+                        <h5><a href="#">{{ post.title }}</a></h5>
+                        <p>{{ post.content|truncatewords:20 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+<!-- Blog Section End -->
+                    <!-- Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" role="dialog" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addToCartModalLabel">Adicionar ao Carrinho</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Conteúdo do Modal -->
+        <h6>Nome do Produto</h6>
+        <p>Descrição breve do produto...</p>
+        <!-- Seletor de variações -->
+        <label>Variações:</label>
+        <select class="form-control">
+          <!-- Opções de variações aqui -->
+        </select>
+        <!-- Campo para quantidade -->
+        <label>Quantidade:</label>
+        <input type="number" class="form-control" value="1" min="1">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary">Adicionar ao Carrinho</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

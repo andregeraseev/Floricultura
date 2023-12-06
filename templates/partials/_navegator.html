@@ -1,0 +1,94 @@
+<!-- Hero Section Begin -->
+<section class="hero">
+    <div class="container">
+        {%if not site_setting.menu_lateral %}
+        <nav class="navbar navbar-expand-lg navbar-dark "
+             style="background-color:{{site_setting.navbar_color}}; font-family:{{site_setting.navbar_font}}; font_weight:{{site_setting.navbar_font_weight}}">
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+                    aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'home' %}"
+                           style=" font-family:{{site_setting.navbar_font}};font-weight:{{site_setting.navbar_font_weight}}">
+                            Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    {% for departement in departements %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{%url 'department_detail' departement.slug %}"
+                           style=" font-family:{{site_setting.navbar_font}};font-weight:{{site_setting.navbar_font_weight}}">
+                            {{departement.name }}</a>
+                    </li>
+
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
+        {% endif %}
+
+        <div class="row">
+
+
+            <div class="col-lg"  >
+                <div class="hero__search">
+                    <div class="hero__search__form">
+                        <form action="#">
+                            <div class="hero__search__categories">
+                                All Categories
+                                <span class="arrow_carrot-down"></span>
+                            </div>
+                            <input type="text" placeholder="What do yo u need?">
+                            <button type="submit" class="site-btn">SEARCH</button>
+                        </form>
+                    </div>
+                    <div class="hero__search__phone">
+                        <div class="hero__search__phone__icon">
+                            <i class="fa fa-phone"></i>
+                        </div>
+                        <div class="hero__search__phone__text">
+
+                            <h5>{{ footer_info.phone }}</h5>
+                            <span>suporte  </span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+
+    </div>
+
+
+</section>
+<!-- Hero Section End -->
+{% if request.resolver_match.url_name == 'home' %}
+
+{%if site_setting.banner_principal %}
+                <div class="container hero__banners" >
+                    {% if hero_banners.is_displayed %}
+                        {% if hero_banners.link %}<a href="{% url 'track-click' hero_banners.id 'hero' %}">{% endif %}
+                            <div class="hero__item set-bg-cover" data-setbg="{{hero_banners.image.url}}">
+                                <div class="hero__text">
+                                    {% if hero_banners.title_active %}
+                                    <span>{{hero_banners.title}}</span>
+                                    {% endif %}
+                                    {% if hero_banners.description_active %}
+                                    <h2>{{hero_banners.description}}</h2>
+                                    {% endif %}
+                                    {% if hero_banners.call_active %}
+                                    {% if hero_banners.link %}
+                                    <a href="{% url 'track-click' hero_banners.id 'hero' %}"> class="primary-btn">{{hero_banners.call}}</a>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% if hero_banners.link%}</a>{% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+{% endif %}

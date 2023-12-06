@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Loja Template">
+    <meta name="keywords" content="Loja, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Loja | Andre</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;900&display=swap" rel="stylesheet">
+
+    <!-- Css Styles -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>        <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" href="{% static 'css/elegant-icons.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/nice-select.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" type="text/css">
+    <!-- Owl Slider -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <link rel="stylesheet" href="{% static 'css/slicknav.min.css' %}" type="text/css">
+    <!--    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">-->
+    <link href="{% static 'css/style.css' %}?v={{ site_settings.version_number }}" rel="stylesheet" type="text/css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+    <header>
+
+        <div id="preloder">
+    <div class="loader"></div>
+</div>
+<div class="main-content"></div>
+<div id="cart-sidebar-container">
+    {% include 'partials/_cart_sidebar.html' %}
+</div>
+{%if site_setting.navbar_fixo %}
+{% include 'partials/_navegador_fixedtop.html' %}
+
+{%elif site_setting.menu_lateral %}
+{% include 'partials/_humberger.html' %}
+{% include 'partials/_header.html' %}
+{% include 'partials/_alldepartments.html' %}
+
+{% else %}
+{% include 'partials/_humberger.html' %}
+{% include 'partials/_header.html' %}
+{% include 'partials/_navegator.html' %}
+
+{% endif %}
+{% include 'partials/_whatsapp.html' %}
+
+
+    </header>
+    <div id="alert-box" class="alert-box" style="display:none;"></div>
+
+    {% block content %}
+    <!-- Conteúdo principal da página -->
+    {% endblock %}
+
+    <footer>
+       <!-- Footer Section Begin -->
+<footer class="footer spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="footer__about">
+                    <div class="footer__about__logo">
+                        <a href="./index.html"><img src="{{site_setting.logo.url}}" alt=""></a>
+                    </div>
+                    <ul>
+                        <li>Address: {{ footer_info.address }}</li>
+                        <li>Phone: {{ footer_info.phone }}</li>
+                        <li>Email: {{ footer_info.email }}</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
+                <div class="footer__widget">
+                    <h6>Useful Links</h6>
+                    {% for category, links in footer_links.items %}
+                    <ul>
+                        {% for link in links %}
+                        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <div class="footer__widget">
+                    <h6>Join Our Newsletter Now</h6>
+                    <p>Get E-mail updates about our latest shop and special offers.</p>
+                    <form action="#">
+                        <input type="text" placeholder="Enter your mail">
+                        <button type="submit" class="site-btn">Subscribe</button>
+                    </form>
+                    <div class="footer__widget__social">
+                        {% for link in social_links %}
+                        <a href="{{ link.url }}"><i class="fa {{ link.icon_class }}"></i></a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="footer__copyright">
+                    <div class="footer__copyright__text">
+                        <p>
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                            Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+                            All rights reserved | This template is made with <i class="fa fa-heart"
+                                                                                aria-hidden="true"></i> by <a
+                                href="https://colorlib.com" target="_blank">Andre Geraseev</a>
+                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                        </p>
+                    </div>
+                    <div class="footer__copyright__payment"><img src="{% static 'img/payment-item.png' %}" alt=""></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- Footer Section End -->
+
+
+    </footer>
+
+    <!-- JS Comum Aqui -->
+    <!-- Js Plugins -->
+<!--<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>-->
+<script src= "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
+
+<!--<script src="{% static 'js/bootstrap.min.js' %}"></script>-->
+<!--<script src="{% static 'js/jquery.nice-select.min.js' %}"></script>-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/jquery.slicknav.js' %}"></script>
+<!-- Owl -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mixitup/3.3.0/mixitup.min.js"></script>
+<script src="https://huynhhuynh.github.io/owlcarousel2-filter/dist/owlcarousel2-filter.min.js"></script>
+
+
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+document.documentElement.style.setProperty('--theme-color', '{{site_setting.theme_color}}');
+document.documentElement.style.setProperty('--navbar-color', '{{ site_setting.navbar_color }}');
+document.documentElement.style.setProperty('--header-color', '{{ site_setting.header }}');
+document.documentElement.style.setProperty('--header-secundario-color', '{{ site_setting.header_secundario }}');
+document.documentElement.style.setProperty('--mobili-header-secundario-color', '{{ site_setting.mobili_header_secundario }}');
+document.documentElement.style.setProperty('--navbar-icons-color', '{{ site_setting.navbar_icons }}');
+document.documentElement.style.setProperty('--navbar-icons-circle-bg', '{{ site_setting.navbar_icons_circle_background }}');
+document.documentElement.style.setProperty('--navbar-icons-circle-text', '{{ site_setting.navbar_icons_circle_text }}');
+document.documentElement.style.setProperty('--mobile-navbar-icons-color', '{{ site_setting.mobile_navbar_icons }}');
+document.documentElement.style.setProperty('--mobile-navbar-icons-circle-bg', '{{ site_setting.mobile_navbar_icons_circle_background }}');
+document.documentElement.style.setProperty('--mobile-navbar-icons-circle-text', '{{ site_setting.mobile_navbar_icons_circle_text }}');
+document.documentElement.style.setProperty('--footer-bg-color', '{{ site_setting.footer_background }}');
+document.documentElement.style.setProperty('--footer-text-color', '{{ site_setting.footer_text_color }}');
+</script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

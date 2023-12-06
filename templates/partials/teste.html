@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Filter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Additional styles if needed */
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div class="w-full md:w-1/4 bg-white shadow-lg rounded-lg p-4 mb-6 md:mb-0">
+                <div class="mb-4">
+                    <h2 class="text-lg font-semibold">All Categories</h2>
+                    <ul class="mt-2">
+                        <li class="py-1 hover:bg-gray-200 cursor-pointer">Flores</li>
+                        <li class="py-1 hover:bg-gray-200 cursor-pointer">Buques</li>
+                        <li class="py-1 hover:bg-gray-200 cursor-pointer">Decoração</li>
+                        <li class="py-1 hover:bg-gray-200 cursor-pointer">Centro Mesa</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="w-full md:w-1/2 bg-white shadow-lg rounded-lg p-4">
+                <div class="mb-4">
+                    <label for="search" class="sr-only">Search</label>
+                    <div class="flex items-center">
+                        <input type="text" id="search" class="w-full p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Search...">
+                        <button class="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Search</button>
+                    </div>
+                </div>
+                <div id="searchResults" class="space-y-4">
+                    <!-- Search results will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for real-time search functionality
+        document.getElementById('search').addEventListener('input', function(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = ''; // Clear previous results
+
+            // Dummy data for demonstration
+            const products = [
+                { name: 'Flor1', value: 'Valor' },
+                { name: 'Flor2', value: 'Valor' },
+                { name: 'Flor3', value: 'Valor' }
+            ];
+
+            // Filter products based on search term
+            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm));
+
+            // Display filtered products
+            filteredProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'p-4 bg-gray-200 rounded-lg flex justify-between items-center';
+                productCard.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="https://via.placeholder.com/50" alt="${product.name}" class="rounded-full mr-4">
+                        <div>
+                            <h3 class="text-lg font-semibold">${product.name}</h3>
+                            <p>${product.value}</p>
+                        </div>
+                    </div>
+                    <button class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">Add</button>
+                `;
+                searchResults.appendChild(productCard);
+            });
+        });
+    </script>
+</body>
+</html>

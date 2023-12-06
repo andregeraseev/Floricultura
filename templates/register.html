@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container p-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Cadastro</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js"></script>
+
+<script>
+
+    function validaCPF(cpf) {
+    console.log(cpf);
+    cpf
+    cpf = cpf.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+            console.log('cpf invalido');
+
+        return false; // Verifica o tamanho e a sequência de dígitos iguais
+    }
+
+    var soma = 0;
+    var resto;
+
+    // Calcula o primeiro dígito verificador
+    for (var i = 1; i <= 9; i++) {
+        soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    soma = 0;
+    // Calcula o segundo dígito verificador
+    for (var i = 1; i <= 10; i++) {
+        soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+    console.log('cpf valido');
+
+    return true;
+}
+
+
+function verificaUsername(inputField) {
+    var isValid = validaUsername(inputField.value);
+    if (!isValid) {
+        inputField.setCustomValidity('Nome de usuário inválido. Use até 150 caracteres com letras, números e @/./+/-/_.');
+    } else {
+        this.classList.remove('is-invalid');
+        inputField.setCustomValidity('');
+    }
+}
+
+function validaUsername(username) {
+    // Cria a expressão regular para o padrão de nome de usuário
+    var regex = /^[a-zA-Z0-9@.+_-]{1,150}$/;
+
+    // Testa se o nome de usuário atende ao padrão
+    if (regex.test(username)) {
+        // Se o nome de usuário é válido
+        return true;
+    } else {
+        // Se o nome de usuário não é válido
+        return false;
+    }
+}
+
+
+function validaSenha(senha) {
+    // Cria a expressão regular para o padrão de senha
+
+    var primeiro_nome = document.getElementById('id_first_name').value;
+    var ultimo_nome = document.getElementById('id_last_name').value;
+
+    var resultado = zxcvbn(senha, [primeiro_nome, ultimo_nome] );
+    for (seq of resultado.sequence) {
+        console.log('seq',seq);
+        if (seq.matched_word === primeiro_nome.toLowerCase() || seq.matched_word === ultimo_nome.toLowerCase()) {
+
+            return false;
+        }
+
+    }
+
+    // Verifica o comprimento da senha
+    if (senha.length < 8) {
+        return false;
+    }
+
+    // Verifica se a senha é inteiramente numérica
+    if (/^\d+$/.test(senha)) {
+        return false;
+    }
+
+    if (resultado.score < 2) { // zxcvbn retorna uma pontuação de 0 a 4
+        return false;
+    }
+    return true; // Senha é considerada forte
+}
+
+
+
+</script>
+{% endblock %}

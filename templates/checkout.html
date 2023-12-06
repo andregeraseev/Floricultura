@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg-cover" data-setbg="{% static 'img/breadcrumb.jpg'%}">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="breadcrumb__text">
+                    <h2>Checkout</h2>
+                    <div class="breadcrumb__option">
+                        <a href="">Home</a>
+                        <span>Checkout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Checkout Section Begin -->
+<section class="checkout spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                {% if adress %}
+                COM ENDERECO
+                {% else %}
+                <h4>Por favor preencha o endereco de envio, ou faca login ou se cadastre</h4>
+                <!-- Botão para abrir o modal de login -->
+                    <button type="button" class="site-btn my-4" data-toggle="modal" data-target="#loginModal">
+                        Login
+                    </button>
+
+                    <!-- Modal de Login -->
+                    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
+                         aria-labelledby="loginModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Formulário de Login -->
+                                    <div class="login-container">
+                                        <form id="loginForm">
+                                            <div class="form-group">
+                                                <label for="username">Usuário</label>
+                                                <input type="text" class="form-control" id="username"
+                                                       placeholder="Usuário">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="password">Senha</label>
+                                                <input type="password" class="form-control" id="password"
+                                                       placeholder="Senha">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Entrar</button>
+                                            <p class="message">Não esta registrado? <a href="#">Crie uma conta</a>
+                                            </p>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                {% endif %}
+            </div>
+        </div>
+        <div class="checkout__form">
+            <h4>Endereco de envio</h4>
+            <div class="row">
+                <div class="col-lg-8 col-md-6">
+                    {% if not adress %}
+                    <form id="address-form" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="address">
+                        {% crispy form %}
+                    </form>
+                    {% endif %}
+                    {% if adress %}
+                    <form id="order-form" method="post">
+                        <div class="form-group">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="order">
+                            {% crispy form_pedido %}
+                            <button type="submit" id="order-submit" class="site-btn">Salvar</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="checkout__order">
+                        <h4>Seu Pedido</h4>
+                        <div class="checkout__order__products">Produtos <span>Total</span></div>
+                        <ul>
+                            {% for item in cart.items.all %}
+                            <li>{{item.quantity}} - {{item.product.name}} <span>{{item.total_price_or_promotional_price}}</span>
+                            </li>
+                            {% endfor %}
+
+                        </ul>
+                        <div class="checkout__order__subtotal">Subtotal <span>R${{cart.total}}</span></div>
+                        <div class="checkout__order__total">Total <span>R${{cart.total}}</span></div>
+                        <div class="checkout__input__checkbox">
+                            <label for="acc-or">
+                                Fazer Login?
+                                <input type="checkbox" id="acc-or">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <p>Faca Login para finalizar sua compra</p>
+                        <div class="checkout__input__checkbox">
+                            <label for="payment">
+                                Check Payment
+                                <input type="checkbox" id="payment">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="checkout__input__checkbox">
+                            <label for="paypal">
+                                Paypal
+                                <input type="checkbox" id="paypal">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="site-btn">PLACE ORDER</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Checkout Section End -->
+
+
+<script>
+<!--    VALIDA CEP -->
+    function createErrorSpan(message,cep,cepField,errorContainerId,errorContainer) {
+            if (!errorContainer) {
+                errorContainer = document.createElement('span');
+                errorContainer.id = errorContainerId;
+                errorContainer.className = 'invalid-feedback';
+                errorContainer.style.display = 'none';
+                cepField.parentNode.appendChild(errorContainer);
+            }
+
+            // Limpa o conteúdo anterior e adiciona o novo conteúdo com <strong>
+            errorContainer.innerHTML = '';
+            var strongMessage = document.createElement('strong');
+            strongMessage.textContent = message;
+            errorContainer.appendChild(strongMessage);
+
+            errorContainer.style.display = 'block';
+        }
+
+        function validacep_submit(valorCep) {
+    var cep = valorCep.replace(/\D/g, '');
+    if (cep.length === 8) {
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    // CEP válido, atualiza os outros campos
+                    // Exemplo: document.getElementById('id_rua').value = data.logradouro;
+                } else {
+                    // CEP inválido, você pode definir novamente uma mensagem de validação
+                    document.getElementById('id_cep').setCustomValidity('CEP não encontrado.');
+                }
+            })
+            .catch(error => {
+                // Tratar o erro de conexão ou problemas com o fetch
+                console.error('Erro ao buscar o CEP:', error);
+            });
+    } else {
+        // Se o CEP não tiver 8 dígitos, defina uma mensagem de validação
+        document.getElementById('id_cep').setCustomValidity('CEP deve ter 8 dígitos.');
+    }
+}
+
+
+
+        function valida_cep(cep,cepField,errorContainerId,errorContainer){
+
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    cepField.classList.remove("is-invalid");
+                    cepField.classList.add("is-valid");
+                    if (errorContainer) errorContainer.style.display = 'none';
+
+                    document.getElementById('id_rua').value = data.logradouro;
+                    document.getElementById('id_bairro').value = data.bairro;
+                    document.getElementById('id_cidade').value = data.localidade;
+                    document.getElementById('id_estado').value = data.uf;
+                }
+                else {
+                    cepField.classList.remove("is-valid");
+                    cepField.classList.add("is-invalid");
+                    document.getElementById('id_rua').value = '';
+                    document.getElementById('id_bairro').value = '';
+                    document.getElementById('id_cidade').value = '';
+                    document.getElementById('id_estado').value = '';
+                    createErrorSpan('CEP inválido ou não encontrado.',cep,cepField,errorContainerId,errorContainer);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                createErrorSpan('Erro ao buscar o CEP.',cep,cepField,errorContainerId,errorContainer);
+            });
+        }
+        else {
+            cepField.classList.remove("is-valid");
+            cepField.classList.add("is-invalid");
+            createErrorSpan('CEP inválido.',cep,cepField,errorContainerId,errorContainer);
+        }
+        }
+
+    document.getElementById('id_cep').addEventListener('change', function() {
+        var cep = this.value.replace(/\D/g, '');
+        var cepField = document.getElementById('id_cep');
+        var errorContainerId = 'error_1_id_cep';
+        var errorContainer = document.getElementById(errorContainerId);
+        valida_cep(cep,cepField,errorContainerId,errorContainer)
+
+
+
+    });
+
+</script>
+
+<!--LOGIN-->
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event){
+    event.preventDefault();
+
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+
+    // Preparar os dados a serem enviados
+    var data = {
+        'username': username,
+        'password': password
+    };
+
+    // Fazer uma requisição AJAX para o servidor
+    fetch('{% url "user_login"%}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        // Redirecionar o usuário ou mostrar uma mensagem, dependendo da resposta
+        if (data.success) {
+            window.location.href = '{% url "checkout"%}';  // Substitua com o URL correto
+        } else {
+            alert('Falha no login: ' + data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+
+
+</script>
+
+<!--CPF-->
+<script>
+        function validaCPF(cpf) {
+    console.log(cpf);
+    cpf
+    cpf = cpf.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+            console.log('cpf invalido');
+
+        return false; // Verifica o tamanho e a sequência de dígitos iguais
+    }
+
+    var soma = 0;
+    var resto;
+
+    // Calcula o primeiro dígito verificador
+    for (var i = 1; i <= 9; i++) {
+        soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    soma = 0;
+    // Calcula o segundo dígito verificador
+    for (var i = 1; i <= 10; i++) {
+        soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+    }
+    resto = (soma * 10) % 11;
+    if ((resto === 10) || (resto === 11)) resto = 0;
+    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+    console.log('cpf valido');
+
+    return true;
+}
+
+</script>
+{% endblock %}
