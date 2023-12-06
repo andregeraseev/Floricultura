@@ -3,254 +3,263 @@
 {% load static %}
 
 
-
 {% block content %}
-    <!-- Breadcrumb Section Begin -->
-    <section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                    <div class="breadcrumb__text">
-                        <h2>Vegetable’s Package</h2>
-                        <div class="breadcrumb__option">
-                            <a href="./index.html">Home</a>
-                            <a href="./index.html">Vegetables</a>
-                            <span>Vegetable’s Package</span>
-                        </div>
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="breadcrumb__text">
+                    <h2>Vegetable’s Package</h2>
+                    <div class="breadcrumb__option">
+                        <a href="./index.html">Home</a>
+                        <a href="./index.html">Vegetables</a>
+                        <span>Vegetable’s Package</span>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- Breadcrumb Section End -->
+    </div>
+</section>
+<!-- Breadcrumb Section End -->
 
-    <!-- Product Details Section Begin -->
-    <section class="product-details spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 col-md-6 ">
-                    <div class="product__details__pic">
-                        <div class="product__details__pic__item">
-                            <img class="product__details__pic__item--large"
-                                src="static/img/product/details/product-details-1.jpg" alt="">
+<!-- Product Details Section Begin -->
+<section class="product-details spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 ">
+                <div class="product__details__pic">
+                    <div class="product__details__pic__item">
+
+
+                        <img class="product__details__pic__item--large"
+                             src="{{produto.images.first.image.url}}" alt="">
+
+                    </div>
+                    <div class="product__details__pic__slider owl-carousel">
+                        {% for image in produto.images.all %}
+                        <img data-imgbigurl="{{image.image.url}}" src="{{image.image.url}}" alt="">
+
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 " >
+                <div class="product__details__text product__item" id="product-item">
+                    <h3>{{produto.name}}</h3>
+
+                    <div class="product__details__rating">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                        <span>(18 reviews)</span>
+                    </div>
+                    <div class="product__details__price">{% if produto.variations.all %}
+                        <div class="product__item__price" id="variation-price-{{ product.id }}">
+                            R${{produto.variations.first.promotional_price | default:produto.variations.first.price }}
+                            {%if produto.variations.first.promotional_price%}
+                            <span>R${{ produto.variations.first.price }}</span>
+                            {%endif%}
                         </div>
-                        <div class="product__details__pic__slider owl-carousel">
-                            {% for image in produto.images.all %}
-                            <img data-imgbigurl="{{image.image.url}}" src="{{image.image.url}}" alt="">
+                        <!-- Inicialize com o preço da primeira variação -->
+                        {% else %}
+                        <div class="product__item__price">R${{ produto.promotional_price | default:produto.price }}
+                            {%if produto.promotional_price%}<span>R${{ produto.price }}</span>{%endif%}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p>{{produto.description}}</p>
+                    <div class="product-options" id="options-{{ product.id }}" style="display: none;">
+                    </div>
+
+                    <div class="options-container">
+                        {% if produto.variations.all %}
+                        <select class="variation-select" onchange="updatePrice(this)">
+                            {% for variation in produto.variations.all %}
+
+                            <option value="{{ variation.id }}" data-desconto="{{ variation.porcentagem_de_desconto }}"
+                                    data-price="{{ variation.promotional_price | default:variation.price }}
+                            {%if variation.promotional_price%}<span>R${{ variation.price }}</span>{%endif%}"
+                                    data-produto-id="{{produto.id}}">
+                                {% if not variation.has_stock %}
+                                Esgotado -
+                                {% endif %}
+                                {% for item in variation.get_grade %}
+                                {{ item.chave }}: {{ item.valor }}{% if not forloop.last %} / {% endif%}
+                                {% endfor %}
+                            </option>
 
                             {% endfor %}
-
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-6 product__item">
-                    <div class="product__details__text">
-                        <h3>{{produto.name}}</h3>
-
-                        <div class="product__details__rating">
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star-half-o"></i>
-                            <span>(18 reviews)</span>
-                        </div>
-                        <div class="product__details__price">{% if produto.variations.all %}
-                            <div class="product__item__price" id="variation-price-{{ product.id }}">
-                                R${{produto.variations.first.promotional_price | default:produto.variations.first.price }}
-                                {%if produto.variations.first.promotional_price%}
-                                <span>R${{ produto.variations.first.price }}</span>
-                                {%endif%}
-                            </div>
-                            <!-- Inicialize com o preço da primeira variação -->
-                            {% else %}
-                            <div class="product__item__price">R${{ produto.promotional_price | default:produto.price }}
-                                {%if produto.promotional_price%}<span>R${{ produto.price }}</span>{%endif%}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <p>{{produto.description}}</p>
-                        <div class="product-options" id="options-{{ product.id }}" style="display: none;">
-
-        </div>
-
-                        <div class="options-container" >
-                {% if produto.variations.all %}
-                <select class="variation-select" onchange="updatePrice(this)" >
-                    {% for variation in produto.variations.all %}
-
-                    <option value="{{ variation.id }}" data-desconto="{{ variation.porcentagem_de_desconto }}"
-                            data-price="{{ variation.promotional_price | default:variation.price }}
-                            {%if variation.promotional_price%}<span>R${{ variation.price }}</span>{%endif%}"
-                            data-produto-id="{{produto.id}}">
-                        {% if not variation.has_stock %}
-                        Esgotado -
+                        </select>
                         {% endif %}
-                        {% for item in variation.get_grade %}
-                        {{ item.chave }}: {{ item.valor }}{% if not forloop.last %} / {% endif%}
-                        {% endfor %}
-                    </option>
 
-                    {% endfor %}
-                </select>
-                {% endif %}
+                        <form onsubmit="event.preventDefault(); addToCart(this); " class="form-inline" style="flex-wrap: nowrap">
+                            <!-- Campo de id produto -->
+                            <input type="hidden" name="productId" class="productId" value="{{ produto.id }}">
+                            <!-- Campo de id variável -->
+                            <input type="hidden" name="variationId" class="variationId" value="">
+                            <!-- Campo de quantidade -->
 
-                <form onsubmit="event.preventDefault(); addToCart(this); ">
-                  <!-- Campo de id produto -->
-                  <input type="hidden" name="productId" class="productId" value="{{ produto.id }}">
-                  <!-- Campo de id variável -->
-                  <input type="hidden" name="variationId" class="variationId" value="">
-                  <!-- Campo de quantidade -->
-                    <div class="product__details__quantity">
-                            <div class="quantity">
-                                <div class="pro-qty">
-                                    <input type="number" name="quantity" class="quantity-input" min="1" value="1">
+                            <div class="product__details__quantity ">
+                                <div class="quantity">
+                                    <div class="pro-qty form-group">
+                                        <input type="number" name="quantity" class="quantity-input" min="1" value="1">
+                                    </div>
                                 </div>
+                            </div>
+                            <!-- Adicionar ao carrinho -->
+                            <button type="submit" class="add-to-cart-btn site-btn form-group"><i class="fa fa-shopping-cart"></i> Adicionar
+                                ao Carrinho
+                            </button>
+
+                            <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+
+                        </form>
+
+
+                    </div>
+
+
+                    <ul>
+                        <li><b>Disponibilidade</b> <span>{% if produto.has_stock %}Em Estoque{% else %} Indisponivel{% endif %}</span>
+                        </li>
+                        <!--                            <li><b>Shipping</b> <span>01 day shipping. <samp>Free pickup today</samp></span></li>-->
+                        <li><b>Peso</b> <span>{{produto.pesoBruto}}kg</span></li>
+                        <li><b>Compartilhe</b>
+                            <div class="share">
+                                <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#"><i class="fa-brands fa-pinterest"></i></a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="product__details__tab">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab"
+                               aria-selected="true">Descrição</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab"
+                               aria-selected="false">Informação</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab"
+                               aria-selected="false">Comentarios <span>(1)</span></a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tabs-1" role="tabpanel">
+                            <div class="product__details__tab__desc">
+                                <h6>Informações do Produto</h6>
+                                <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
+                                    Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus. Vivamus
+                                    suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam sit amet quam
+                                    vehicula elementum sed sit amet dui. Donec rutrum congue leo eget malesuada.
+                                    Vivamus suscipit tortor eget felis porttitor volutpat. Curabitur arcu erat,
+                                    accumsan id imperdiet et, porttitor at sem. Praesent sapien massa, convallis a
+                                    pellentesque nec, egestas non nisi. Vestibulum ac diam sit amet quam vehicula
+                                    elementum sed sit amet dui. Vestibulum ante ipsum primis in faucibus orci luctus
+                                    et ultrices posuere cubilia Curae; Donec velit neque, auctor sit amet aliquam
+                                    vel, ullamcorper sit amet ligula. Proin eget tortor risus.</p>
+                                <p>Praesent sapien massa, convallis a pellentesque nec, egestas non nisi. Lorem
+                                    ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit aliquet
+                                    elit, eget tincidunt nibh pulvinar a. Cras ultricies ligula sed magna dictum
+                                    porta. Cras ultricies ligula sed magna dictum porta. Sed porttitor lectus
+                                    nibh. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.
+                                    Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui. Sed
+                                    porttitor lectus nibh. Vestibulum ac diam sit amet quam vehicula elementum
+                                    sed sit amet dui. Proin eget tortor risus.</p>
                             </div>
                         </div>
-
-                  <!-- Adicionar ao carrinho -->
-                  <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Adicionar ao Carrinho</button>
-                </form>
-
-
-
-
-            </div>
-                        <a href="#" class="primary-btn">ADD TO CARD</a>
-                        <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
-                        <ul>
-                            <li><b>Disponibilidade</b> <span>{% if produto.has_stock %}Em Estoque{% else %} Indisponivel{% endif %}</span></li>
-<!--                            <li><b>Shipping</b> <span>01 day shipping. <samp>Free pickup today</samp></span></li>-->
-                            <li><b>Peso</b> <span>{{produto.pesoBruto}}kg</span></li>
-                            <li><b>Compartilhe</b>
-                                <div class="share">
-                                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
-                                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                                    <a href="#"><i class="fa-brands fa-pinterest"></i></a>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="product__details__tab">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab"
-                                    aria-selected="true">Descrição</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab"
-                                    aria-selected="false">Informação</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab"
-                                    aria-selected="false">Comentarios <span>(1)</span></a>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                                <div class="product__details__tab__desc">
-                                    <h6>Informações do Produto</h6>
-                                    <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
-                                        Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus. Vivamus
-                                        suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam sit amet quam
-                                        vehicula elementum sed sit amet dui. Donec rutrum congue leo eget malesuada.
-                                        Vivamus suscipit tortor eget felis porttitor volutpat. Curabitur arcu erat,
-                                        accumsan id imperdiet et, porttitor at sem. Praesent sapien massa, convallis a
-                                        pellentesque nec, egestas non nisi. Vestibulum ac diam sit amet quam vehicula
-                                        elementum sed sit amet dui. Vestibulum ante ipsum primis in faucibus orci luctus
-                                        et ultrices posuere cubilia Curae; Donec velit neque, auctor sit amet aliquam
-                                        vel, ullamcorper sit amet ligula. Proin eget tortor risus.</p>
-                                        <p>Praesent sapien massa, convallis a pellentesque nec, egestas non nisi. Lorem
-                                        ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit aliquet
-                                        elit, eget tincidunt nibh pulvinar a. Cras ultricies ligula sed magna dictum
-                                        porta. Cras ultricies ligula sed magna dictum porta. Sed porttitor lectus
-                                        nibh. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.
-                                        Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui. Sed
-                                        porttitor lectus nibh. Vestibulum ac diam sit amet quam vehicula elementum
-                                        sed sit amet dui. Proin eget tortor risus.</p>
-                                </div>
+                        <div class="tab-pane" id="tabs-2" role="tabpanel">
+                            <div class="product__details__tab__desc">
+                                <h6>Informações do Produto</h6>
+                                <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
+                                    Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus.
+                                    Vivamus suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam
+                                    sit amet quam vehicula elementum sed sit amet dui. Donec rutrum congue leo
+                                    eget malesuada. Vivamus suscipit tortor eget felis porttitor volutpat.
+                                    Curabitur arcu erat, accumsan id imperdiet et, porttitor at sem. Praesent
+                                    sapien massa, convallis a pellentesque nec, egestas non nisi. Vestibulum ac
+                                    diam sit amet quam vehicula elementum sed sit amet dui. Vestibulum ante
+                                    ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
+                                    Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.
+                                    Proin eget tortor risus.</p>
+                                <p>Praesent sapien massa, convallis a pellentesque nec, egestas non nisi. Lorem
+                                    ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit aliquet
+                                    elit, eget tincidunt nibh pulvinar a. Cras ultricies ligula sed magna dictum
+                                    porta. Cras ultricies ligula sed magna dictum porta. Sed porttitor lectus
+                                    nibh. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.</p>
                             </div>
-                            <div class="tab-pane" id="tabs-2" role="tabpanel">
-                                <div class="product__details__tab__desc">
-                                    <h6>Informações do Produto</h6>
-                                    <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
-                                        Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus.
-                                        Vivamus suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam
-                                        sit amet quam vehicula elementum sed sit amet dui. Donec rutrum congue leo
-                                        eget malesuada. Vivamus suscipit tortor eget felis porttitor volutpat.
-                                        Curabitur arcu erat, accumsan id imperdiet et, porttitor at sem. Praesent
-                                        sapien massa, convallis a pellentesque nec, egestas non nisi. Vestibulum ac
-                                        diam sit amet quam vehicula elementum sed sit amet dui. Vestibulum ante
-                                        ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
-                                        Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.
-                                        Proin eget tortor risus.</p>
-                                    <p>Praesent sapien massa, convallis a pellentesque nec, egestas non nisi. Lorem
-                                        ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit aliquet
-                                        elit, eget tincidunt nibh pulvinar a. Cras ultricies ligula sed magna dictum
-                                        porta. Cras ultricies ligula sed magna dictum porta. Sed porttitor lectus
-                                        nibh. Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a.</p>
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="tabs-3" role="tabpanel">
-                                <div class="product__details__tab__desc">
-                                    <h6>Informações do Produto</h6>
-                                    <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
-                                        Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus.
-                                        Vivamus suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam
-                                        sit amet quam vehicula elementum sed sit amet dui. Donec rutrum congue leo
-                                        eget malesuada. Vivamus suscipit tortor eget felis porttitor volutpat.
-                                        Curabitur arcu erat, accumsan id imperdiet et, porttitor at sem. Praesent
-                                        sapien massa, convallis a pellentesque nec, egestas non nisi. Vestibulum ac
-                                        diam sit amet quam vehicula elementum sed sit amet dui. Vestibulum ante
-                                        ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
-                                        Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.
-                                        Proin eget tortor risus.</p>
-                                </div>
+                        </div>
+                        <div class="tab-pane" id="tabs-3" role="tabpanel">
+                            <div class="product__details__tab__desc">
+                                <h6>Informações do Produto</h6>
+                                <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui.
+                                    Pellentesque in ipsum id orci porta dapibus. Proin eget tortor risus.
+                                    Vivamus suscipit tortor eget felis porttitor volutpat. Vestibulum ac diam
+                                    sit amet quam vehicula elementum sed sit amet dui. Donec rutrum congue leo
+                                    eget malesuada. Vivamus suscipit tortor eget felis porttitor volutpat.
+                                    Curabitur arcu erat, accumsan id imperdiet et, porttitor at sem. Praesent
+                                    sapien massa, convallis a pellentesque nec, egestas non nisi. Vestibulum ac
+                                    diam sit amet quam vehicula elementum sed sit amet dui. Vestibulum ante
+                                    ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
+                                    Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.
+                                    Proin eget tortor risus.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- Product Details Section End -->
+    </div>
+</section>
+<!-- Product Details Section End -->
 
-    <!-- Related Product Section Begin -->
-    <section class="related-product">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title related__product__title">
-                        <h2>Produtos Relacionados</h2>
-                    </div>
+<!-- Related Product Section Begin -->
+<section class="related-product">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title related__product__title">
+                    <h2>Produtos Relacionados</h2>
                 </div>
             </div>
-            <div class="row">
+        </div>
+        <div class="row">
 
-                {% for product in related_items %}
-                <div class="col-lg-3 col-md-4 col-sm-6">
+            {% for product in related_items %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
                 {% include 'partials/_product_item.html' %}
-                </div>
-                {% endfor %}
-
-
             </div>
+            {% endfor %}
+
+
         </div>
-    </section>
-    <!-- Related Product Section End -->
+    </div>
+</section>
+<!-- Related Product Section End -->
 
 <script>
-    window.onload = function() {
-    console.log('loaded')
-    variationSelects = document.querySelectorAll('.product-details .product-options')
-    var parentDiv = variationSelects.closest('.product__item');
-    console.log(variationSelects)
-    selecionarPrimeiraOpcao(variationSelects)
+  window.onload = function() {
+    console.log('loaded');
+    var variationSelects = document.querySelectorAll('.product-details .product-options');
+
+    variationSelects.forEach(function(select) {
+        var parentDiv = select.closest('.product__item');
+        console.log('Parent Div:', parentDiv);
+        selecionarPrimeiraOpcao(parentDiv);
+    });
 };
+
 
 
 </script>

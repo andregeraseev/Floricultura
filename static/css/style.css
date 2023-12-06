@@ -2011,10 +2011,18 @@ ol {
 }
 
 .product__details__text .product__details__price {
-	font-size: 30px;
+	font-size: 2rem;
 	color: #dd2222;
 	font-weight: 600;
 	margin-bottom: 15px;
+}
+
+.product__details__text .product__details__price span {
+	display: inline-block;
+	font-size: 1.5rem;
+	font-weight: 400;
+	text-decoration: line-through;
+	margin-left: 10px;
 }
 
 .product__details__text p {

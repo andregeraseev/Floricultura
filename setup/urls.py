@@ -40,7 +40,7 @@ urlpatterns = [
 
 
     # WEBHOOKS
-    path('webhook/tiny_produtos' , ProductWebhook.as_view(), name='product-webhook'),
+    path('webhook/tiny_produtos/' , ProductWebhook.as_view(), name='product-webhook'),
 
 #     TRACKING BANNER
     path('track-click/<int:banner_id>/<str:banner_type>/', track_click, name='track-click'),
