@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from tiny_webhook.serializers import ProductSerializer
@@ -17,6 +18,6 @@ class ProductWebhook(APIView):
         if serializer.is_valid():
             serializer.save()
             print(serializer.data)
-            return Response(serializer.data, content_type="application/json", status=200 )
+            return HttpResponse(serializer.data, content_type="application/json", status=200 )
         else:
-            return Response(serializer.errors, status=400)
+            return HttpResponse(serializer.errors, content_type="application/json", status=400)
