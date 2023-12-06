@@ -30,7 +30,7 @@ def get_cart(request):
             session_cart = ShoppingCart.objects.filter(session__session_key=session).first()
             # print(session_cart)
     except:
-        pass
+        print('erro ao criar carrinho para usuario autenticado')
     else:
         # Para usuários anônimos, obtenha ou crie um carrinho com base na sessão
 
