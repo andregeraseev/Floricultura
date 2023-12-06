@@ -26,6 +26,10 @@ class ProductSerializer(serializers.ModelSerializer):
             data['price'] = data.pop('preco', None)
             print('data',data['price'])
             data['name'] = data.pop('nome', None)
+            # Garantir que pesoLiquido e pesoBruto tenham no máximo duas casas decimais
+            data['pesoLiquido'] = round(float(data.get('pesoLiquido', 0)), 2)
+            data['pesoBruto'] = round(float(data.get('pesoBruto', 0)), 2)
+            data['unidadePorCaixa'] = int(data.get('unidadePorCaixa', 0))
             return super().to_internal_value(data)
         except Exception as e:
             logger.error(f"Erro ao converter os dados: {e}")
