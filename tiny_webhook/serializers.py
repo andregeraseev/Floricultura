@@ -23,6 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
         Converte os nomes dos campos recebidos da API externa para os nomes dos campos do modelo.
         """
         data['price'] = data.pop('preco', None)
+        print('data',data['price'])
         data['name'] = data.pop('nome', None)
         return super().to_internal_value(data)
 
@@ -30,7 +31,8 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Cria um novo produto ou atualiza um existente.
         """
-        arvore_categorias = self.context.get("request").data.get('arvoreCategoria', [])
+        arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
+        print('arvore_categorias',arvore_categorias)
         departamento, categoria = self.process_departamento_e_categoria(arvore_categorias)
 
         validated_data['category'] = categoria
@@ -41,8 +43,8 @@ class ProductSerializer(serializers.ModelSerializer):
             defaults=validated_data
         )
 
-        self.process_images(product, self.context['request'].data.get('anexos', []))
-        self.process_variacoes(product, self.context.get("request").data.get('variacoes', []))
+        self.process_images(product, self.context['request'].get('anexos', []))
+        self.process_variacoes(product, self.context.get("request").get('variacoes', []))
 
         return product
 
