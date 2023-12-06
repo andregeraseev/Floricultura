@@ -31,6 +31,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Cria um novo produto ou atualiza um existente.
         """
+        logger.info(f"Obejto recebido: {validated_data}")
         arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
         print('arvore_categorias',arvore_categorias)
         departamento, categoria = self.process_departamento_e_categoria(arvore_categorias)
