@@ -13,8 +13,7 @@ venv.bak/
 *.sqlite3
 *.pyc
 db.sqlite3
-/media
-/static
+
 .DS_Store
 .env
 

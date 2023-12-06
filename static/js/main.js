@@ -438,7 +438,7 @@ function updatePrice(selectElement) {
     var variant_id = selectedOption.getAttribute('value');
     // Encontrar a div pai mais próxima com a classe 'product__item__price' e 'product__discount__percent'
     var parentDiv = selectElement.closest('.product__item');
-
+    console.log('parentDiv',parentDiv,'price',price,'desconto',desconto,'variant_id',variant_id);
     if (parentDiv) {
         // Encontrar elementos de preço e desconto dentro desta div pai
         var priceElement = parentDiv.querySelector('.product__item__price');
@@ -470,7 +470,7 @@ function addToCart(formElement) {
   const productId = formElement.querySelector('.productId').value;
   const variationId = formElement.querySelector('.variationId').value || null; // Use null se o valor for vazio
   const quantity = formElement.querySelector('.quantity-input').value;
-
+  console.log('productId',productId,'variationId',variationId,'quantity',quantity);
   const csrftoken = getCookie('csrftoken'); // Função para obter o token CSRF do cookie
 
   fetch('/carrinho/', {

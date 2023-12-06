@@ -21,7 +21,7 @@ def get_cart(request):
         session = request.session.session_key
 
     # Se o usuário estiver autenticado, obtenha ou crie um carrinho associado ao perfil do usuário
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.profile:
         # print('userautenticado', request.user)
         cart, created = ShoppingCart.objects.get_or_create(user_profile=request.user.profile)
         # print(cart, created, )
