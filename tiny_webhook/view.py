@@ -4,6 +4,7 @@ from tiny_webhook.serializers import ProductSerializer
 
 class ProductWebhook(APIView):
     def post(self, request, format=None):
+        print(request.data)
         serializer = ProductSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
