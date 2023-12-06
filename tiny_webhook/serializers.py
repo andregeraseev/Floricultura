@@ -22,10 +22,14 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Converte os nomes dos campos recebidos da API externa para os nomes dos campos do modelo.
         """
-        data['price'] = data.pop('preco', None)
-        print('data',data['price'])
-        data['name'] = data.pop('nome', None)
-        return super().to_internal_value(data)
+        try:
+            data['price'] = data.pop('preco', None)
+            print('data',data['price'])
+            data['name'] = data.pop('nome', None)
+            return super().to_internal_value(data)
+        except Exception as e:
+            logger.error(f"Erro ao converter os dados: {e}")
+            raise APIException("Erro ao converter os dados")
 
     def create(self, validated_data):
         """
