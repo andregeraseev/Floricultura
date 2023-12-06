@@ -23,7 +23,7 @@ class ProductSerializer(serializers.ModelSerializer):
         Converte os nomes dos campos recebidos da API externa para os nomes dos campos do modelo.
         """
         try:
-            logger.ingo(f"data: {data}")
+            logger.info(f"data: {data}")
             data['price'] = data.pop('preco', None)
             print('data',data['price'])
             data['name'] = data.pop('nome', None)
