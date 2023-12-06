@@ -12,7 +12,7 @@ def parse_payload(request_body):
 class ProductWebhook(APIView):
     def post(self, request, format=None):
         payload = parse_payload(request.body)
-
+        print('payload',payload)
         serializer = ProductSerializer(data=payload['dados'], context={'request': payload['dados']})
         if serializer.is_valid():
             serializer.save()
