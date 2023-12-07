@@ -1,4 +1,53 @@
 <!-- Hero Section Begin -->
+<style>
+.dropdown-item {
+    font-family: Cairo;
+    font-weight: bolder;
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1.5rem;
+    clear: both;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+}
+
+.nav-item {
+    position: relative;
+
+}
+.dropdown-item.active, .dropdown-item:active {
+    color: #fff;
+    text-decoration: none;
+    background-color: #e65e6b;
+}
+
+.nav-item .dropdown-menu {
+    font-family: Cairo;
+    font-weight: bolder;
+    border: 0px;
+    background-color: #dc3545;
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%; /* Faz com que o dropdown comece logo após o fim do item do menu */
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+
+}
+
+.nav-item:hover .dropdown-menu,
+.nav-item .dropdown-menu:hover {
+    display: block;
+    opacity: 1;
+
+}
+
+
+</style>
 <section class="hero">
     <div class="container">
         {%if not site_setting.menu_lateral %}
@@ -18,10 +67,17 @@
                     </li>
                     {% for departement in departements %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{%url 'department_detail' departement.slug %}"
-                           style=" font-family:{{site_setting.navbar_font}};font-weight:{{site_setting.navbar_font_weight}}">
-                            {{departement.name }}</a>
+                        <a class="nav-link " href="{{ departement.get_absolute_url }}"
+                           style="font-family:{{ site_setting.navbar_font }}; font-weight:{{ site_setting.navbar_font_weight }}">
+                            {{ departement.name }}
+                        </a>
+                        <div class="dropdown-menu" style="backgrond-color: #dc3545;">
+                            {% for category in departement.categories.all %}
+                            <a class="dropdown-item" href="{{ category.get_absolute_url }} " style="backgrond-color: #dc3545;">{{ category.name }}</a>
+                            {% endfor %}
+                        </div>
                     </li>
+
 
                     {% endfor %}
                 </ul>
@@ -92,3 +148,23 @@
                 </div>
                 {% endif %}
 {% endif %}
+
+
+<script>
+document.querySelectorAll('.nav-item').forEach(item => {
+    let timer;
+    item.addEventListener('mouseover', function() {
+        clearTimeout(timer);
+        this.querySelector('.dropdown-menu').style.display = 'block';
+        setTimeout(() => this.querySelector('.dropdown-menu').style.opacity = 1, 10);
+    });
+    item.addEventListener('mouseout', function() {
+        timer = setTimeout(() => {
+            this.querySelector('.dropdown-menu').style.opacity = 0;
+            setTimeout(() => this.querySelector('.dropdown-menu').style.display = 'none', 50);
+        }, 50); // Atraso para fechar o menu
+    });
+});
+
+
+</script>

@@ -18,7 +18,7 @@
                 {% if departement.image_department %}
                 <div class="col-lg-3">
                     <div class="categories__item set-bg-cover" data-setbg="{{departement.image_department.url}}">
-                        <h5><a href="{% static '#' %}">{{departement.name}}</a></h5>
+                        <h5><a href="{{departement.get_absolute_url}}">{{departement.name}}</a></h5>
                     </div>
                 </div>
                 {% endif %}

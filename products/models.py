@@ -292,7 +292,7 @@ class Department(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    department  = models.ForeignKey('Department', on_delete=models.CASCADE)
+    department  = models.ForeignKey('Department',  on_delete=models.CASCADE,related_name='categories', null=True, blank=True)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
     id_pai = models.IntegerField(null=True, blank=True)
