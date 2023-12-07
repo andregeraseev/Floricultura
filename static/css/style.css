@@ -591,8 +591,8 @@ ol {
 }
 
 .header__cart .header__cart__price {
-	font-size: 14px;
-	color: #6f6f6f;
+	font-size: 1rem;
+	color: #000000;
 	display: inline-block;
 }
 
@@ -3692,7 +3692,7 @@ display: none;
 		cursor: pointer;
 		position: absolute;
 		right: 15px;
-		top: 7px;
+		top: 25%;
 	}
 	.header .container {
 		position: relative;
@@ -3862,7 +3862,7 @@ display: none;
 		display: none;
 	}
 	.header__align {
-
+    padding: 8px 0px 8px 0px;
     background-color: var(--mobili-header-secundario-color);
 }
 

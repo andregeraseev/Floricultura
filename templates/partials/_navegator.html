@@ -71,9 +71,12 @@
                            style="font-family:{{ site_setting.navbar_font }}; font-weight:{{ site_setting.navbar_font_weight }}">
                             {{ departement.name }}
                         </a>
-                        <div class="dropdown-menu" style="backgrond-color: #dc3545;">
+                        <div class="dropdown-menu" >
+
                             {% for category in departement.categories.all %}
-                            <a class="dropdown-item" href="{{ category.get_absolute_url }} " style="backgrond-color: #dc3545;">{{ category.name }}</a>
+                            {% if category.name != departement.name %}
+                            <a class="dropdown-item" href="{{ category.get_absolute_url }} " >{{ category.name }}</a>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </li>
@@ -93,11 +96,11 @@
                     <div class="hero__search__form">
                         <form action="#">
                             <div class="hero__search__categories">
-                                All Categories
+                                Todas Categorias
                                 <span class="arrow_carrot-down"></span>
                             </div>
-                            <input type="text" placeholder="What do yo u need?">
-                            <button type="submit" class="site-btn">SEARCH</button>
+                            <input type="text" placeholder="Oque você precisa?">
+                            <button type="submit" class="site-btn">Buscar</button>
                         </form>
                     </div>
                     <div class="hero__search__phone">

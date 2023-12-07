@@ -1,4 +1,7 @@
 {% load static %}
+
+
+
 <!-- Humberger Begin -->
 <div class="humberger__menu__overlay"></div>
 <div class="humberger__menu__wrapper">
@@ -38,18 +41,25 @@
         </div>
     </div>
     <nav class="humberger__menu__nav mobile-menu">
-        <ul>
-            <li class="active"><a href="{% url 'home' %}">Home</a></li>
-                <ul class="header__menu__dropdown">
-                    {% for departement in departements %}
-                        <li><a href="{{departement.get_absolute_url}}">{{ departement.name }}</a></li>
-                        {% endfor %}
-                </ul>
-            </li>
-            <li><a href="./blog.html">Blog</a></li>
-            <li><a href="./contact.html">{{ footer_info.phone }}</a></li>
+    <ul>
+        <li class="active"><a href="{% url 'home' %}">Home</a></li>
+        {% for departement in departements %}
+    <li>
+        <a href="{{ departement.get_absolute_url }}">{{ departement.name }}</a>
+        <ul class="humberger-dropdown-menu">
+            {% for category in departement.categories.all %}
+                {% if category.name != departement.name %}
+                    <li><a class="humberger-dropdown-item" href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+                {% endif %}
+            {% endfor %}
         </ul>
-    </nav>
+    </li>
+{% endfor %}
+        <li><a href="./blog.html">Blog</a></li>
+        <li><a href="./contact.html">{{ footer_info.phone }}</a></li>
+    </ul>
+</nav>
+
     <div id="mobile-menu-wrap"></div>
     <div class="header__top__right__social">
         {% for link in social_links %}
