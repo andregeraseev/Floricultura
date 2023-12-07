@@ -217,9 +217,9 @@ color: #ff5151a6;
             {% endif %}
           </p>
           <div class="quantity-selector">
-            <button class="quantity-btn" onclick="decreaseQuantity({{ forloop.counter }})">-</i></button>
+            <button class="quantity-btn" onclick="decreaseQuantity({{ item.id }})">-</i></button>
             <input type="text" value="{{ item.quantity }}" id="quantity-{{ forloop.counter }}">
-            <button class="quantity-btn" onclick="increaseQuantity({{ forloop.counter }})">+</button>
+            <button class="quantity-btn" onclick="increaseQuantity({{ item.id }})">+</button>
           </div>
         </div>
                   <a onclick="removeItem({{ item.id}})" class="remove-item-btn"><i class="fa-solid fa-trash-can"></i></a>
@@ -240,18 +240,21 @@ color: #ff5151a6;
 </div>
 
 <script>
-    // script.js
 
-
-function increaseQuantity(index) {
-  // Increase the quantity of the item in the cart
+// Função auxiliar para obter o valor do cookie CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
-
-function decreaseQuantity(index) {
-  // Decrease the quantity of the item in the cart
-}
-
-
-
 
 </script>

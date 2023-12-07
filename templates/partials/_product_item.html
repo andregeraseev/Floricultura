@@ -26,8 +26,8 @@
                     {% for variation in product.variations.all %}
 
                     <option value="{{ variation.id }}" data-desconto="{{ variation.porcentagem_de_desconto }}"
-                            data-price="{{ variation.promotional_price | default:variation.price }}
-                            {%if variation.promotional_price%}<span>R${{ variation.price }}</span>{%endif%}"
+                            data-price="{{ variation.price_or_promocional_price | default:variation.price }}
+                            {%if product.promotion_active%}<span>R${{ variation.price }}</span>{%endif%}"
                             data-produto-id="{{product.id}}">
                         {% if not variation.has_stock %}
                         Esgotado -

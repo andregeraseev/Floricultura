@@ -522,7 +522,7 @@ function removeItem(itemId) {
     if(data.success) {
       console.log(data.message);
       updateCartSidebar(data.cart_sidebar);
-      updateCartCounter(data.cart_counter_items)
+      updateCartCounter(data.cart_counter_items);
       showSuccessAlert(data.message);
     } else {
       console.error('Falha ao remover ao carrinho:', data.error);
@@ -553,6 +553,53 @@ function updateCartSidebar(data) {
                 sidebarContainer.querySelector('#cart-sidebar').classList.add('visible');
                 }
 }
+
+
+
+// Aumentar ou diminuir a quantidade do item no carrinho
+function increaseQuantity(itemId) {
+console.log(itemId)
+    updateItemQuantity(itemId, 1);
+}
+// Aumentar ou diminuir a quantidade do item no carrinho
+function decreaseQuantity(itemId) {
+console.log(itemId)
+    updateItemQuantity(itemId, -1);
+}
+
+// Atualizar a quantidade do item no carrinho
+function updateItemQuantity(itemId, change) {
+    fetch("/carrinho/", {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+
+            item_id: itemId,
+            change: change
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartSidebar(data.cart_sidebar);
+            updateCartCounter(data.cart_counter_items);
+            showSuccessAlert(data.message);
+        } else {
+            showErrorAlert(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
+
+
+
+
+
 
 // Função para exibir/ocultar o carrinho
 function toggleCartSidebar() {

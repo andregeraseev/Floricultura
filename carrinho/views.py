@@ -284,6 +284,33 @@ class CartView(View):
             logger.error(f'Erro ao remover item do carrinho: {e}')
             return JsonResponse({'success': False, 'error': 'Erro interno do servidor'}, status=500)
 
+    def patch(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        return self.update_quantity(request, data)
+
+    def update_quantity(self, request, data):
+        item_id = data.get('item_id')
+        change = int(data.get('change'))
+        cart = self.get_user_cart(request)
+        cart_counter_items = self.cart_counter_items(cart)
+        cart_sidebar = self.cart_sidebar(request)
+        try:
+            item = ShoppingCartItem.objects.get(id=item_id)
+            if change > 0 or (change < 0 and item.quantity > 1):
+                item.quantity += change
+                item.save()
+                cart = self.get_user_cart(request)
+                cart_counter_items = self.cart_counter_items(cart)
+                cart_sidebar = self.cart_sidebar(request)
+                return JsonResponse({'success': True, 'message': 'Quantidade atualizada','cart_counter_items': cart_counter_items, 'cart_sidebar': cart_sidebar})
+            else:
+                return JsonResponse({'success': False, 'error': 'Quantidade não pode ser menor que 1','cart_counter_items': cart_counter_items, 'cart_sidebar': cart_sidebar}, status=400)
+        except ShoppingCartItem.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item não encontrado','cart_counter_items': cart_counter_items, 'cart_sidebar': cart_sidebar}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e),'cart_counter_items': cart_counter_items, 'cart_sidebar': cart_sidebar}, status=500)
+
+
     def get_user_cart(self, request):
         """
         Retorna o carrinho de compras do usuário.
