@@ -2,9 +2,9 @@ from django.shortcuts import render
 
 from products.models import Product, Department, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Min
-from django.db.models.functions import Coalesce
 
+from django.db.models import Case, When, Value, F, Min, DecimalField
+from django.db.models.functions import Coalesce
 
 
 def home(request):
@@ -20,8 +20,7 @@ def department_detail(request, slug):
     base_query = Product.objects.filter(departamento__slug=slug)
 
     # Usar anotação para adicionar o menor preço da variação ou o preço do produto se não houver variação
-    from django.db.models import Case, When, Value, F, Min, DecimalField
-    from django.db.models.functions import Coalesce
+
 
     annotated_query = base_query.annotate(
         lowest_price=Coalesce(
@@ -93,12 +92,40 @@ def category_detail(request, slug):
     sort_by = request.GET.get('sort', 'default')
     products_desconto = Product.objects.filter(category__slug=slug, promotional_price__isnull=False,
                                                promotion_active=True)
-    category = Category.objects.get(slug=slug)
-    if sort_by == 'price_asc':
-        products = Product.objects.filter(category__slug=slug).order_by('price')
 
+    base_query = Product.objects.filter(category__slug=slug)
+    category = Category.objects.get(slug=slug)
+
+    annotated_query = base_query.annotate(
+        lowest_price=Coalesce(
+            # Primeiro, tenta pegar o menor preço promocional das variações, se a promoção estiver ativa
+            Min(
+                Case(
+                    When(
+                        promotion_active=True,
+                        then='variations__promotional_price'
+                    ),
+                    default='variations__price',
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
+            ),
+            # Se não houver variações, verifica se há um preço promocional no produto
+            Case(
+                When(
+                    promotion_active=True,
+                    then='promotional_price'
+                ),
+                default='price',
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            ),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )
+
+    if sort_by == 'price_asc':
+        products = annotated_query.order_by('lowest_price')
     elif sort_by == 'price_desc':
-        products = Product.objects.filter(category__slug=slug).order_by('-price')
+        products = annotated_query.order_by('-lowest_price')
     elif sort_by == 'name_asc':
         products = Product.objects.filter(category__slug=slug).order_by('name')   # Adicione mais condições conforme necessário
 

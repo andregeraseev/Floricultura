@@ -67,12 +67,12 @@
         <span class="product__item__descripition" ><h6>lalala{{product.descricao}}</h6></span>
 
         {% if product.variations.all %}
-        <div class="product__item__price" id="variation-price-{{ product.id }}">R${{ product.variations.first.promotional_price | default:product.variations.first.price }}
-        {%if product.variations.first.promotional_price%}<span>R${{ product.variations.first.price }}</span>{%endif%}</div>
+        <div class="product__item__price" id="variation-price-{{ product.id }}">R${{ product.variations.first.price_or_promocional_price | default:product.variations.first.price }}
+        {%if product.promotion_active%}<span>R${{ product.variations.first.price }}</span>{%endif%}</div>
         <!-- Inicialize com o preço da primeira variação -->
         {% else %}
-        <div class="product__item__price">R${{ product.promotional_price | default:product.price }}
-            {%if product.promotional_price%}<span>R${{ product.price }}</span>{%endif%}</div>
+        <div class="product__item__price">R${{ product.price_or_promocional_price | default:product.price }}
+            {%if product.promotion_active%}<span>R${{ product.price }}</span>{%endif%}</div>
         {% endif %}
     </div>
 </div>
