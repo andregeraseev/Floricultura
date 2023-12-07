@@ -30,6 +30,7 @@ urlpatterns = [
     path('usuario/', include('usuario.urls')),
     path('checkout/', include('pedidos.urls')),
     path('produtos/', include('products.urls')),
+    path('pedidos/', include('pedidos.urls')),
 
     # path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('department/<slug:slug>/', department_detail, name='department_detail'),

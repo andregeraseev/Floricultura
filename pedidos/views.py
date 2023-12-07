@@ -205,3 +205,73 @@ class PedidoView(View):
         """
         html = render_to_string('partials/_cart_sidebar.html', request=request)
         return html
+
+
+# views.py
+from django.http import JsonResponse
+from .models import Order
+
+
+def orders_view(request):
+    # Aqui você pode adicionar qualquer contexto adicional necessário
+    context = {}
+    return render(request, 'dashboard_admin/pedidos.html', context)
+
+def orders_list(request):
+    draw = int(request.GET.get('draw', default=1))
+    start = int(request.GET.get('start', default=0))
+    length = int(request.GET.get('length', default=10))
+
+    # Processar a busca e os filtros
+    search_value = request.GET.get('search[value]', default='')
+
+    # Aqui você pode ajustar a consulta para filtrar os dados
+    orders = Order.objects.filter(destinatario__icontains=search_value)[start:start + length]
+    total = Order.objects.count()
+
+    # Serializar os dados para JSON
+    data = [{
+        'id': order.id,
+        'full_name': order.user_profile.user.get_full_name() if order.user_profile and order.user_profile.user.get_full_name() else order.destinatario,
+        'status': order.status,
+        'final_total': order.final_total,
+        'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de data
+        'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio'><button class='track-btn' data-id='{order.id}'>Adicionar</button>",
+        'actions': f"<button class='pay-btn' data-id='{order.id}'>Pago</button>",
+        'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
+                              'user_details': {
+        'cpf': order.user_profile.cpf if order.user_profile else '',
+        'phone_number': order.user_profile.phone_number if order.user_profile else '',
+        'whatsapp': order.user_profile.whatsapp if order.user_profile else '',
+        'email': order.user_profile.user.email if order.user_profile else '',}
+
+         } for order in orders]
+
+    # Construir a resposta
+    response = {
+        'draw': draw,
+        'recordsTotal': total,
+        'recordsFiltered': total,
+        'data': data,
+    }
+
+    return JsonResponse(response)
+
+
+
+def marcar_como_pago(request):
+    print('marcar como pago')
+    order_id = request.POST.get('order_id')
+    print(order_id)
+    try:
+        order = Order.objects.get(id=order_id)
+        print(order)
+        order.status = 'pago'
+        order.save()
+        print(order.status)
+        return JsonResponse({'success': True, 'message': 'Pedido atualizado com sucesso'})
+    except Order.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
