@@ -539,7 +539,10 @@ function updateCartCounter(data) {
 
 
      document.getElementById('cart-counter').textContent = data.count;
+     document.getElementById('cart-counter-humberger').textContent = data.count;
      document.getElementById('cart-total').textContent = data.total;
+     document.getElementById('cart-total-humberger').textContent = data.total;
+     console.log('contador carrinho')
 
  }
 

@@ -34,10 +34,15 @@ class ShoppingCart(models.Model):
         if product.has_variations():
             print('variacao')
             produto_variacao = variation
-            materia_primas_ids = variation.variation_materials.values_list('materia_prima_id', flat=True)
-            # Obter o consumo total de matéria-prima dos itens já no carrinho
-            consumo_carrinho = {}
-            items_carrinho = self.items.filter(variation__variation_materials__materia_prima_id__in=materia_primas_ids)
+            if produto_variacao.variation_materials.exists():
+                materia_primas_ids = variation.variation_materials.values_list('materia_prima_id', flat=True)
+                # Obter o consumo total de matéria-prima dos itens já no carrinho
+                consumo_carrinho = {}
+                items_carrinho = self.items.filter(variation__variation_materials__materia_prima_id__in=materia_primas_ids)
+
+            else:
+                self.verificar_estoque_produto_sem_materia_prima(product,variation, quantidade_adicional)
+                return True
         else:
             print('produto')
             if product.product_materials.exists():
@@ -47,7 +52,7 @@ class ShoppingCart(models.Model):
                 consumo_carrinho = {}
                 items_carrinho = self.items.filter(product__product_materials__materia_prima_id__in=materia_primas_ids)
             else:
-                self.verificar_estoque_produto_sem_materia_prima(product, quantidade_adicional)
+                self.verificar_estoque_produto_sem_materia_prima(product, variation, quantidade_adicional)
                 return True
 
         for item in items_carrinho:
@@ -74,11 +79,18 @@ class ShoppingCart(models.Model):
         return True
 
 
-    def verificar_estoque_produto_sem_materia_prima(self, product, quantidade_adicional):
-        quantidade_no_carrinho = self.items.filter(product=product).aggregate(total_quantidade=models.Sum('quantity'))[
-                                     'total_quantidade'] or 0
-        if product.estoqueAtual < quantidade_adicional + quantidade_no_carrinho:
-            raise Exception('Estoque insuficiente para o produto')
+    def verificar_estoque_produto_sem_materia_prima(self, product, variation, quantidade_adicional):
+        if variation:
+            quantidade_no_carrinho = self.items.filter(variation=variation).aggregate(
+                total_quantidade=models.Sum('quantity'))['total_quantidade'] or 0
+            if variation.estoqueAtual < quantidade_adicional + quantidade_no_carrinho:
+                raise Exception('Estoque insuficiente para o produto')
+
+        else:
+            quantidade_no_carrinho = self.items.filter(product=product).aggregate(total_quantidade=models.Sum('quantity'))[
+                                         'total_quantidade'] or 0
+            if product.estoqueAtual < quantidade_adicional + quantidade_no_carrinho:
+                raise Exception('Estoque insuficiente para o produto')
 
     def add_item(self, product, quantity=1, variant_id=None):
 
@@ -119,6 +131,8 @@ class ShoppingCart(models.Model):
         item = ShoppingCartItem.objects.get(cart=self, product__id=product_id)
         item.quantity = quantity
         item.save()
+
+
 
     def clear(self):
         self.items.all().delete()
