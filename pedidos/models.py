@@ -1,4 +1,4 @@
-from products.models import Product
+from products.models import Product, ProductVariation
 from usuario.models import UserProfile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -43,17 +43,41 @@ class Order(models.Model):
     # Informações de pagamento
     payment_method = models.CharField(max_length=100)  # Ex: 'credit_card', 'paypal', 'bank_transfer'
     payment_status = models.CharField(max_length=100, default='pending')  # Ex: 'pending', 'completed', 'failed'
-
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total =models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # Cupom de desconto
     coupon = models.CharField(max_length=100)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     observacoes = models.TextField(blank=True, null=True)
+    em_producao = models.BooleanField(default=False)
+
+    def adicionar_valores(self):
+        self.subtotal = sum([item.total_price_or_promotional_price for item in self.items.all()])
+        self.total = self.final_total
+        self.save()
+
+    @property
+    def printable_address(self):
+        return f" <strong>Destinatario:</strong> {self.destinatario} <br> <strong>Rua:</strong> {self.rua}, {self.numero}   <strong>Bairro:</strong> {self.bairro}<br><strong> Cidade:</strong> {self.cidade} - {self.estado} <br> <strong>Complemento:</strong>{self.complemento}<br><strong>CEP:</strong> {self.cep}"
+    @property
+    def printable_order(self):
+        return f"Pedido: {self.id} | Cliente: {self.destinatario} | Email: {self.email_pedido} | CPF: {self.cpf_destinatario} |<p>" \
+               f" Total: {self.total} | Status: {self.status}"
     def __str__(self):
         return f"Order {self.id} "
 
     @property
+    def togle_em_producao(self):
+        if self.em_producao == False:
+            self.em_producao = True
+        else:
+            self.em_producao = False
+        self.save()
+        return self.em_producao
+
+    @property
     def final_total(self):
-        return max(Decimal('0.00'), self.total - self.discount)
+        return max(Decimal('0.00'), Decimal(self.subtotal) - Decimal(self.discount) + Decimal(self.valor_frete))
 
     @property
     def is_paid(self):
@@ -67,11 +91,32 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variation = models.ForeignKey(ProductVariation, on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Preço por unidade no momento da compra
 
     def __str__(self):
         return f"{self.product.name} - {self.quantity}"
+
+    @property
+    def product_or_variation(self):
+        if self.variation:
+            return self.variation
+        return self.product
+
+    @property
+    def price_or_promocional_price(self):
+        return self.product_or_variation.price_or_promocional_price
+
+
+    @property
+    def total(self):
+        return self.product_or_variation.price * self.quantity
+
+    @property
+    def total_price_or_promotional_price(self):
+        return self.product_or_variation.price_or_promocional_price * self.quantity
+
 
     class Meta:
         verbose_name = _('order item')

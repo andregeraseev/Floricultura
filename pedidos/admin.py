@@ -13,12 +13,13 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ('id', 'user_profile', 'status', 'created_at', 'final_total', 'is_paid', 'view_items')
+    list_display = ('id', 'user_profile', 'status', 'em_producao', 'created_at', 'final_total', 'is_paid', 'view_items')
+    list_editable = ('status', 'em_producao')
     list_filter = ('status', 'payment_method', 'created_at', 'estado')
     search_fields = ('id', 'user_profile__user__username', 'destinatario', 'cidade', 'cep')
     readonly_fields = ('created_at', 'updated_at', 'final_total', 'is_paid')
     fieldsets = (
-        ('Informações Básicas', {'fields': ('user_profile', 'status', 'total', 'discount', 'final_total', 'is_paid')}),
+        ('Informações Básicas', {'fields': ('user_profile', 'status', 'em_producao', 'total', 'discount', 'final_total', 'is_paid')}),
         ('Endereço de Envio', {'fields': ('tipo_frete','destinatario','cpf_destinatario', 'rua', 'numero', 'bairro', 'cidade', 'estado', 'cep', 'pais')}),
         ('Pagamento', {'fields': ('payment_method', 'payment_status', 'coupon')}),
         ('Outras Informações', {'fields': ('observacoes', 'created_at', 'updated_at')}),

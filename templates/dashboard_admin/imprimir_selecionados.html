@@ -1,0 +1,178 @@
+{% extends "dashboard_admin/base_dashboard.html" %}
+
+{% load static %}
+
+{% block content %}
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+<style>
+    .order-details-container {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+
+        border-radius: 5px;
+    }
+
+    .order-info strong {
+        font-size: 1rem;
+
+    }
+
+    .order-actions {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .order-actions button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .order-actions button:hover {
+        background-color: #0056b3;
+    }
+
+    .table-responsive {
+        margin-top: 20px;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #212529;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .localizacao {
+      background-color: #504d4d6e;
+        }
+
+
+    @media print {
+        .container {
+        page-break-after: always;
+      }
+
+
+        .table td, .table th {
+            background-color: transparent !important;
+        }
+        .localizacao {
+      background-color: #504d4d6e !important;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+        .printable-area, .printable-area * {
+            visibility: visible;
+        }
+
+        .printable-area {
+
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .order-actions {
+            display: none;
+        }
+
+    }
+</style>
+<div class="order-actions">
+    <button onclick="window.print();">Imprimir Pedido</button>
+
+</div>
+
+
+{% for order in orders %}
+
+<div class="container printable-area">
+    <div class="order-details-container ">
+        <strong style="font-size: 32px">XFLAVORS</strong><br>
+        <div class="order-info row">
+
+            <div class="col-6">
+
+                <strong style="font-size: 20px">Detalhes do pedido</strong>
+
+
+                <br><strong>Número do pedido:</strong> {{ order.order.id }}
+                <br><strong>Status:</strong> {{ order.order.status }}
+                <br><strong>Data do pedido:</strong> {{order.order.created_at|date:"d/m/Y H:i"}}
+            </div>
+            <div class="col-6">
+                <strong style="font-size: 20px">Detalhes Entrega</strong>
+
+                <br>Tipo de Frete:<strong style="font-size: 18px"> {{ order.order.tipo_frete }}</strong>
+                <br>{{ order.order.printable_address|safe }}
+            </div>
+            <div class="col-md-12">
+                {% if order.observacoes %}<br><strong>Observação do cliente:</strong> <br>{{ order.order.observacoes }}
+                {% endif %}
+                {% if order.order.observacoes_internas %}<br><strong>Observação internas:</strong>
+                {{order.order.observacoes_internas}}
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-12">
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <!--                    <th>Localização</th>-->
+                        <th>Valor Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for localizacao, itens in order.items_por_localizacao.items %}
+
+                    <tr class="localizacao">
+                        <td colspan="6" ><strong>{{ localizacao }}</strong></td>
+                    </tr>
+                    {% for item in itens %}
+
+                    <tr>
+
+                        <td style="width: 50%;"> {{ item.product_or_variation.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>R$ {{ item.price_or_promocional_price }}</td>
+                        <td>R$ {{ item.total_price_or_promotional_price}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-size: 12px">
+                <strong>Subtotal:</strong> R$ {{ order.order.subtotal }}<br>
+                <strong>Frete:</strong> R$ {{ order.order.valor_frete }}<br>
+                <strong>Total:</strong> R$ {{ order.order.total }}<br>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% endblock %}

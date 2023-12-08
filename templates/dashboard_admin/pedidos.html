@@ -1,0 +1,301 @@
+{% extends "dashboard_admin/base_dashboard.html" %}
+
+{% load static %}
+
+{% block content %}
+<style>
+    #ordersTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ordersTable thead th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#ordersTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#ordersTable tr:hover {
+    background-color: #ddd;
+}
+
+#ordersTable th, #ordersTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.pay-btn, .details-btn {
+    padding: 5px 10px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pay-btn {
+    background-color: #4CAF50;
+}
+
+.pay-btn:hover {
+    background-color: #45a049;
+}
+
+.details-btn {
+    background-color: #008CBA;
+}
+
+.details-btn:hover {
+    background-color: #007BAC;
+}
+
+</style>
+    <link href="{% static 'css/style.css' %}?v={{ site_settings.version_number }}" rel="stylesheet" type="text/css">
+
+    <div id="alert-box" class="alert-box" style="display:none;"></div>
+
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+{% load static %}
+    <h1>Gerenciamento de Pedidos</h1>
+
+    <table id="ordersTable" class="display" style="width:100%">
+        <div class="buttons-panel">
+    <button id="select-all-orders" class="btn">Selecionar Todos</button>
+    <button id="print-selected-orders" class="btn">Imprimir Selecionados</button>
+            <!-- Filtro para Status do Pedido -->
+<select id="filter-status">
+    <option value="">Todos os Status</option>
+    <option value="pago">Pago</option>
+    <!-- Outras opções de status -->
+</select>
+
+<!-- Filtro para Status de Produção -->
+<select id="filter-producao">
+    <option value="">Todos os Estados de Produção</option>
+    <option value="em_producao">Em Produção</option>
+    <option value="nao_em_producao">Não em Produção</option>
+
+    <!-- Outras opções de estado de produção -->
+</select>
+
+<button onclick="applyFilters()">Aplicar Filtros</button>
+
+</div>
+
+        <thead>
+            <tr>
+                <th >#</th>
+                <th>Visualizar</th>
+                <th>Cliente</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Data do Pedido</th>
+                <th>Rastreio</th>
+                <th>Ações</th>
+                <th>Produção</th>
+                <th>Detalhes</th>
+            </tr>
+        </thead>
+    </table>
+
+    <!-- Incluir jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Incluir DataTables -->
+
+    <script>
+
+
+        $(document).ready(function() {
+
+
+     var table = $('#ordersTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+
+        "ajax": function(data, callback, settings) {
+            console.log("Parâmetros enviados:", data);
+
+            var status = document.getElementById('filter-status').value;
+            var producao = document.getElementById('filter-producao').value;
+            console.log("Parâmetros producao:", producao, status);
+            fetch('/pedidos/orders_view/orders_list/?' + new URLSearchParams({
+    status: status,
+    producao: producao,
+    draw: data.draw,
+    start: data.start,
+    length: data.length,
+    order_colum: data.order[0].column,
+    order_dir: data.order[0].dir,
+    'search[value]': data.search.value,
+
+}).toString(), {
+    method: 'GET',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+    },
+})
+.then(response => response.json())
+.then(json => callback(json))
+.catch(error => console.error('Error:', error));
+        },
+        "columns": [
+            { "data": "id" },
+            { "data": "check","orderable": false, "searchable": false  },
+            { "data": "full_name" },
+            { "data": "status" },
+            { "data": "final_total" },
+            { "data": "created_at" },
+            { "data": "rastreio" },
+            { "data": "actions", "orderable": false, "searchable": false },
+            { "data": "producao"},
+            { "data": "details" },
+        ],
+        "columnDefs": [{
+            "targets": -1,  // Índice da última coluna
+            "data": null,
+           "defaultContent": "<button class='pay-btn' data-action='pay'>Pago</button>"
+
+
+        }]
+        // Outras opções conforme necessário
+    });
+
+// Evento para expandir e mostrar detalhes do usuário
+    $('#ordersTable tbody').on('click', '.details-btn', function() {
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+        } else {
+            var rowData = row.data();
+            row.child(formatUserDetails(rowData.user_details)).show();
+            tr.addClass('shown');
+        }
+    });
+});
+
+
+// Função para formatar detalhes do usuário
+function formatUserDetails(details) {
+    return `
+        <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
+            <tr>
+                <td>CPF:</td>
+                <td>${details.cpf}</td>
+            </tr>
+            <tr>
+                <td>Telefone:</td>
+                <td>${details.phone_number}</td>
+            </tr>
+            <tr>
+                <td>WhatsApp:</td>
+                <td>${details.whatsapp}</td>
+            </tr>
+            <!-- Outras informações do perfil do usuário -->
+        </table>
+    `;
+}
+    </script>
+<script>
+$(document).on('click', '.pay-btn', function() {
+    var btn = $(this);
+    var orderId = btn.data('id');
+    var row = btn.closest('tr'); // Encontrar a linha da tabela que contém o botão clicado
+    var dataTable = $('#ordersTable').DataTable(); // Obter a instância da DataTable
+
+    $.ajax({
+        url: 'marcar_como_pago/',
+        method: 'POST',
+        data: {
+            order_id: orderId,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+                if (response.success) {
+                console.log('Pedido marcado como pago:', response);
+
+                // Atualizar a linha específica
+                var rowData = dataTable.row(row).data(); // Obter os dados da linha
+                console.log('rowData:', rowData);
+                rowData.status = 'Pago'; // Atualizar o status na linha de dados
+                console.log('rowData:', rowData);
+                dataTable.row(row).data(rowData).draw(false); // Atualizar a linha na tabela
+                console.log('rowData:', rowData);
+
+                showSuccessAlert(response.message);
+            }
+        },
+        error: function(error) {
+            showErrorAlert(response.error);
+        }
+    });
+    document.getElementById('reload-button').addEventListener('click', function() {
+        table.ajax.reload();
+    });
+});
+
+</script>
+
+<script>
+<!--Check todos-->
+    document.getElementById('select-all-orders').addEventListener('click', function() {
+    console.log('Selecionar todos os pedidos');
+    const checkboxes = document.querySelectorAll('#ordersTable .order-checkbox');
+    checkboxes.forEach(chk => chk.checked = true);
+});
+
+</script>
+
+
+<script>
+<!--IMPRIMIR SELECIONADOS-->
+    document.getElementById('print-selected-orders').addEventListener('click', function() {
+    const selectedOrders = [...document.querySelectorAll('#ordersTable .order-checkbox:checked')].map(chk => chk.getAttribute('data-id'));
+    console.log('Imprimir pedidos selecionados:', selectedOrders);
+    if (selectedOrders.length) {
+        window.location.href = `imprimir_selecionados?ids=${selectedOrders.join(',')}`;
+    }
+});
+
+</script>
+<script>
+
+function showAlert(message, type) {
+  const alertBox = document.getElementById('alert-box');
+  alertBox.textContent = message;
+  alertBox.className = `alert-box alert-${type}`;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.style.display = 'none';
+  }, 3000); // O alerta desaparece após 3 segundos
+}
+
+function showSuccessAlert(message) {
+  showAlert(message, 'success');
+}
+
+function showErrorAlert(message) {
+  showAlert(message, 'error');
+}
+</script>
+
+<script>
+<!--FILTROS-->
+function applyFilters() {
+    var status = document.getElementById('filter-status').value;
+    var producao = document.getElementById('filter-producao').value;
+
+    // Atualiza a DataTable com os novos parâmetros de filtro
+    $('#ordersTable').DataTable().ajax.url('/pedidos/orders_view/orders_list/?status=' + status + '&producao=' + producao ).load();
+}
+</script>
+{% endblock %}

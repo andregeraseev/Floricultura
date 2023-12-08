@@ -298,10 +298,7 @@ class CartView(View):
             item = ShoppingCartItem.objects.get(id=item_id)
             print('item',item.product)
             print('itemvariation',item.variation)
-            if item.variation:
-                variation = item.variation
-            else:
-                variation = None
+
             cart.verifica_estoque_suficiente_para_adicao(item.product, item.variation, change)
             if change > 0 or (change < 0 and item.quantity > 1):
                 item.quantity += change

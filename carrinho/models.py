@@ -147,8 +147,9 @@ class ShoppingCart(models.Model):
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
+                variation=item.variation,
                 quantity=item.quantity,
-                price=item.product.price
+                price=item.product_or_variation.price_or_promocional_price
             )
         self.clear()
         return order

@@ -1,4 +1,5 @@
 from carrinho.models import ShoppingCart, ShoppingCartItem
+from django.db.models import Q
 from pedidos.models import Order
 from products.models import Product
 from django.contrib.sessions.models import Session
@@ -7,7 +8,7 @@ from django.template.loader import render_to_string
 import json
 import logging
 from django.views import View
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.http import JsonResponse
 from usuario.forms import AddressForm
 from usuario.models import Address
@@ -99,7 +100,7 @@ class PedidoView(View):
             order.tipo_frete = form_pedido.cleaned_data['frete']
 
             order.save()
-
+            order.adicionar_valores()
             return redirect('home')
         else:
             form = CheckoutForm()
@@ -221,23 +222,63 @@ def orders_list(request):
     draw = int(request.GET.get('draw', default=1))
     start = int(request.GET.get('start', default=0))
     length = int(request.GET.get('length', default=10))
-
     # Processar a busca e os filtros
     search_value = request.GET.get('search[value]', default='')
 
-    # Aqui você pode ajustar a consulta para filtrar os dados
-    orders = Order.objects.filter(destinatario__icontains=search_value)[start:start + length]
     total = Order.objects.count()
+
+    status_filter = request.GET.get('status',None)
+    producao_filter = request.GET.get('producao', None)
+
+    query = Order.objects.all()
+
+    if status_filter:
+        query = query.filter(status=status_filter)
+
+    if producao_filter == 'nao_em_producao':
+        # Substitua por sua lógica específica para verificar se um pedido não está em produção
+        query = query.exclude(em_producao=True)
+    if producao_filter == 'em_producao':
+        query = query.exclude(em_producao=False)
+
+
+    # Aqui você pode ajustar a consulta para filtrar os dados
+    # Obter informações de ordenação da solicitação
+    order_column = int(request.GET.get('order_colum', 0))
+    order_direction = request.GET.get('order_dir', 'desc')
+    order_ex = request.GET.get('order')
+    print('order_ex',order_ex)
+    print('order_column',order_column)
+    print('order_direction',order_direction)
+    # Mapear o índice da coluna para o nome do campo no modelo
+    column_names = ['id', '_','destinatario', 'status', 'total', 'created_at',
+                    'rastreio', '_', 'em_producao']  # Adicione todos os nomes dos campos das colunas
+
+    # Aplicar a ordenação
+    order_column_name = column_names[order_column]
+    if order_direction == 'desc':
+        order_column_name = f'-{order_column_name}'
+        # Verifica se search_value é um número (ID) ou texto (destinatário)
+    try:
+        search_value_as_int = int(search_value)
+        search_condition = Q(destinatario__icontains=search_value) | Q(id=search_value_as_int)
+    except ValueError:
+        search_condition = Q(destinatario__icontains=search_value)
+
+    orders = query.filter(search_condition).order_by(order_column_name)[start:start + length]
 
     # Serializar os dados para JSON
     data = [{
-        'id': order.id,
+
+        'id':  order.id,
+        'check':   f"<input type='checkbox' class='order-checkbox' data-id='{order.id}'> <a href='visualizar_pedido/{order.id}' class='fa fa-eye' ><a>",
         'full_name': order.user_profile.user.get_full_name() if order.user_profile and order.user_profile.user.get_full_name() else order.destinatario,
         'status': order.status,
         'final_total': order.final_total,
         'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de data
         'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio'><button class='track-btn' data-id='{order.id}'>Adicionar</button>",
         'actions': f"<button class='pay-btn' data-id='{order.id}'>Pago</button>",
+        'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' {'checked' if order.em_producao else ''}>",
         'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
                               'user_details': {
         'cpf': order.user_profile.cpf if order.user_profile else '',
@@ -253,6 +294,9 @@ def orders_list(request):
         'recordsTotal': total,
         'recordsFiltered': total,
         'data': data,
+        'status': status_filter,
+        'producao': producao_filter,
+
     }
 
     return JsonResponse(response)
@@ -275,3 +319,53 @@ def marcar_como_pago(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+def visualizar_pedido(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    items = order.items.all()
+
+    # Obter todas as localizações únicas dos itens
+    localizacoes = set(item.product.localizacao if item.product.localizacao else "Sem Localização" for item in items)
+
+    # Agrupar itens por localização
+    items_por_localizacao = {localizacao: [] for localizacao in localizacoes}
+    for item in items:
+        if item.product.localizacao in localizacoes:
+            items_por_localizacao[item.product.localizacao].append(item)
+        else:
+            items_por_localizacao['Sem Localização'].append(item)
+
+    print(items_por_localizacao)
+
+
+
+    return render(request, 'dashboard_admin/visualizar_pedido.html', {'order': order,'items_por_localizacao':items_por_localizacao})
+
+
+def imprimir_selecionados(request):
+    order_ids = request.GET.get('ids')
+
+    orders = Order.objects.filter(id__in=order_ids.split(',') if order_ids else [])
+    print('ordes',orders)
+    context = {'orders': []}
+    for order in orders:
+        order = get_object_or_404(Order, id=order.id)
+        items = order.items.all()
+
+        # Obter todas as localizações únicas dos itens
+        localizacoes = set(item.product.localizacao if item.product.localizacao else "Sem Localização" for item in items)
+        print(localizacoes)
+        # Agrupar itens por localização
+        items_por_localizacao = {localizacao: [] for localizacao in localizacoes}
+        print(items_por_localizacao)
+        for item in items:
+            if item.product.localizacao in localizacoes:
+                items_por_localizacao[item.product.localizacao].append(item)
+            else:
+                items_por_localizacao['Sem Localização'].append(item)
+        print(items_por_localizacao)
+        context['orders'].append({'order': order, 'items_por_localizacao': items_por_localizacao})
+    print(context)
+
+
+
+    return render(request, 'dashboard_admin/imprimir_selecionados.html', context)
