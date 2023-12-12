@@ -218,58 +218,76 @@ def orders_view(request):
     context = {}
     return render(request, 'dashboard_admin/pedidos.html', context)
 
-def orders_list(request):
-    draw = int(request.GET.get('draw', default=1))
-    start = int(request.GET.get('start', default=0))
-    length = int(request.GET.get('length', default=10))
-    # Processar a busca e os filtros
-    search_value = request.GET.get('search[value]', default='')
+import logging
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import Order
 
-    total = Order.objects.count()
+# Configuração do logging
+logger = logging.getLogger(__name__)
 
-    status_filter = request.GET.get('status',None)
+# Constantes para nomes de colunas e valores padrão
+COLUMN_NAMES = ['id', '_', 'destinatario', 'status', 'total', 'created_at', 'rastreio', '_','em_producao']
+DEFAULT_DRAW = 1
+DEFAULT_START = 0
+DEFAULT_LENGTH = 10
+
+def get_request_parameters(request):
+    """
+    Extrai e converte os parâmetros da requisição. Valida os valores recebidos.
+    """
+    try:
+        draw = int(request.GET.get('draw', DEFAULT_DRAW))
+        start = int(request.GET.get('start', DEFAULT_START))
+        length = int(request.GET.get('length', DEFAULT_LENGTH))
+        search_value = request.GET.get('search[value]', '')
+        return draw, start, length, search_value
+    except ValueError as e:
+        logger.error(f"Erro na validação de parâmetros: {e}")
+        raise ValueError("Parâmetros inválidos na requisição.")
+
+def apply_filters(query, request):
+    """
+    Aplica filtros de status e produção à query.
+    """
+    status_filter = request.GET.get('status', None)
     producao_filter = request.GET.get('producao', None)
-
-    query = Order.objects.all()
 
     if status_filter:
         query = query.filter(status=status_filter)
+    if producao_filter:
+        print(producao_filter)
+        query = query.filter(em_producao=producao_filter == 'em_producao')
 
-    if producao_filter == 'nao_em_producao':
-        # Substitua por sua lógica específica para verificar se um pedido não está em produção
-        query = query.exclude(em_producao=True)
-    if producao_filter == 'em_producao':
-        query = query.exclude(em_producao=False)
+    return query
 
-
-    # Aqui você pode ajustar a consulta para filtrar os dados
-    # Obter informações de ordenação da solicitação
+def apply_ordering(query, request):
+    """
+    Aplica ordenação à query com base nos parâmetros da requisição.
+    """
     order_column = int(request.GET.get('order_colum', 0))
     order_direction = request.GET.get('order_dir', 'desc')
-    order_ex = request.GET.get('order')
-    print('order_ex',order_ex)
-    print('order_column',order_column)
-    print('order_direction',order_direction)
-    # Mapear o índice da coluna para o nome do campo no modelo
-    column_names = ['id', '_','destinatario', 'status', 'total', 'created_at',
-                    'rastreio', '_', 'em_producao']  # Adicione todos os nomes dos campos das colunas
-
-    # Aplicar a ordenação
-    order_column_name = column_names[order_column]
+    order_column_name = COLUMN_NAMES[order_column]
     if order_direction == 'desc':
         order_column_name = f'-{order_column_name}'
-        # Verifica se search_value é um número (ID) ou texto (destinatário)
-    try:
-        search_value_as_int = int(search_value)
-        search_condition = Q(destinatario__icontains=search_value) | Q(id=search_value_as_int)
-    except ValueError:
-        search_condition = Q(destinatario__icontains=search_value)
 
-    orders = query.filter(search_condition).order_by(order_column_name)[start:start + length]
+    return query.order_by(order_column_name)
 
-    # Serializar os dados para JSON
-    data = [{
+def apply_search(query, search_value):
+    """
+    Aplica filtragem de pesquisa à query.
+    """
+    if search_value.isdigit():
+        return query.filter(Q(destinatario__icontains=search_value) | Q(id=search_value))
+    else:
+        return query.filter(Q(destinatario__icontains=search_value))
 
+def serialize_orders(orders):
+    """
+    Serializa os dados dos pedidos para a resposta.
+    """
+    return [
+        {
         'id':  order.id,
         'check':   f"<input type='checkbox' class='order-checkbox' data-id='{order.id}'> <a href='visualizar_pedido/{order.id}' class='fa fa-eye' ><a>",
         'full_name': order.user_profile.user.get_full_name() if order.user_profile and order.user_profile.user.get_full_name() else order.destinatario,
@@ -277,29 +295,46 @@ def orders_list(request):
         'final_total': order.final_total,
         'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de data
         'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio'><button class='track-btn' data-id='{order.id}'>Adicionar</button>",
-        'actions': f"<button class='pay-btn' data-id='{order.id}'>Pago</button>",
+        'actions':  f"<button class='pay-btn' data-id='{order.id}'>PAGAR</button>  " if order.status == 'pending' or order.status == 'aguardando pagamento'else f"<button class='btn-success' data-id='{order.id}' disabled>PAGO</button>  ",
         'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' {'checked' if order.em_producao else ''}>",
-        'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
+        'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button> <i class='fa fa-exclamation-circle blue-icon' data-action='observacao'></i> " if  order.observacoes  else f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
                               'user_details': {
         'cpf': order.user_profile.cpf if order.user_profile else '',
         'phone_number': order.user_profile.phone_number if order.user_profile else '',
         'whatsapp': order.user_profile.whatsapp if order.user_profile else '',
-        'email': order.user_profile.user.email if order.user_profile else '',}
+        'email': order.user_profile.user.email if order.user_profile else '',}} for order in orders
+    ]
 
-         } for order in orders]
+def orders_list(request):
+    """
+    Função principal para listar pedidos com base nos parâmetros da requisição.
+    """
+    try:
+        draw, start, length, search_value = get_request_parameters(request)
 
-    # Construir a resposta
-    response = {
-        'draw': draw,
-        'recordsTotal': total,
-        'recordsFiltered': total,
-        'data': data,
-        'status': status_filter,
-        'producao': producao_filter,
+        query = Order.objects.all()
+        query = apply_filters(query, request)
+        filtered_total = query.count()  # Otimização para a contagem de registros filtrados
+        query = apply_ordering(query, request)
+        query = apply_search(query, search_value)
 
-    }
+        orders = query[start:start + length]
+        data = serialize_orders(orders)
 
-    return JsonResponse(response)
+        response = {
+            'draw': draw,
+            'recordsTotal': Order.objects.count(),
+            'recordsFiltered': filtered_total,
+            'data': data,
+            'status': request.GET.get('status', None),
+            'producao': request.GET.get('producao', None),
+        }
+
+        return JsonResponse(response)
+
+    except Exception as e:
+        logger.error(f"Erro ao listar pedidos: {e}")
+        return JsonResponse({'error': 'Erro interno no servidor'}, status=500)
 
 
 
@@ -369,3 +404,5 @@ def imprimir_selecionados(request):
 
 
     return render(request, 'dashboard_admin/imprimir_selecionados.html', context)
+
+

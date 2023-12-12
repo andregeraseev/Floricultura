@@ -95,6 +95,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    @property
+    def get_firs_image(self):
+        if self.images.first():
+            return self.images.first().image_thumbnail.url
+        return 'https://via.placeholder.com/100x100'
 
     @property
     def get_absolute_url(self):

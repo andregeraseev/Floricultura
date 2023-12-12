@@ -1,7 +1,11 @@
 from carrinho.models import ShoppingCart
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 import json
 import logging
+
+from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
@@ -132,7 +136,7 @@ def trransferir_itens_carrinho_anonimo_carrinho_usuario(session_cart, session_ca
         session_cart.delete()
         logger.info(f'Transferência realizada com sucesso para o {user_cart} e carrinho de sessão anônima excluído')
 
-from .forms import AddressForm
+from .forms import AddressForm, UserPhoneForm
 from django.views import View
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
@@ -164,13 +168,31 @@ class UserRegistrationView(View):
 
 class AddressRegistrationView(View):
     def get(self, request, *args, **kwargs):
+        print('request',request)
+        print('args',args)
+        print('kwargs',kwargs)
         kwargs = {'user': request.user}
-        form = AddressForm(initial=kwargs)
-        return render(request, 'add_address.html', {'form': form})
+
+        endereco_id = request.GET.get('endereco_id')
+        requisicao_json = request.GET.get('requisicao_json', 'false').lower() == 'true'
+
+        print('endereco_id', endereco_id)
+        print('requisicao_json', requisicao_json)
+        if requisicao_json == True:
+
+            endereco = request.user.profile.addresses.get(id=endereco_id)
+            print('endereco', endereco)
+            form = AddressForm(instance=endereco)
+            form_html = render_to_string('usuario/editar-endereco-container.html', {'form': form}, request)
+            return JsonResponse({'success': True, 'form_html': form_html})
+        else:
+            form = AddressForm(initial=kwargs)
+            return render(request, 'add_address.html', {'form': form})
 
 
     def post(self, request, *args, **kwargs):
         form = AddressForm(request.POST)
+        print('request', request)
         if form.is_valid():
             print('Adressform valido')
             try:
@@ -186,3 +208,93 @@ class AddressRegistrationView(View):
         return render(request, 'add_address.html', {'form': form})
 
 
+
+
+
+    def delete(self, request, *args, **kwargs):
+        print('request',request.body)
+        print('args',args)
+        print('kwargs',kwargs)
+        try:
+            data= json.loads(request.body)
+            print('data',data)
+            print('endereco_id',data.get('endereco_id'))
+            endereco = request.user.profile.addresses.get(id=data.get('endereco_id'))
+            print('endereco',endereco)
+            endereco.delete()
+            return JsonResponse({'success': True, 'message': 'Endereço excluído com sucesso.'})
+        except ObjectDoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Endereço não encontrado.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Erro interno do servidor.{e}'})
+
+    def put(self, request, *args, **kwargs):
+        print('REQUISICAOPUT', request.body)
+        try:
+            data = json.loads(request.body)
+            print('DATA', data)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Erro no processamento dos dados.'})
+        try:
+            # Remover tokens CSRF do objeto de dados
+            data.pop('csrfmiddlewaretoken', None)
+
+            endereco_id = data.get('endereco_id')
+            endereco = request.user.profile.addresses.get(id=endereco_id)
+            print('ENDERECO', endereco)
+
+            form = AddressForm(data, instance=endereco)
+            if form.is_valid():
+                address = form.save(commit=False)
+                address.user_profile = request.user.profile
+                address.save()
+                return JsonResponse({'success': True, 'message': f'Endereço {address} atualizado com sucesso.'})
+            else:
+                form_html = render_to_string('usuario/editar-endereco-container.html', {'form': form}, request)
+                return JsonResponse({'success': False, 'formulario_invalido':True, 'form_html': form_html})
+
+
+        except ObjectDoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Endereço não encontrado.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Erro interno do servidor: {e}'})
+
+
+class UserDashboard(View):
+    def get(self, request, *args, **kwargs):
+        form_celular = UserPhoneForm(instance=request.user.profile)
+        pedidos = request.user.profile.orders.all()
+        context = {'cliente': request.user.profile,
+                   'enderecos': request.user.profile.addresses.all(),
+                   'produtos_favoritos': request.user.profile.get_wishlist_items(),
+                   'form_celular': form_celular,
+                   'pedidos': pedidos
+                   }
+        return render(request, 'usuario/dashboard.html',context)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            form_celular = UserPhoneForm(data, instance=request.user.profile)
+
+            if form_celular.is_valid():
+                form_celular.save()
+                return JsonResponse({'success': True, 'message': 'Número de celular atualizado com sucesso.'})
+            else:
+                form_html = render_to_string('usuario/informacoes_cliente.html', {'form_celular': form_celular}, request=request)
+                return JsonResponse({'success': False, 'formulario_invalido': True, 'message': 'Dados inválidos.', 'form_html': form_html})
+
+        except json.JSONDecodeError as e:
+            return JsonResponse({'success': False, 'message': 'Erro ao processar os dados JSON: ' + str(e)})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'Erro interno do servidor: ' + str(e)})
+
+class PedidoUserDetailView(View):
+    def get(self, request, *args, **kwargs):
+        print('request',request)
+        print('args',args)
+        print('kwargs',kwargs)
+        pedido_id = kwargs.get('pedido_id')
+        pedido = request.user.profile.orders.get(id=pedido_id)
+        context = {'pedido': pedido}
+        return render(request, 'usuario/detalhes_pedido.html', context)

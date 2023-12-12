@@ -1,0 +1,166 @@
+
+
+    <div class="card">
+        <div class="card-header">
+                    <h1>Meus Pedidos</h1>
+                </div>
+        <div class="card-body">
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table">
+              <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Status</th>
+                <th scope="col">Info</th>
+                <th scope="col">Pedido</th>
+
+                <th scope="col">Rastreio</th>
+                <th scope="col">Forma Pagamento</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for pedido in pedidos %}
+              <tr>
+
+
+                  <!--        Numero do pedido    -->
+                <td>{{ pedido.id }}</td>
+
+                  <!--        Data pedido    -->
+                <td>{{ pedido.created_at|date:"d/m/Y" }}</td>
+
+                  <!--        Valor pedido    -->
+                <td>R${{ pedido.final_total|floatformat:2 }}</td>
+
+                  <!--        Status    -->
+                <td class="pedido-status" data-status="{{ pedido.status }}">{{ pedido.status }}</td>
+
+
+        <!--        Info-->
+
+        {% if pedido.payment_method == "Pix"  or pedido.payment_method == "Deposito" %}
+        {% if pedido.comprovante %}
+        <td>
+        <a href="{{ pedido.comprovante.url }}">Ver comprovante: <button class="btn btn-sm" style="border-radius: 0px; background-color: #d8d8d8;"><i class="far fa-eye text-dark"  ></i></button></a>
+        </td>
+        {% else %}
+        <td>
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" style="font-size: 10px" data-bs-target="#Modalcomprovante{{pedido.id}}">
+          Enviar Comprovante
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="Modalcomprovante{{pedido.id}}" tabindex="-1" role="dialog" aria-labelledby="comprovanteModalLabel{{ pedido.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" >Enviar comprovante do pedido {{pedido.id}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+              </div>
+                <form action="{% url 'paga_pix' %}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+
+                        {% csrf_token %}
+                        <input type="hidden" name="pedido_id" value="{{ pedido.id }}">
+                        <div class="form-group">
+                            <label for="comprovante{{ pedido.id }}" class="botao-comprovante"
+                                   id="botao-comprovante{{ pedido.id }}">Selecione o comprovante</label>
+                            <input type="file" name="comprovante" id="comprovante{{ pedido.id }}" accept="image/*" required
+                                   style="display:none;" onchange="updateLabel(this, '{{ pedido.id }}')">
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+            </td>
+
+        {% endif %}
+        {% elif pedido.payment_method == "MercadoPago" %}
+           {% if pedido.status == "Aguardando pagamento" %}
+           <td><a href="{{pedido.link_mercado_pago}}" class="btn btn-primary" style="font-size: 10px">Mercado Pago</a></td>
+
+            {% else %}
+           <td>ID MP: {{pedido.mercado_pago_id }}</td>
+            {% endif %}
+
+        {% else %}
+        <td>Sem info</td>
+        {% endif %}
+        <!--FIM COMPROVANTE PIX -->
+
+
+
+                <td><a href="{% url 'detalhes_pedido' pedido.id %}"><button class="btn btn-sm" style="border-radius: 0px; background-color: #d8d8d8;"><i class="far fa-eye text-dark"  ></i></button></a></td>
+               <td>{% if pedido.rastreamento %}<a href="https://www2.correios.com.br/sistemas/rastreamento/?objetos={{ pedido.rastreamento }}" target="_blank"> {{ pedido.rastreamento }}</a>{% else %} Sem Rastreio {% endif %}</td>
+
+                <td>{{ pedido.payment_method }}</td>
+
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+
+
+
+{% load static %}
+
+<style>
+.pedido-status {
+  width: 10%;
+  vertical-align: middle;
+}
+
+@media (max-width: 576px) {
+  /* Tamanho da fonte para telas menores */
+  .table td,
+  .table th {
+    font-size: 0.8rem;
+  }
+}
+</style>
+
+
+<script>
+function updateLabel(input, pedido_id) {
+  var fileName = input.value.split('\\').pop();
+  document.getElementById('botao-comprovante'+ pedido_id).innerHTML = fileName;
+}
+
+</script>
+
+<style>
+
+        .botao-comprovante {
+background-color: #008CBA;
+color: #fff;
+font-size: 16px;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+}
+
+      </style>
+
+
+<style>
+.pedido-status {
+  width: 10%;
+  vertical-align: middle;
+}
+</style>

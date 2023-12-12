@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Dashboard do Cliente</h1>
+        </div>
+    <div class="row">
+        <div class="col-md-4" id="infomacoes_cliente">
+        {%include 'usuario/informacoes_cliente.html'%}
+         </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" data-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Endereços</a>
+                        </li>
+                        <li class="nav-item">
+                            <a data-target="#reestoque" class="nav-link" data-toggle="tab">Avise-me</a>
+                        </li>
+                        <li class="nav-item">
+                            <a data-target="#favoritos" class="nav-link" data-toggle="tab">Favoritos</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    <!--                    ENDERECO        -->
+                    <div class="tab-pane fade show active" id="home">
+                        {% include 'usuario/endereco_cliente.html' %}
+                    </div>
+
+
+                    <!--                    AVISOS        -->
+
+                    <div class="tab-pane fade" id="reestoque">
+                        <div class="card-body card-aviso">
+                            <p class="card-text">Lista de produtos para serem notificados ao ter reestoque </p>
+                            <ul class="list-group" style="max-height: 400px; overflow-y: auto;">
+                                <div id="avisos-container">
+                                    {% for aviso in avisos %}
+                                    <li class="list-group-item d-flex" style="font-size: 14px">
+                                        <div class="col-4 col-lg-2">
+                                            <img src="{{ aviso.produto.image.url }}" alt="{{ aviso.produto.name }}"
+                                                 width="100" height="100">
+                                        </div>
+                                        <div class="col-6 col-lg-7 mx-2">
+                                            <strong>Produto:</strong><br> {{ aviso.produto.name }}<br>
+                                            <strong>Data do aviso:</strong><br> {{ aviso.created_at|date:"d/m/Y" }}
+                                        </div>
+                                        <div class="col-1  ms-auto">
+
+                                            <button id="excluir-aviso" data-aviso-id="{{ aviso.id }}"
+                                                    class="btn btn-danger mt-3">x
+                                            </button>
+                                        </div>
+                                    </li>
+                                    {% empty %}
+                                    <li class="list-group-item">Nenhum aviso cadastrado.</li>
+                                    {% endfor %}
+                                </div>
+                            </ul>
+
+                        </div>
+                    </div>
+
+
+                    <!--                FAVORITOS-->
+
+                    <div class="tab-pane fade" id="favoritos">
+                        {% include 'usuario/favoritos_cliente.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row mt-4">
+
+
+        <div class="col-md-12">
+                        {% include 'usuario/visualizar_pedidos.html' %}
+
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+
+<!--PROPAGANDA-->
+<script>
+
+  $(document).ready(function() {
+    $('#toggle-btn').click(function() {
+      $.ajax({
+        url: '/usuario/dashboard/'
+        method: 'PUT',
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(data) {
+          // Atualiza o texto do botão de acordo com o valor de propaganda
+          if (data.propaganda) {
+            $('#propaganda-toggle p').html('<p class="h6 text-success" ><strong>Ativado</strong></p>');
+          } else {
+            $('#propaganda-toggle p').html('<p class="h6 text-danger" ><strong>Desativado</strong></p>');
+          }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log(errorThrown);
+        }
+      });
+    });
+  });
+
+
+</script>
+
+
+<!--deletar aviso-->
+
+<script>
+$(document).ready(function() {
+
+  $('.card-aviso').on('click', '#excluir-aviso', function(e) {
+    e.preventDefault();
+    var avisoId = $(this).data('aviso-id');
+    var confirmacao = confirm('Tem certeza que deseja excluir este aviso?');
+    if (confirmacao) {
+      $.ajax({
+        url: 'excluir_aviso/',
+        type: 'POST',
+        data: {
+          'aviso_id': avisoId,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+          if (response.success) {
+                        $('#avisos-container').load(location.href + ' #avisos-container');
+          } else {
+            alert(response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    }
+  });
+});
+
+
+
+</script>
+
+
+<!--ENDERECOS SCRIPT-->
+<script>
+
+$(document).ready(function() {
+  $('.card-endereco').on('click', '#excluir-endereco', function(e) {
+    e.preventDefault();
+    var enderecoId = $(this).data('endereco-id');
+    var confirmacao = confirm('Tem certeza que deseja excluir este endereço?');
+
+    if (confirmacao) {
+      fetch('/usuario/endereco/', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ 'endereco_id': enderecoId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          $('#home').load(location.href + ' #home');
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+      });
+    }
+  });
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+
+</script>
+
+
+<script>
+$(document).ready(function() {
+    console.log('editar-endereco');
+    $('#home').on('click', '#editar-endereco', function(e) {
+        e.preventDefault();
+        var enderecoId = $(this).data('endereco-id');
+        buscarFormularioEdicao(enderecoId);
+    });
+});
+function buscarFormularioEdicao(enderecoId) {
+        console.log('buscarFormularioEdicao');
+
+    var csrf_token = getCookie('csrftoken');
+    $.ajax({
+        url: '/usuario/endereco/',
+        type: 'GET',
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        data: { 'endereco_id': enderecoId, 'requisicao_json': true },
+        success: function(response) {
+            $('#editar-endereco-container').html(response.form_html);
+            $('#form-editar-endereco').data('endereco-id', enderecoId);
+            inicializarFormularioEdicao();
+        }
+    });
+}
+
+
+function inicializarFormularioEdicao() {
+
+
+    $('#fechar-editar-endereco').on('click', function() {
+        $('#editar-endereco-container').empty();
+    });
+}
+
+$(document).on('submit', '#form-editar-endereco', function(e) {
+    e.preventDefault();
+    var formData = $(this).serializeArray();
+    var dataObj = {};
+    var enderecoId = $(this).data('endereco-id');
+    dataObj['endereco_id'] = enderecoId;
+    formData.forEach(function(item) {
+        dataObj[item.name] = item.value;
+    });
+
+    var csrf_token = getCookie('csrftoken');
+    $.ajax({
+        url: '/usuario/endereco/',
+        method: 'PUT',
+        headers: {
+            'X-CSRFToken': csrf_token,
+            'Content-Type': 'application/json'  // Adicione este cabeçalho
+        },
+        data: JSON.stringify(dataObj),  // Envie os dados como JSON
+        success: function(data) {
+            if (data.success == true) {
+                $('#home').load(location.href + ' #home');
+            } else {
+                if (data.formulario_invalido == true) {
+                    console.log('erro',data.message);
+                    $('#editar-endereco-container').html(data.form_html);
+                    $('#form-editar-endereco').data('endereco-id', enderecoId);
+                } else {
+                    console.log('erro',data.message);
+                }
+                console.log('erro',data.message);
+            }
+
+        },
+        error: function(xhr, status, error) {
+            console.error('error');
+        }
+    });
+});
+
+
+</script>
+
+
+
+<script>
+  $(document).ready(function() {
+    $('#abrir-modal-adicionar-endereco').on('click', function(e) {
+      e.preventDefault();
+      $.ajax({
+        url: 'adicionar_endereco/',
+        type: 'GET',
+        success: function(response) {
+          $('#adicionar-endereco-container').html(response);
+          $('#modal-adicionar-endereco').modal('show');
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    });
+  });
+
+</script>
+
+
+{% endblock %}

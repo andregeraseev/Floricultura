@@ -1,0 +1,37 @@
+    <div class="card-body card-favorito">
+                            <p class="card-text">Lista de produtos favoritos </p>
+                            <ul class="list-group" style="max-height: 400px; overflow-y: auto;">
+                                <div id="favoritos-container">
+                                    {% for favorito in produtos_favoritos %}
+
+
+                                    <li class="list-group-item d-flex" style="font-size: 1rem">
+                                        <div class="col-4 col-lg-2">
+                                            <a href="{{favorito.product.get_absolute_url}}">
+                                                <img src="{{ favorito.product.images.first.image.url }} " alt="{{ favorito.product.name }}"
+                                                     width="100" height="100">
+                                            </a>
+                                        </div>
+                                        <div class="col-6 col-lg-7 mx-2">
+                                            <strong>Produto:</strong><br> {{ favorito.product.name }} <br>
+
+                                        </div>
+                                        <div class="col-1  ms-auto">
+
+                                            <!-- Adiciona o botão de favorito sobre a imagem do produto -->
+                                            <button id="favorite-btn-{{ favorito.product.id }}"
+                                                    class="btn favorite-btn position-absolute top-0 end-0 m-3 text-danger"
+                                                     onclick="favorite(this)" data-product-id="{{ favorito.product.id }}">
+
+                                                <i class="fas fa-heart"></i>
+
+                                            </button>
+                                        </div>
+                                    </li>
+                                    {% empty %}
+                                    <li class="list-group-item">Nenhum produto favoritado.</li>
+                                    {% endfor %}
+                                </div>
+                            </ul>
+                        </div>
+                    

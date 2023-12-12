@@ -406,6 +406,11 @@ function showOptions(button) {
         }
     }
 }
+
+
+
+
+
 function selecionarPrimeiraOpcao(parentDiv) {
     console.log('Funcionando');
     var select = parentDiv.querySelector('select');
@@ -423,6 +428,44 @@ function selecionarPrimeiraOpcao(parentDiv) {
 // Fechar as opções
 function closeOptions(button) {
     button.closest('.product-options').style.display = 'none';
+}
+
+//FAVORITE
+function favorite(button) {
+    var produto_id = button.getAttribute('data-product-id');
+    fetch('/favoritos/adicionar-favorito/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // Obter o token CSRF
+        },
+        body: JSON.stringify({ 'produto_id': produto_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+    if(data.success) {
+
+      showSuccessAlert(data.message);
+      $('#favoritos-container').load(location.href + ' #favoritos-container');
+      document.getElementById('favorite-counter').textContent = data.favorite_counter;
+      // Alterna a cor do botão
+            if (button.style.color === 'red') {
+                button.style.color = ''; // Define para a cor original
+            } else {
+                button.style.color = 'red';
+            }
+    } else {
+
+      showErrorAlert(data.error);
+    }
+  })
+
+    .catch(error => {
+        console.error('Erro:', error);
+
+    }
+    );
 }
 
 
@@ -444,8 +487,7 @@ function updatePrice(selectElement) {
         var priceElement = parentDiv.querySelector('.product__item__price');
         var discontElement = parentDiv.querySelector('.product__discount__percent');
         var variantplace = parentDiv.querySelector('.variationId');
-        console.log('selecao',selectedOption);
-        console.log('variant_id',variantplace);
+
         if (variant_id) {
             variantplace.value = variant_id;
         }
@@ -645,3 +687,5 @@ function showSuccessAlert(message) {
 function showErrorAlert(message) {
   showAlert(message, 'error');
 }
+
+

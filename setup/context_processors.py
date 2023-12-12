@@ -46,8 +46,13 @@ def get_cart(request):
 
 
 def global_context(request):
+    if request.user.is_authenticated:
+        wishlist_product_ids = request.user.profile.wishlist.values_list('product_id', flat=True)
+        favorite_counter = request.user.profile.wishlist.count()
 
-
+    else:
+        wishlist_product_ids = []
+        favorite_counter = 0
     cart=get_cart(request)
     posts = Post.objects.all()[:3]
     site_setting = SiteSettings.objects.first()
@@ -72,6 +77,7 @@ def global_context(request):
         footer_links[link.category].append(link)
     # Preparar o contexto com os dados para o template
     context = {
+        'favorite_counter': favorite_counter,
         'cart': cart,
         'posts': posts,
         'best_sellers_products': best_sellers_products,
@@ -86,7 +92,7 @@ def global_context(request):
         'review_products': review_products,
         'footer_info': footer_info,
         'footer_links': dict(footer_links),
-
+        'wishlist_product_ids': wishlist_product_ids,
     }
 
     # Renderizar o template com o contexto

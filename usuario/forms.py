@@ -8,7 +8,7 @@ import phonenumbers
 from phonenumbers import NumberParseException
 from validate_docbr import CPF
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Field, HTML, Div, Submit
+from crispy_forms.layout import Layout, Fieldset, Field, HTML, Div, Submit, Button
 
 
 
@@ -24,9 +24,73 @@ def validate_phone(value):
     try:
         number = phonenumbers.parse(value, 'BR')  # 'BR' é o código do país para o Brasil
         if not phonenumbers.is_valid_number(number):
+            print(number,'invalido')
             raise ValidationError('Número de telefone inválido.')
     except NumberParseException:
+        print(number, 'invalido')
         raise ValidationError('Número de telefone inválido.')
+
+
+class UserPhoneForm(forms.ModelForm):
+    phone_number = forms.CharField(max_length=15, required=False, validators=[validate_phone])
+    whatsapp = forms.CharField(max_length=15, required=False, validators=[validate_phone])
+
+    class Meta:
+        model = User
+        fields = ('phone_number', 'whatsapp')
+
+    def __init__(self, *args, **kwargs):
+        print('iniciando form', args, kwargs)
+
+        super(UserPhoneForm, self).__init__(*args, **kwargs)
+        print('iniciando form', args, kwargs)
+        print('initial',self.initial)
+        print('initial',self.data)
+
+        # Desabilita o campo phone_number se ele não estiver presente nos dados enviados
+        if 'phone_number' in self.data:
+            self.fields['phone_number'].disabled = False
+        else:
+            self.fields['phone_number'].disabled = True
+
+        # Desabilita o campo whatsapp se ele não estiver presente nos dados enviados
+        if 'whatsapp' in self.data:
+            self.fields['whatsapp'].disabled = False
+        else:
+            self.fields['whatsapp'].disabled = True
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Informações Adicionais",
+                Div(
+                    Field('phone_number', css_class='', data_mask='(00) 0000-00000', wrapper_class="col-8",
+                          placeholder='Numero de Telefone', id="id_phone_number", disabled=True),
+                    HTML(
+                        '<button type="button" class="btn btn-primary mb-3" onclick="habilitaCampo(\'#id_phone_number\')"><i class="fa fa-pencil-alt"></i></button>'),
+                    css_class='form-row align-items-end',
+                ),
+                Div(
+                    Field('whatsapp', css_class='', wrapper_class="col-8", data_mask='(00) 0000-00000',
+                          placeholder='Whatsapp', id="id_whatsapp", disabled=True),
+                    HTML(
+                        '<button type="button" class="btn btn-primary mb-3" onclick="habilitaCampo(\'#id_whatsapp\')"><i class="fa fa-pencil-alt"></i></button>'),
+                    css_class='form-row align-items-end',
+                ),
+                Submit('submit', 'Salvar', css_class='btn btn-primary d-none', id="id_submit_celular")
+            )
+        )
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            UserProfile.objects.filter(user__email=user).update(
+                phone_number=self.cleaned_data['phone_number'],
+                whatsapp=self.cleaned_data['whatsapp'],
+            )
+        return user
+
+
 
 class UserRegistrationForm(UserCreationForm):
     cpf = forms.CharField(max_length=14, required=True, validators=[validate_cpf])
@@ -191,9 +255,7 @@ class AddressForm(forms.ModelForm):
 
                     Field('destinatario', wrapper_class="col-12", placeholder='Destinatário'),
                     Field('cep', wrapper_class="col-6", data_mask='00000-000', placeholder='CEP',oninvalid="this.setCustomValidity('CEP invalido') ; ", oninput="this.setCustomValidity(''); validacep_submit(this.value)" ),
-                    Field('cpf_destinatario', css_class='', wrapper_class="col-6", data_mask='000.000.000-00',
-                          placeholder='Número do CPF', required=True,
-                          oninput="this.setCustomValidity(validaCPF(this) ? '' : 'CPF inválido');"),
+                    Field('cpf_destinatario', css_class='', wrapper_class="col-6", data_mask='000.000.000-00', placeholder='Número do CPF', required=True, oninput="this.setCustomValidity(validaCPF(this) ? '' : 'CPF inválido');"),
 
                     css_class='form-row'
                 ),

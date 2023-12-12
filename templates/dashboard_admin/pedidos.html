@@ -37,11 +37,11 @@
 }
 
 .pay-btn {
-    background-color: #4CAF50;
+    background-color: #008CBA;
 }
 
 .pay-btn:hover {
-    background-color: #45a049;
+    background-color: #007BAC;
 }
 
 .details-btn {
@@ -70,6 +70,8 @@
             <!-- Filtro para Status do Pedido -->
 <select id="filter-status">
     <option value="">Todos os Status</option>
+    <option value="pending">Pendente</option>
+    <option value="em_analize">Em Analize</option>
     <option value="pago">Pago</option>
     <!-- Outras opções de status -->
 </select>
@@ -83,7 +85,7 @@
     <!-- Outras opções de estado de produção -->
 </select>
 
-<button onclick="applyFilters()">Aplicar Filtros</button>
+<button id="updateTable">Aplicar Filtros</button>
 
 </div>
 
@@ -180,6 +182,9 @@
             tr.addClass('shown');
         }
     });
+    $('#updateTable').on('click', function() {
+        table.draw();
+    });
 });
 
 
@@ -237,9 +242,7 @@ $(document).on('click', '.pay-btn', function() {
             showErrorAlert(response.error);
         }
     });
-    document.getElementById('reload-button').addEventListener('click', function() {
-        table.ajax.reload();
-    });
+
 });
 
 </script>
@@ -290,12 +293,6 @@ function showErrorAlert(message) {
 
 <script>
 <!--FILTROS-->
-function applyFilters() {
-    var status = document.getElementById('filter-status').value;
-    var producao = document.getElementById('filter-producao').value;
 
-    // Atualiza a DataTable com os novos parâmetros de filtro
-    $('#ordersTable').DataTable().ajax.url('/pedidos/orders_view/orders_list/?status=' + status + '&producao=' + producao ).load();
-}
 </script>
 {% endblock %}

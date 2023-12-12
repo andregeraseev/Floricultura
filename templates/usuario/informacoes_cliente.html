@@ -1,0 +1,95 @@
+{% load crispy_forms_tags %}
+{% load static %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+            <div class="card ">
+                <div class="card-header">
+                    Informações do Cliente
+                </div>
+                <div class="card-body ">
+                    <h5 class="card-title">{{ cliente.user.get_full_name }}</h5>
+                    <p class="card-text"><strong>Email:</strong> {{ cliente.user.email }}</p>
+                    <p class="card-text"><strong>CPF:</strong> {{ cliente.cpf }}</p>
+                    <!--                    FORM CELULAR-->
+                     <form id="form-celular">
+                        <div class="form-row align-items-end">
+                        {% csrf_token %}
+                        {% crispy form_celular %}
+                       </div>
+                    </form>
+
+                        <!--                 CUPONS E PROMOCOES-->
+                        <div>
+                            <p class="my-2"><strong>Newsletter:</strong><br>
+                                <small>Receber emails com cupons e novidades</small></p>
+
+                            <div id="propaganda-toggle">
+                                {% if cliente.propaganda %}
+
+                            <p class="h6 text-success"><strong>Ativado</strong></p>
+                            {% else %}
+                            <p class="h6 text-danger"><strong>Desativado</strong></p>
+                            {% endif %}
+                            <button type="button" class="btn btn-primary" id="toggle-btn">Alterar</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+<!--Funcao form celular-->
+<script>
+
+  function habilitaCampo(campo){
+       console.log('habilitaCampo',campo);
+      $(campo).prop('disabled', false);
+      $('#submit-id-submit').removeClass('d-none');
+      $(this).addClass('d-none');
+    };
+
+$(document).ready(function() {
+    console.log('editar-celular');
+    $('#form-celular').submit(function(e) {
+        e.preventDefault();
+        console.log('editar-celular1');
+
+        var formData = new FormData(this);
+        var dataObj = Object.fromEntries(formData);
+
+        fetch('/usuario/dashboard/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(dataObj)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro na rede');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success == true) {
+                $('#input-celular').prop('disabled', true);
+                $('#btn-save-celular').addClass('d-none');
+                $('#btn-edit-celular').removeClass('d-none');
+                showSuccessAlert(data.message);
+
+            } else {
+                $('#infomacoes_cliente').html(data.form_html);
+                showErrorAlert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+
+        });
+    });
+});
+
+
+
+</script>

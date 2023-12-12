@@ -1,0 +1,38 @@
+<div class="card-body card-endereco" id="card-body">
+    <!--                    ENDERECOS        -->
+    <ul class="list-group" style="max-height: 400px; overflow-y: auto;">
+        {% for endereco in enderecos %}
+        <li class="list-group-item d-flex" style="font-size: 14px">
+            <div class="col-9">
+                <strong>Destinatario:</strong> {{ endereco.destinatario }} <br>
+                <strong>Endereço:</strong> {{ endereco.rua }} , {{ endereco.numero }},
+                {{ endereco.bairro }} <br>
+                <strong>Cidade: </strong>{{ endereco.cidade }} / {{ endereco.estado }} <br>
+                <strong>Cep:</strong> {{ endereco.cep }}
+                {% if endereco.complemento %} <br> <strong>Complemento:</strong>
+                {{ endereco.complemento }}
+                {% endif %}
+
+            </div>
+            <div class="col-3 ms-auto">
+                <button id="editar-endereco" data-endereco-id="{{ endereco.id }}"
+                        class="btn btn-primary me-2" style="width: 4.5rem">Editar
+                </button>
+                <button id="excluir-endereco" data-endereco-id="{{ endereco.id }}"
+                        class="btn btn-danger" style="width: 4.5rem">Excluir
+                </button>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">Nenhum endereço cadastrado.</li>
+        {% endfor %}
+    </ul>
+
+    <div id="editar-endereco-container" data-endereco-id="{{ endereco.id }}"></div>
+</div>
+<button id="adicionar_endereco" data-endereco-id="{{ endereco.id }}"
+        class="btn btn-primary m-3">
+    Adicionar Endereço
+</button>
+<div id="adicionar_endereco_container"></div>
+

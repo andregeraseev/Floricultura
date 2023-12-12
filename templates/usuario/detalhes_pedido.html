@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg">
+            <div class="card-body">
+            <h2 class="mb-4">
+                <i class="bi bi-cart-fill me-2"></i>
+                Detalhes do Pedido #{{ pedido.id }}
+            </h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th scope="col">Produto</th>
+                                            <th scope="col">Qtd</th>
+                                            <th scope="col">Valor</th>
+                                            <th scope="col">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in pedido.items.all %}
+                                        <tr>
+                                            <td>{{item.product_or_variation.name}}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>R${{item.price_or_promocional_price}}</td>
+                                            <td>R${{ item.total_price_or_promotional_price }} </td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr>
+                                            <td colspan="4" class="border-top"></td>
+                                        </tr>
+                                        <tr>
+                                            <td  colspan="3"  class="text-end"><strong>Resumo:</strong></td>
+                                            <td ></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td colspan="3" class=" text-uppercase text-end"><strong>{{ pedido.tipo_frete }}</strong></td>
+                                            <td><strong> R${{ pedido.valor_frete }} </strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                            <td><strong>R$ {{ pedido.subtotal }}</strong></td>
+                                        </tr>
+                                        {% if pedido.discount %}
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Desconto:</strong></td>
+                                            <td><strong>R$ {{ pedido.discount }}</strong></td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                            <td><strong>R$ {{ pedido.final_total }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-credit-card-fill me-2"></i>Forma de pagamento</h5>
+                            <p class="card-text">{{ pedido.payment_method }}</p>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Data do Pedido</h5>
+                            <p class="card-text"> {{ pedido.created_at|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Tipo de frete</h5>
+                            <p class="text-uppercase card-text"> {{ pedido.tipo_frete }}</p>
+                        </div>
+                    </div>
+                     <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Endereço de entrega</h5>
+                            {{pedido.printable_address|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

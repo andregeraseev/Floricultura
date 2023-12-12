@@ -154,6 +154,8 @@ class Address(models.Model):
     def __str__(self):
         return f"{self.rua}, {self.cidade}, {self.estado}, {self.cep}, {self.pais}"
 
+    def get_wishlist_items(self):
+        return self.wishlist.all()
     class Meta:
         verbose_name = _('address')
         verbose_name_plural = _('addresses')

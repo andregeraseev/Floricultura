@@ -14,7 +14,16 @@
         {% endif %}
 
         <ul class="product__item__pic__hover">
-            <li><a href="#"><i class="fa fa-heart"></i></a></li>
+            {% if request.user.is_authenticated %}
+                {% if product.id in wishlist_product_ids %}
+            <li><a class="favorite" onclick="favorite(this)"
+                   data-product-id="{{ product.id }}" style="color:red"><i class="fa fa-heart"></i></a></li>
+            {% else %}
+             <li><a class="favorite" onclick="favorite(this)"
+                   data-product-id="{{ product.id }}" ><i class="fa fa-heart"></i></a></li>
+            {% endif %}
+
+            {% endif %}
             <li><a href="#"><i class="fa fa-retweet"></i></a></li>
             <li><a class="show-options" onclick="showOptions(this)"
                    data-product-id="{{ product.id }}"><i class="fa fa-shopping-cart"></i></a></li>
