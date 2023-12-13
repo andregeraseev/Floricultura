@@ -24,7 +24,7 @@ def enviar_email_confirmacao(destinatario, nome):
     # send_mail(assunto, html_content, remetente, [destinatario], fail_silently=False)
 
 
-def enviar_email_pedido_criado(destinatario, nome, order ):
+def enviar_email_pedido_criado(destinatario, nome, order ,site='https://andregeraseev.pythonanywhere.com/'):
     print('enviado email')
     assunto = 'Pedido Criado'
     mensagem = f'Olá {nome}, \n\nSeu pedido #{order} foi criado com sucesso.'
@@ -32,7 +32,7 @@ def enviar_email_pedido_criado(destinatario, nome, order ):
     # send_mail(assunto, mensagem, remetente, [destinatario], fail_silently=False)
 
     # Define o conteúdo do e-mail em HTML e texto puro
-    html_content = render_to_string('emails/pedido.html', {'nome': nome,'order':order })
+    html_content = render_to_string('emails/pedido.html', {'nome': nome,'order':order,'site':site })
     text_content = strip_tags(html_content)
 
     # Cria a mensagem
