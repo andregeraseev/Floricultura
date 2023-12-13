@@ -40,7 +40,7 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <img src="{% static 'media/settings/xflavors_logo_comprido.png' %}" alt="xflavors.net">
+            <img src="https://andregeraseev.pythonanywhere.com/media/settings/xflavors_logo_comprido.png'" alt="xflavors.net">
         </div>
         <div class="content">
             <h2>Confirmação de Pedido</h2>
@@ -60,7 +60,8 @@
                     {% for item in order.items.all %}
                     <tr>
                         <td>
-                            <img class="product-image" src="{{item.product.images.first.image.url}}" alt="{{ item.product.name }}">
+                            <img class="product-image" src="https://andregeraseev.pythonanywhere.com/{{item.product.images.first.image.url}}" alt="{{ item.product.name }}">
+                            {{item.product.images.first.image.url}}
                             {{ item.product_or_variation.name }}
                         </td>
                         <td>{{ item.quantity }}</td>
