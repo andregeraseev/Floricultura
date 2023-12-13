@@ -173,36 +173,58 @@ class AddressRegistrationView(View):
         print('kwargs',kwargs)
         kwargs = {'user': request.user}
 
-        endereco_id = request.GET.get('endereco_id')
+        endereco_id = request.GET.get('endereco_id', None)
         requisicao_json = request.GET.get('requisicao_json', 'false').lower() == 'true'
 
         print('endereco_id', endereco_id)
         print('requisicao_json', requisicao_json)
         if requisicao_json == True:
-
-            endereco = request.user.profile.addresses.get(id=endereco_id)
-            print('endereco', endereco)
-            form = AddressForm(instance=endereco)
+            if endereco_id != '':
+                endereco = request.user.profile.addresses.get(id=endereco_id)
+                print('endereco', endereco)
+                form = AddressForm(instance=endereco)
+                adicionar_endereco = False
+            else:
+                form = AddressForm(initial=kwargs)
+                adicionar_endereco = True
             form_html = render_to_string('usuario/editar-endereco-container.html', {'form': form}, request)
-            return JsonResponse({'success': True, 'form_html': form_html})
+            return JsonResponse({'success': True, 'form_html': form_html, 'adicionar_endereco': adicionar_endereco})
         else:
             form = AddressForm(initial=kwargs)
             return render(request, 'add_address.html', {'form': form})
 
 
     def post(self, request, *args, **kwargs):
-        form = AddressForm(request.POST)
-        print('request', request)
-        if form.is_valid():
-            print('Adressform valido')
-            try:
-                address = form.save(commit=False)
-                address.user_profile = request.user.profile
-                address.save()
-                return redirect('home')
-            except Exception as e:
-                print('erros',e)
-                return render(request, 'add_address.html', {'form': form})
+        content_type = request.META.get('CONTENT_TYPE')
+
+        if content_type == 'application/json':
+            # Requisição veio via AJAX
+            data = json.loads(request.body.decode('utf-8'))  # Decodifica o corpo da requisição
+            form = AddressForm(data)
+            if form.is_valid():
+                print('Adressform valido')
+                try:
+                    address = form.save(commit=False)
+                    address.user_profile = request.user.profile
+                    address.save()
+                    return JsonResponse({'success': True, 'message': f'Endereço {address} adicionado.'})
+
+                except Exception as e:
+                    print('erros',e)
+                    form_html = render_to_string('usuario/editar-endereco-container.html', {'form': form}, request)
+                    return JsonResponse({'success': False, 'formulario_invalido': True, 'form_html': form_html})
+
+        else:
+            # Requisição veio via formulário HTML tradicional
+            form = AddressForm(request.POST)
+            if form.is_valid():
+                try:
+                    address = form.save(commit=False)
+                    address.user_profile = request.user.profile
+                    address.save()
+                    return redirect('home')
+                except Exception as e:
+                    return render(request, 'add_address.html', {'form': form})
 
         print('Adressform invalido')
         return render(request, 'add_address.html', {'form': form})
@@ -276,12 +298,13 @@ class UserDashboard(View):
         try:
             data = json.loads(request.body)
             form_celular = UserPhoneForm(data, instance=request.user.profile)
+            form_html = render_to_string('usuario/informacoes_cliente.html', {'form_celular': form_celular},
+                                         request=request)
 
             if form_celular.is_valid():
                 form_celular.save()
-                return JsonResponse({'success': True, 'message': 'Número de celular atualizado com sucesso.'})
+                return JsonResponse({'success': True, 'message': 'Número de celular atualizado com sucesso.','form_html': form_html})
             else:
-                form_html = render_to_string('usuario/informacoes_cliente.html', {'form_celular': form_celular}, request=request)
                 return JsonResponse({'success': False, 'formulario_invalido': True, 'message': 'Dados inválidos.', 'form_html': form_html})
 
         except json.JSONDecodeError as e:

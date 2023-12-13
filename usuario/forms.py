@@ -197,24 +197,6 @@ import requests
 
 class AddressForm(forms.ModelForm):
 
-    # destinatario = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Destinatário'}))
-    # rua = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Rua'}))
-    # numero = forms.CharField(max_length=5, widget=forms.TextInput(attrs={'placeholder': 'Número'}))
-    # bairro = forms.CharField(max_length=30, widget=forms.TextInput(attrs={'placeholder': 'Bairro'}))
-    # cidade = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'placeholder': 'Cidade'}))
-    # estado = forms.ChoiceField(choices=[
-    #     ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
-    #     ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
-    #     ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
-    #     ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
-    #     ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
-    #     ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
-    #     ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins')
-    # ], required=True)
-    # # cep = forms.CharField(max_length=9, widget=forms.TextInput(attrs={'placeholder': 'CEP'}))
-    # complemento = forms.CharField(max_length=30, required=False, widget=forms.TextInput(attrs={'placeholder': 'Complemento'}))
-
-
     class Meta:
         model = Address
         fields = ['destinatario', 'cpf_destinatario', 'rua', 'numero','cep','bairro','cidade', 'estado', 'complemento']

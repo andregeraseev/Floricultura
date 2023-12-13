@@ -292,7 +292,94 @@ function showErrorAlert(message) {
 </script>
 
 <script>
-<!--FILTROS-->
+
+function adicionarCodigoRastreio(orderId, btnElement) {
+    console.log(btnElement)
+    var btn= btnElement
+    var row = btn.closest('tr'); // Encontrar a linha da tabela que contém o botão clicado
+    var dataTable = $('#ordersTable').DataTable(); // Obter a instância da DataTable
+    console.log(btn);
+    var codigoRastreio = document.getElementById('tracking-' + orderId).value;
+
+    if (!codigoRastreio) {
+        alert('Por favor, insira um código de rastreio.');
+        return;
+    }
+
+    fetch('adicionar_rastreio/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ id: orderId, codigo_rastreio: codigoRastreio })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Código de rastreio adicionado com sucesso.');
+            showSuccessAlert(data.message);
+            var rowData = dataTable.row(row).data(); // Obter os dados da linha
+            console.log('rowData:', rowData);
+
+            dataTable.row(row).data(rowData).draw(false); // Atualizar a linha na tabela
+
+            // Atualizar a página ou modificar o DOM conforme necessário
+        } else {
+            console.error('Erro ao adicionar o código de rastreio:', data.message);
+            showErrorAlert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
+
+
+
+
+
+
+
+function alterarProducaoStatus(orderId) {
+    console.log('Alterar status de produção do pedido:', orderId);
+    var checkbox = document.querySelector('.producao-checkbox[data-id="' + orderId + '"]');
+    var emProducao = checkbox.checked;
+
+    fetch('toggle_producao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Certifique-se de incluir o token CSRF
+        },
+        body: JSON.stringify({ id: orderId, em_producao: emProducao })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert(data.message);
+        } else {
+            console.error('Erro ao alterar o status:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
 </script>
 {% endblock %}

@@ -13,8 +13,66 @@ from django.http import JsonResponse
 from usuario.forms import AddressForm
 from usuario.models import Address
 from pedidos.forms import CheckoutForm
+from pedidos.correios import cotacao_frete_correios
 logger = logging.getLogger('pedido')
 
+def adicionar_rastreio(request):
+    print('adicionar_rastreio')
+    order_id = json.loads(request.body).get('id')
+    codigo_rastreio = json.loads(request.body).get('codigo_rastreio')
+    print(order_id)
+    print(codigo_rastreio)
+    try:
+        order = Order.objects.get(id=order_id)
+        print(order)
+        order.rastreio = codigo_rastreio
+        order.save()
+        print(order.rastreio)
+
+        return JsonResponse({'success': True, 'message': f'Codigo de rastreio {codigo_rastreio} adicionado com sucesso ao pedido {order}'})
+    except Order.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def toggle_producao(request):
+    print('toggle_producao')
+    try:
+        order_id = json.loads(request.body).get('id')
+    except Exception as e:
+        logger.error(f'Erro ao obter ID do pedido: {e}')
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    print(order_id)
+    try:
+        order = Order.objects.get(id=order_id)
+        print(order)
+        order.togle_em_producao
+        order.save()
+        print(order.em_producao)
+        return JsonResponse({'success': True, 'message': f'Produção do pedido {order} atualizada com sucesso'})
+    except Order.DoesNotExist:
+        logger.warning(f'Pedido não encontrado: {order_id}')
+        return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
+    except Exception as e:
+        logger.error(f'Erro ao atualizar produção do pedido: {e}')
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+def mudar_endereco(request):
+    print('mudar_endereco')
+    adress_id = json.loads(request.body).get('endereco_id')
+    print(adress_id)
+    try:
+        adress = Address.objects.get(id=adress_id)
+        print(adress)
+        adress.toggles_self_primary_and_others_not()
+        adress.save()
+        print(adress.is_primary)
+        return JsonResponse({'success': True, 'message': f'Endereço atualizado {adress} com sucesso'})
+    except Address.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Endereço não encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 def get_user_cart(request):
     """
@@ -46,32 +104,67 @@ class PedidoView(View):
     View do carrinho de compras para gerenciar as ações do carrinho, incluindo
     adicionar itens, remover itens e renderizar o carrinho.
     """
+
     def get(self, request, *args, **kwargs):
         kwargs = {'user': request.user}
         form = AddressForm(initial=kwargs)
-        form_pedido = CheckoutForm(initial=kwargs)
+
         if request.user.is_authenticated:
             adress = request.user.profile.addresses.filter(is_primary=True).first()
         else:
             session = Session.objects.get(session_key=request.session.session_key)
             adress = Address.objects.filter(session=session, is_primary=True).first()
-            print(adress)
 
+
+        if adress:
+            print(get_user_cart(request))
+            print('adress',adress.cep)
+            try:
+                response = cotacao_frete_correios(request, get_user_cart(request), adress)
+            except Exception as e:
+                print('erros cotacao_frete_correios', e)
+                return render(request, 'checkout.html', {'form': form, 'adress': adress, })
+            print('response',response)
+            data = json.loads(response.content.decode('utf-8'))
+            frete_choices = [
+                (f"{item['codigo']}-{item['valor']}", f"{item['codigo']} - {item['valor']} - {item['prazodeentrega']}") for
+                item in
+                data.get('results', [])]
+
+            form_pedido = CheckoutForm( initial=kwargs, frete_choices=frete_choices)
+
+        else:
+            form_pedido = CheckoutForm(initial=kwargs)
 
         return render(request, 'checkout.html', {'form': form , 'adress':adress, 'form_pedido':form_pedido})
 
     def post(self, request, *args, **kwargs):
         form_type = request.POST.get('form_type')
+        if request.user.is_authenticated:
+            adress = request.user.profile.addresses.filter(is_primary=True).first()
+            session = None
+        else:
+            session = Session.objects.get(session_key=request.session.session_key)
+            adress = Address.objects.filter(session=session, is_primary=True).first()
 
         if form_type == 'address':
-            return self.formulario_endereco(request)
+            return self.formulario_endereco(request,session,adress)
         elif form_type == 'order':
-            return self.fomulario_pedido(request)
+            return self.fomulario_pedido(request,session,adress)
         else:
             return JsonResponse({'success': False, 'error': 'Formulário inválido'}, status=400)
 
-    def fomulario_pedido(self, request):
-        form_pedido = CheckoutForm(request.POST)
+    def fomulario_pedido(self, request,session,adress):
+        response = cotacao_frete_correios(request, get_user_cart(request), adress)
+        data = json.loads(
+            response.content.decode('utf-8'))
+        frete_choices = [
+            (f"{item['codigo']}-{item['valor']}", f"{item['codigo']} - {item['valor']} - {item['prazodeentrega']}") for
+            item in
+            data.get('results', [])]
+
+        form_pedido = CheckoutForm(request.POST, frete_choices=frete_choices)
+
         if form_pedido.is_valid():
             # Crie a ordem aqui com as informações do formulário e do carrinho
             if request.user.is_authenticated:
@@ -85,39 +178,56 @@ class PedidoView(View):
                 adress = Address.objects.filter(session=session, is_primary=True).first()
                 print(adress)
             cart = get_user_cart(request)
-            order = cart.finalize_purchase()  # Converte os itens do carrinho em itens da ordem
-            order.payment_method = form_pedido.cleaned_data['metodo_pagamento']
-            order.observacoes = form_pedido.cleaned_data['observacoes']
-            order.destinatario = adress.destinatario
-            order.cpf_destinatario = adress.cpf_destinatario
-            order.rua = adress.rua
-            order.numero = adress.numero
-            order.bairro = adress.bairro
-            order.cidade = adress.cidade
-            order.complemento = adress.complemento
-            order.estado = adress.estado
-            order.cep = adress.cep
-            order.tipo_frete = form_pedido.cleaned_data['frete']
+            try:
+                order = cart.finalize_purchase()  # Converte os itens do carrinho em itens da ordem
+            except Exception as e:
+                print('erros finalize_purchase', e)
+                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})
 
-            order.save()
-            order.adicionar_valores()
+            try:
+                codigo_servico, valor_frete = form_pedido.cleaned_data['frete'].split('-')
+                order.tipo_frete = codigo_servico
+                order.valor_frete = float(valor_frete)
+                order.payment_method = form_pedido.cleaned_data['metodo_pagamento']
+                order.observacoes = form_pedido.cleaned_data['observacoes']
+                order.destinatario = adress.destinatario
+                order.cpf_destinatario = adress.cpf_destinatario
+                order.rua = adress.rua
+                order.numero = adress.numero
+                order.bairro = adress.bairro
+                order.cidade = adress.cidade
+                order.complemento = adress.complemento
+                order.estado = adress.estado
+                order.cep = adress.cep
+
+                order.save()
+                order.adicionar_valores()
+            except Exception as e:
+                print('erros', e)
+                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})
             return redirect('home')
         else:
-            form = CheckoutForm()
-        return render(request, 'checkout.html', {'form': form})
+            return render(request, 'checkout.html', {'form_pedido': form_pedido, 'adress':adress,})
 
-    def formulario_endereco(self, request):
+    def formulario_endereco(self, request,session,adress):
         form = AddressForm(request.POST)
         if form.is_valid():
             print('Adressform valido')
             try:
+                if request.user.is_authenticated:
+                    user = request.user.profile
+                    session = None
+                else:
+                    session_key = request.session.session_key
+                    session = Session.objects.get(session_key=session_key)
+                    user = None
                 address = form.save(commit=False)
+
                 print(request.session.session_key)
-                session_key = request.session.session_key
-                session = Session.objects.get(session_key=session_key)
                 print('sessao', session)
                 print('adrerss', address)
                 address.session = session
+                address.user_profile = user
                 print('adrersssesao', address.session)
                 address.save()
                 print('salvo')
@@ -294,10 +404,10 @@ def serialize_orders(orders):
         'status': order.status,
         'final_total': order.final_total,
         'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de data
-        'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio'><button class='track-btn' data-id='{order.id}'>Adicionar</button>",
+        'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio' id='tracking-{ order.id }'><button class='track-btn' data-id='{order.id}'onclick='adicionarCodigoRastreio({ order.id }, this)'>Adicionar</button>",
         'actions':  f"<button class='pay-btn' data-id='{order.id}'>PAGAR</button>  " if order.status == 'pending' or order.status == 'aguardando pagamento'else f"<button class='btn-success' data-id='{order.id}' disabled>PAGO</button>  ",
-        'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' {'checked' if order.em_producao else ''}>",
-        'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button> <i class='fa fa-exclamation-circle blue-icon' data-action='observacao'></i> " if  order.observacoes  else f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
+        'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' onclick='alterarProducaoStatus({ order.id })' {'checked' if order.em_producao else ''}>",
+        'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button> <span class='badge bg-warning' data-action='observacao' title='observação:\n {order.observacoes}'>Obs</span> " if  order.observacoes  else f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
                               'user_details': {
         'cpf': order.user_profile.cpf if order.user_profile else '',
         'phone_number': order.user_profile.phone_number if order.user_profile else '',
@@ -335,7 +445,6 @@ def orders_list(request):
     except Exception as e:
         logger.error(f"Erro ao listar pedidos: {e}")
         return JsonResponse({'error': 'Erro interno no servidor'}, status=500)
-
 
 
 def marcar_como_pago(request):

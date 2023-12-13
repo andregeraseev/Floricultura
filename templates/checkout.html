@@ -29,13 +29,14 @@
         <div class="row">
             <div class="col-lg-12">
                 {% if adress %}
-                COM ENDERECO
                 {% else %}
                 <h4>Por favor preencha o endereco de envio, ou faca login ou se cadastre</h4>
                 <!-- Botão para abrir o modal de login -->
                     <button type="button" class="site-btn my-4" data-toggle="modal" data-target="#loginModal">
                         Login
                     </button>
+                    <a name="" id="" class="site-btn my-4" href="{% url 'cadastro'%}" role="button">CADASTRO</a>
+
 
                     <!-- Modal de Login -->
                     <div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
@@ -77,17 +78,39 @@
             </div>
         </div>
         <div class="checkout__form">
+            {% if not adress %}
             <h4>Endereco de envio</h4>
+            {% else %}
+            <h4>Confirnando dados</h4>
+            {% endif %}
             <div class="row">
                 <div class="col-lg-8 col-md-6">
                     {% if not adress %}
                     <form id="address-form" method="post">
                         {% csrf_token %}
-                        <input type="hidden" name="form_type" value="address">
+                    <input type="hidden" name="form_type" value="address">
+
                         {% crispy form %}
                     </form>
                     {% endif %}
+                    <h5>Endereço de envio</h5>
                     {% if adress %}
+                    {% if user.is_authenticated %}
+                    <div id="endereco_de_envio" class="my-3">
+                        <select class="custom-select" id="endereco_de_envio_select"
+                                onchange="atualizarEnderecoPrimario()">
+                            {% for adress in user.profile.addresses.all %}
+                            <option value="{{adress.id}}">{{adress.destinatario}} {{adress.rua}}, {{adress.numero}} -
+                                {{adress.bairro}} - {{adress.cidade}} - {{adress.estado}} - {{adress.cep}}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                    {% else %}
+                    {{adress}}
+                    {% endif %}
+
                     <form id="order-form" method="post">
                         <div class="form-group">
                             {% csrf_token %}
@@ -111,31 +134,11 @@
                             {% endfor %}
 
                         </ul>
-                        <div class="checkout__order__subtotal">Subtotal <span>R${{cart.total}}</span></div>
-                        <div class="checkout__order__total">Total <span>R${{cart.total}}</span></div>
-                        <div class="checkout__input__checkbox">
-                            <label for="acc-or">
-                                Fazer Login?
-                                <input type="checkbox" id="acc-or">
-                                <span class="checkmark"></span>
-                            </label>
-                        </div>
-                        <p>Faca Login para finalizar sua compra</p>
-                        <div class="checkout__input__checkbox">
-                            <label for="payment">
-                                Check Payment
-                                <input type="checkbox" id="payment">
-                                <span class="checkmark"></span>
-                            </label>
-                        </div>
-                        <div class="checkout__input__checkbox">
-                            <label for="paypal">
-                                Paypal
-                                <input type="checkbox" id="paypal">
-                                <span class="checkmark"></span>
-                            </label>
-                        </div>
-                        <button type="submit" class="site-btn">PLACE ORDER</button>
+                        <div class="checkout__order__subtotal">Subtotal <span id="valor_subtotal">R${{cart.total}}</span></div>
+                        <div class="checkout__order__shipping">Frete <span id="valor_frete">R${{cart.frete|default:0.00}}</span></div>
+                        <div class="checkout__order__total">Total <span id="valor_total">R${{cart.total}}</span></div>
+
+                        <button type="submit" class="site-btn">FINALIZAR PEDIDO</button>
                     </div>
                 </div>
             </div>
@@ -320,4 +323,84 @@
 }
 
 </script>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('div_id_frete').addEventListener('change', function() {
+        // Encontrar o botão de rádio selecionado dentro da div
+        const freteSelecionado = document.querySelector('#div_id_frete input[name="frete"]:checked');
+        console.log(freteSelecionado);
+        if (freteSelecionado) {
+            // Extrair o valor do frete
+            const valorFrete = freteSelecionado.value.split('-')[1]; // Pega a parte do valor após o hífen
+            console.log(valorFrete);
+            // Atualizar o valor do frete na página
+            document.getElementById('valor_frete').textContent = 'R$' + valorFrete;
+            atualizarTotal()
+        }
+    });
+});
+
+
+function atualizarTotal() {
+    // Obter valores do subtotal e do frete
+    var subtotal = parseFloat(document.getElementById('valor_subtotal').textContent.replace('R$', ''));
+    var frete = parseFloat(document.getElementById('valor_frete').textContent.replace('R$', ''));
+    // Calcular o total
+    var total = subtotal + frete;
+    // Atualizar o valor total na página
+    document.getElementById('valor_total').textContent = 'R$' + total.toFixed(2);
+}
+</script>
+
+
+<script>
+
+function atualizarEnderecoPrimario() {
+    var enderecoId = document.getElementById('endereco_de_envio_select').value;
+    console.log(enderecoId);
+    fetch('/pedidos/mudar_endereco', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Certifique-se de incluir o token CSRF
+        },
+        body: JSON.stringify({ endereco_id: enderecoId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Endereço atualizado com sucesso.');
+            showSuccessAlert(data.message);
+            // Código adicional em caso de sucesso (opcional)
+        } else {
+            console.error('Erro ao atualizar o endereço:', data.error);
+            // Código adicional em caso de erro (opcional)
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+</script>
+
 {% endblock %}

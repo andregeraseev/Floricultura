@@ -4,6 +4,9 @@
         {% for endereco in enderecos %}
         <li class="list-group-item d-flex" style="font-size: 14px">
             <div class="col-9">
+                {% if endereco.is_primary %}
+                <span class="badge bg-success">Principal</span><br>
+                {% endif %}
                 <strong>Destinatario:</strong> {{ endereco.destinatario }} <br>
                 <strong>Endereço:</strong> {{ endereco.rua }} , {{ endereco.numero }},
                 {{ endereco.bairro }} <br>

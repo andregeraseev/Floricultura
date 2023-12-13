@@ -21,7 +21,7 @@
                         </div>
                         <div class="header__top__right__auth">
                             {% if user.is_authenticated %}
-                            <a href="{% url 'logout' %}"><i class="fa fa-dashboard"></i> {{user.username}}</a>
+                            <a href="{% url 'dashboard' %}"><i class="fa fa-dashboard"></i> {{user.username}}</a>
                             {% else %}
                             <a href="{% url 'cadastro' %}"><i class="fa fa-user"></i> Cadastrar</a>
                             {% endif %}

@@ -28,7 +28,7 @@
 
                 <div class="tab-content">
                     <!--                    ENDERECO        -->
-                    <div class="tab-pane fade show active" id="home">
+                    <div class="tab-pane fade show active tab-endereco" id="home">
                         {% include 'usuario/endereco_cliente.html' %}
                     </div>
 
@@ -163,7 +163,7 @@ $(document).ready(function() {
 <script>
 
 $(document).ready(function() {
-  $('.card-endereco').on('click', '#excluir-endereco', function(e) {
+  $('.tab-endereco').on('click', '#excluir-endereco', function(e) {
     e.preventDefault();
     var enderecoId = $(this).data('endereco-id');
     var confirmacao = confirm('Tem certeza que deseja excluir este endereço?');
@@ -212,15 +212,31 @@ function getCookie(name) {
 
 
 <script>
+<!--ADICIONAR ENDERECO-->
+$(document).ready(function() {
+    console.log('adicionar-endereco');
+    $('#home').on('click', '#adicionar_endereco', function(e) {
+        e.preventDefault();
+        var enderecoId = null;
+        var requisicaoJson = true;
+        console.log('adicionar-endereco1',enderecoId, requisicaoJson);
+
+        buscarFormularioEndereco(enderecoId, requisicaoJson);
+    });
+});
+
+
+
 $(document).ready(function() {
     console.log('editar-endereco');
     $('#home').on('click', '#editar-endereco', function(e) {
         e.preventDefault();
         var enderecoId = $(this).data('endereco-id');
-        buscarFormularioEdicao(enderecoId);
+        var requisicaoJson = true;
+        buscarFormularioEndereco(enderecoId, requisicaoJson);
     });
 });
-function buscarFormularioEdicao(enderecoId) {
+function buscarFormularioEndereco(enderecoId, requisicaoJson) {
         console.log('buscarFormularioEdicao');
 
     var csrf_token = getCookie('csrftoken');
@@ -230,11 +246,17 @@ function buscarFormularioEdicao(enderecoId) {
         headers: {
             'X-CSRFToken': csrf_token
         },
-        data: { 'endereco_id': enderecoId, 'requisicao_json': true },
+        data: { 'endereco_id': enderecoId, 'requisicao_json': requisicaoJson },
         success: function(response) {
-            $('#editar-endereco-container').html(response.form_html);
-            $('#form-editar-endereco').data('endereco-id', enderecoId);
-            inicializarFormularioEdicao();
+            if (response.adicionar_endereco == true) {
+                $('#adicionar_endereco_container').html(response.form_html);
+                inicializarFormularioEdicao();
+            } else {
+                $('#editar-endereco-container').html(response.form_html);
+                $('#form-editar-endereco').data('endereco-id', enderecoId);
+                inicializarFormularioEdicao();
+            }
+
         }
     });
 }
@@ -246,9 +268,12 @@ function inicializarFormularioEdicao() {
     $('#fechar-editar-endereco').on('click', function() {
         $('#editar-endereco-container').empty();
     });
+    $('#fechar-editar-endereco').on('click', function() {
+        $('#adicionar_endereco_container').empty();
+    });
 }
-
-$(document).on('submit', '#form-editar-endereco', function(e) {
+<!--envio para editar-->
+$(document).on('submit', '#editar-endereco-container #form-editar-endereco', function(e) {
     e.preventDefault();
     var formData = $(this).serializeArray();
     var dataObj = {};
@@ -288,30 +313,52 @@ $(document).on('submit', '#form-editar-endereco', function(e) {
     });
 });
 
+<!--envio para adiconar-->
+$(document).on('submit', '#adicionar_endereco_container #form-editar-endereco', function(e) {
+    e.preventDefault();
+    var formData = $(this).serializeArray();
+    var dataObj = {};
+    var enderecoId = $(this).data('endereco-id');
+    dataObj['endereco_id'] = enderecoId;
+    formData.forEach(function(item) {
+        dataObj[item.name] = item.value;
+    });
 
-</script>
+    var csrf_token = getCookie('csrftoken');
+    $.ajax({
+        url: '/usuario/endereco/',
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrf_token,
+            'Content-Type': 'application/json'  // Adicione este cabeçalho
+        },
+        data: JSON.stringify(dataObj),  // Envie os dados como JSON
+        success: function(data) {
+            if (data.success == true) {
+                $('#home').load(location.href + ' #home');
+            } else {
+                if (data.formulario_invalido == true) {
+                    console.log('erro',data.message);
+                    $('#editar-endereco-container').html(data.form_html);
+                    $('#form-editar-endereco').data('endereco-id', enderecoId);
+                } else {
+                    console.log('erro',data.message);
+                }
+                console.log('erro',data.message);
+            }
 
-
-
-<script>
-  $(document).ready(function() {
-    $('#abrir-modal-adicionar-endereco').on('click', function(e) {
-      e.preventDefault();
-      $.ajax({
-        url: 'adicionar_endereco/',
-        type: 'GET',
-        success: function(response) {
-          $('#adicionar-endereco-container').html(response);
-          $('#modal-adicionar-endereco').modal('show');
         },
         error: function(xhr, status, error) {
-          console.error(error);
+            console.error('error');
         }
-      });
     });
-  });
+});
+
 
 </script>
+
+
+
 
 
 {% endblock %}

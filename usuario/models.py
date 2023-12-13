@@ -42,6 +42,9 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    @property
+    def get_primary_cep(self):
+        return self.addresses.filter(is_primary=True).first().cep
 
     # Em UserProfile
     def add_to_wishlist(self, product_id):
@@ -127,6 +130,19 @@ class Address(models.Model):
     pais = models.CharField(max_length=50, default='Brasil')
     is_primary = models.BooleanField(default=True)
 
+    def delete(self, *args, **kwargs):
+        # Verifica se o endereço a ser deletado é o primário
+        if self.is_primary:
+            # Busca outro endereço para definir como primário
+            next_primary_address = self.user_profile.addresses.exclude(pk=self.pk).first()
+            if next_primary_address:
+                # Define o próximo endereço como primário
+                next_primary_address.is_primary = True
+                next_primary_address.save()
+
+        # Deleta o endereço
+        super().delete(*args, **kwargs)
+
     def save(self, *args, **kwargs):
         # Verifica se existe um user_profile associado
         if self.user_profile:
@@ -141,6 +157,13 @@ class Address(models.Model):
                 self.is_primary = True
 
         super().save(*args, **kwargs)
+
+
+    def toggles_self_primary_and_others_not(self):
+        if self.user_profile:
+            self.user_profile.addresses.filter(is_primary=True).update(is_primary=False)
+            self.is_primary = True
+            self.save()
 
     @property
     def toggle_primary(self):
@@ -159,6 +182,7 @@ class Address(models.Model):
     class Meta:
         verbose_name = _('address')
         verbose_name_plural = _('addresses')
+        ordering = ['-is_primary', '-id']
 
 
 

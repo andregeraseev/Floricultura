@@ -1,22 +1,26 @@
 {% load crispy_forms_tags %}
 {% load static %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
             <div class="card ">
                 <div class="card-header">
                     Informações do Cliente
                 </div>
-                <div class="card-body ">
+                <div class="card-body">
                     <h5 class="card-title">{{ cliente.user.get_full_name }}</h5>
                     <p class="card-text"><strong>Email:</strong> {{ cliente.user.email }}</p>
                     <p class="card-text"><strong>CPF:</strong> {{ cliente.cpf }}</p>
                     <!--                    FORM CELULAR-->
                      <form id="form-celular">
+                         <div id="form-celular-div">
+
+
                         <div class="form-row align-items-end">
                         {% csrf_token %}
                         {% crispy form_celular %}
                        </div>
+                         </div>
                     </form>
 
                         <!--                 CUPONS E PROMOCOES-->
@@ -76,6 +80,7 @@ $(document).ready(function() {
                 $('#input-celular').prop('disabled', true);
                 $('#btn-save-celular').addClass('d-none');
                 $('#btn-edit-celular').removeClass('d-none');
+                $('#infomacoes_cliente').html(data.form_html);
                 showSuccessAlert(data.message);
 
             } else {
@@ -89,6 +94,9 @@ $(document).ready(function() {
         });
     });
 });
+
+
+
 
 
 
