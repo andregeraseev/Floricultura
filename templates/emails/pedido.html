@@ -60,7 +60,7 @@
                     {% for item in order.items.all %}
                     <tr>
                         <td>
-                            <img class="product-image" src="{{ item.product.images.first.image.url }}" alt="{{ item.product_name }}">
+                            <img class="product-image" src="{{item.product.images.first.image.url}}" alt="{{ item.product.name }}">
                             {{ item.product_or_variation.name }}
                         </td>
                         <td>{{ item.quantity }}</td>
