@@ -81,3 +81,21 @@ def send_email_aviso_estoque(aviso):
     # Envia o e-mail
     msg.send()
 
+
+def enviar_email_rastreio(destinatario, nome, pedido, rastreio):
+    print('enviado email rastreio')
+    assunto = 'Pedido Enviado'
+    mensagem = f'Olá {nome}, \n\nSeu pedido #{pedido} foi criado com sucesso.'
+    remetente = EMAIL_HOST_USER
+    # send_mail(assunto, mensagem, remetente, [destinatario], fail_silently=False)
+
+    # Define o conteúdo do e-mail em HTML e texto puro
+    html_content = render_to_string('emails/rastreio.html', {'nome': nome,'order':pedido, "rastreio": rastreio })
+    text_content = strip_tags(html_content)
+
+    # Cria a mensagem
+    msg = EmailMultiAlternatives(assunto, text_content, remetente, [destinatario])
+    msg.attach_alternative(html_content, "text/html")
+
+    # Envia o e-mail
+    msg.send()

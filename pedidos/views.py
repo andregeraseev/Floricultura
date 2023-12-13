@@ -1,6 +1,6 @@
 from carrinho.models import ShoppingCart, ShoppingCartItem
 from django.db.models import Q
-from enviadores.email import enviar_email_pedido_criado
+from enviadores.email import enviar_email_pedido_criado, enviar_email_rastreio
 from pedidos.models import Order
 from products.models import Product
 from django.contrib.sessions.models import Session
@@ -29,6 +29,11 @@ def adicionar_rastreio(request):
         order.rastreio = codigo_rastreio
         order.save()
         print(order.rastreio)
+
+        try:
+            enviar_email_rastreio(order.email_pedido, order.destinatario, order, order.rastreio)
+        except Exception as e:
+            print('erros enviar_email_rastreio', e)
 
         return JsonResponse({'success': True, 'message': f'Codigo de rastreio {codigo_rastreio} adicionado com sucesso ao pedido {order}'})
     except Order.DoesNotExist:
