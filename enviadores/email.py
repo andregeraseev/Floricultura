@@ -32,7 +32,7 @@ def enviar_email_pedido_criado(destinatario, nome, order ):
     # send_mail(assunto, mensagem, remetente, [destinatario], fail_silently=False)
 
     # Define o conteúdo do e-mail em HTML e texto puro
-    html_content = render_to_string('emails/pedido2.html', {'nome': nome,'order':order })
+    html_content = render_to_string('emails/pedido.html', {'nome': nome,'order':order })
     text_content = strip_tags(html_content)
 
     # Cria a mensagem
