@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bem-vindo ao XFlavors</title>
+  <style>
+    /* Estilos de exemplo, personalize conforme sua necessidade */
+    body {
+      background-color: #f7f7f7;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fafafa;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://www.xflavors.net/static/imagens/xflavors_logo_comprido.png" alt="XFlavors Logo">
+    <p>Ola {{nome}},</p>
+
+<p>Temos o prazer de informar que seu pedido foi criado com sucesso e agradecemos por escolher a XFlavors. </p>
+    <p>número do seu pedido é: <strong>#{{ pedido.id }}</strong>.</p>
+
+<p>A forma de pagamento selecionada para o seu pedido foi:<strong> {{ pedido.payment_method }}</strong>.<br> Caso você não tenha finalizado o pagamento em nosso site, fornecemos instruções adicionais abaixo.</p>
+
+{% if pedido.payment_method == "MercadoPago" %}
+<p>Por favor, siga o link abaixo para finalizar o pagamento na plataforma MercadoPago:</p>
+<p>{{ pedido.link_mercado_pago }}</p>
+{% elif pedido.metodo_de_pagamento == "Pix" %}
+<h2>Dados de pagamento</h2>
+<p>Para realizar o pagamento via Pix, utilize a opção de transferência via Pix em seu aplicativo ou internet banking e
+  insira a chave Pix. Verifique se a chave está correta antes de confirmar o pagamento.
+  Em caso de dúvidas, entre em contato conosco.</p>
+<p>Chave Pix: <b>xflavors@gmail.com</b></p>
+<h2>Envio do comprovante de pagamento</h2>
+<p>Por favor, envie o comprovante de pagamento diretamente em nosso site, em seu
+  <a href="https://www.xflavors.net/dashboard/">dashboard</a>, para que possamos confirmar seu pedido.</p>
+{% elif pedido.payment_method == 'Deposito' %}
+<h2>Dados de pagamento</h2>
+<p>Para efetuar o pagamento via depósito bancário, faça uma transferência para a seguinte conta bancária:</p>
+<p>Banco: Nu Pagamentos S.A. (260)</p>
+<p>Agência: 0001</p>
+<p>Conta Corrente: 27794362-7</p>
+<p>CNPJ: 30059334/0001-00</p>
+<p>Titular da conta: André Moreira Geraseev</p>
+<h2>Envio do comprovante de pagamento</h2>
+<p>Por favor, envie o comprovante de pagamento diretamente em nosso site, em seu
+  <a href="https://www.xflavors.net/dashboard/">dashboard</a>, para que possamos confirmar seu pedido.</p>
+{% endif %}
+<p>Em breve, enviaremos atualizações sobre o seu pedido para o seu dashboard e também por e-mail.</p>
+
+<p>Atenciosamente,
+A Equipe XFlavors.</p>
+  </div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 from carrinho.models import ShoppingCart, ShoppingCartItem
 from django.db.models import Q
+from enviadores.email import enviar_email_pedido_criado
 from pedidos.models import Order
 from products.models import Product
 from django.contrib.sessions.models import Session
@@ -188,6 +189,8 @@ class PedidoView(View):
                 codigo_servico, valor_frete = form_pedido.cleaned_data['frete'].split('-')
                 order.tipo_frete = codigo_servico
                 order.valor_frete = float(valor_frete)
+                order.email_pedido = form_pedido.cleaned_data['email_pedido']
+                print('email_pedido', order.email_pedido)
                 order.payment_method = form_pedido.cleaned_data['metodo_pagamento']
                 order.observacoes = form_pedido.cleaned_data['observacoes']
                 order.destinatario = adress.destinatario
@@ -199,9 +202,12 @@ class PedidoView(View):
                 order.complemento = adress.complemento
                 order.estado = adress.estado
                 order.cep = adress.cep
-
                 order.save()
                 order.adicionar_valores()
+                try:
+                    enviar_email_pedido_criado(order.email_pedido, order.destinatario, order)
+                except Exception as e:
+                    print('erros enviar_email_pedido_criado', e)
             except Exception as e:
                 print('erros', e)
                 return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})

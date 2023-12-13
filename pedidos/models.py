@@ -58,7 +58,11 @@ class Order(models.Model):
 
     @property
     def printable_address(self):
-        return f" <strong>Destinatario:</strong> {self.destinatario} <br> <strong>Rua:</strong> {self.rua}, {self.numero}   <strong>Bairro:</strong> {self.bairro}<br><strong> Cidade:</strong> {self.cidade} - {self.estado} <br> <strong>Complemento:</strong>{self.complemento}<br><strong>CEP:</strong> {self.cep}"
+        if self.complemento:
+            return f" <strong>Destinatario:</strong> {self.destinatario} <br> <strong>Rua:</strong> {self.rua}, {self.numero}   <strong>Bairro:</strong> {self.bairro}<br><strong> Cidade:</strong> {self.cidade} - {self.estado} <br>  <strong>Complemento:</strong>{self.complemento}<br><strong>CEP:</strong> {self.cep}"
+        else:
+            return f" <strong>Destinatario:</strong> {self.destinatario} <br> <strong>Rua:</strong> {self.rua}, {self.numero}   <strong>Bairro:</strong> {self.bairro}<br><strong> Cidade:</strong> {self.cidade} - {self.estado} <br><strong>CEP:</strong> {self.cep}"
+
     @property
     def printable_order(self):
         return f"Pedido: {self.id} | Cliente: {self.destinatario} | Email: {self.email_pedido} | CPF: {self.cpf_destinatario} |<p>" \
@@ -77,7 +81,8 @@ class Order(models.Model):
 
     @property
     def final_total(self):
-        return max(Decimal('0.00'), Decimal(self.subtotal) - Decimal(self.discount) + Decimal(self.valor_frete))
+        total= max(Decimal('0.00'), Decimal(self.subtotal) - Decimal(self.discount) + Decimal(self.valor_frete))
+        return round(total,2)
 
     @property
     def is_paid(self):

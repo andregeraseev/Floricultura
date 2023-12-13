@@ -19,7 +19,7 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ('id', 'user_profile__user__username', 'destinatario', 'cidade', 'cep')
     readonly_fields = ('created_at', 'updated_at', 'final_total', 'is_paid')
     fieldsets = (
-        ('Informações Básicas', {'fields': ('user_profile', 'status', 'em_producao', 'total', 'discount', 'final_total', 'is_paid')}),
+        ('Informações Básicas', {'fields': ('user_profile', 'email_pedido','status', 'em_producao', 'total', 'discount', 'final_total', 'is_paid')}),
         ('Endereço de Envio', {'fields': ('tipo_frete','destinatario','cpf_destinatario', 'rua', 'numero', 'bairro', 'cidade', 'estado', 'cep', 'pais')}),
         ('Pagamento', {'fields': ('payment_method', 'payment_status', 'coupon')}),
         ('Outras Informações', {'fields': ('observacoes', 'created_at', 'updated_at')}),

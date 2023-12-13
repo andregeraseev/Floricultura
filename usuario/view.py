@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from enviadores.email import enviar_email_confirmacao
+
 logger = logging.getLogger('usuarios')
 
 
@@ -155,6 +157,10 @@ class UserRegistrationView(View):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')  # Pega a senha do formulário
             print('indo fazer login')
+            try:
+                enviar_email_confirmacao(form.cleaned_data.get('email'),form.cleaned_data.get('username'))
+            except Exception as e:
+                print('erros',e)
 
             login_with_cart(password =password, request=request, username=username)
             # Redirecionar para a página de login ou outra página conforme necessário
