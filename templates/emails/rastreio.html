@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmação de Pedido - xflavors.net</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: white; color: black; }
+        .email-container { max-width: 600px; margin: auto; background-color: #f8f8f8; border: 1px solid #dddddd; }
+        .header { background-color: red; padding: 10px; text-align: center; }
+        .header img { max-width: 200px; }
+        .content { margin: 20px; padding: 20px; }
+        .footer { text-align: center; padding: 10px; font-size: 0.8em; color: #666; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #cc0000; color: white; }
+        .total-line { font-weight: bold; }
+        .product-image { width: 30px; height: auto; }
+        .frete-details { background-color: #eee; padding: 15px; margin-top: 20px; border-radius: 5px; }
+         .totals-table { margin-top: 15px; border-collapse: collapse; width: 100%; }
+        .totals-table th, .totals-table td { text-align: right; padding: 8px; }
+        .totals-table th { background-color: #cc0000; color: white; }
+        .totals-table td { border-top: 1px solid #ddd; }
+        .grand-total { font-weight: bold; background-color: #eee; }
+
+
+
+        @media only screen and (max-width: 600px) {
+            .email-container { width: 100%; }
+            .header img { max-width: 150px; }
+            .content, .footer { padding: 10px; }
+            .product-image { width: 20px; }
+            th, td { padding: 5px; font-size: 14px; }
+            .total-line, .frete-details { font-size: 14px; }
+            .totals-table th, .totals-table td { padding: 5px; font-size: 14px; }
+            .grand-total { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="https://www.xflavors.net/static/imagens/xflavors_logo_comprido.3433ff189a79.png" alt="xflavors.net">
+        </div>
+        <div class="content">
+            <h2>Seu Pedido {{order.id}} foi Enviado!</h2>
+
+            <p>Olá {{ nome }}, estamos felizes em informar que seu pedido na xflavors.net foi enviado. Aqui estão os detalhes do seu pedido e informações de rastreamento:</p>
+            <!-- Itens do Pedido -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            <img class="product-image" src="{{item.product.images.first.image.url}}" alt="{{ item.product.name }}">
+
+                            {{ item.product_or_variation.name }}
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>R$ {{ item.price }}</td>
+                        <td>R$ {{ item.total_price_or_promotional_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Informações de Rastreamento -->
+            <div class="tracking-details">
+                <h3>Informações de Rastreamento</h3>
+                <p>Código de Rastreamento: {{ order.rastreio }}</p>
+                <p>Você pode acompanhar seu pedido através do link: <a href="URL de rastreamento">Clique aqui para rastrear</a></p>
+            </div>
+
+            <!-- Totais -->
+            <!-- Tabela de Totais -->
+        <table class="totals-table">
+            <tr>
+                <th>Subtotal:</th>
+                <td>R$ {{ order.subtotal }}</td>
+            </tr>
+            <tr>
+                <th>Frete ({{ order.tipo_frete }}):</th>
+                <td>R$ {{ order.valor_frete }}</td>
+            </tr>
+            <tr class="grand-total">
+                <th>Total:</th>
+                <td>R$ {{ order.final_total }}</td>
+            </tr>
+        </table>
+
+
+            <!-- Detalhes de Frete -->
+            <div class="frete-details">
+                <h3>Detalhes de Frete</h3>
+                <p>{{ order.printable_address | safe }}</p>
+            </div>
+        </div>
+        <div class="footer">
+            &copy; 2023 xflavors.net | Todos os direitos reservados
+        </div>
+    </div>
+</body>
+</html>
