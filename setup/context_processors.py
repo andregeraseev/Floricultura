@@ -54,7 +54,7 @@ def global_context(request):
         favorite_counter = 0
     cart=get_cart(request)
 
-    site_setting = SiteSettings.objects.first()
+    site_setting = SiteSettings.objects.filter(active=True).first()
 
     categories = Category.objects.all()
     departements = Department.objects.all()

@@ -4,6 +4,7 @@ from colorfield.fields import ColorField
 
 class SiteSettings(models.Model):
     # Informações Básicas
+    active = models.BooleanField(default=False)
     site_name = models.CharField(max_length=100, default='Meu Site')
     logo = models.ImageField(upload_to='settings/', blank=True, null=True)
     favicon = models.ImageField(upload_to='settings/', blank=True, null=True)
