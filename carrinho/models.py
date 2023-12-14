@@ -144,6 +144,11 @@ class ShoppingCart(models.Model):
     def finalize_purchase(self):
         order = Order.objects.create(user_profile=self.user_profile)
         for item in self.items.all():
+            try:
+                item.product.add_sells(item.quantity)
+            except Exception as e:
+                print(e)
+
             OrderItem.objects.create(
                 order=order,
                 product=item.product,

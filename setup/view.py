@@ -2,13 +2,33 @@ from django.shortcuts import render
 
 from products.models import Product, Department, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from banners.models import HeroBanner, SecondaryBanner
+from blog.models import Post
 from django.db.models import Case, When, Value, F, Min, DecimalField
 from django.db.models.functions import Coalesce
 
 
 def home(request):
-    return render(request, 'index2.html')
+    posts = Post.objects.all()[:3]
+    hero_banners = HeroBanner.objects.first()
+    secondary_banners = SecondaryBanner.objects.all()
+    # Buscar os últimos 10 produtos criados
+    latest_products = Product.objects.all().order_by('-create_at')[:10]
+    # Buscar 10 produtos marcados como destaque
+    featured_products = Product.objects.filter(is_featured=True)[:10]
+    best_sellers_products = Product.objects.all().order_by('-sells')[:3]
+    # Buscar 10 produtos com mais avaliações
+    review_products = Product.objects.all()[:10]  # Similar para 'Review'
+    context = {
+    'hero_banners': hero_banners,
+    'secondary_banners': secondary_banners,
+    'posts': posts,
+    'best_sellers_products': best_sellers_products,
+    'latest_products': latest_products,
+    'featured_products': featured_products,
+    'review_products': review_products,
+    }
+    return render(request, 'index2.html', context)
 
 
 
@@ -79,6 +99,7 @@ def department_detail(request, slug):
         products = paginator.page(paginator.num_pages)
 
     context = {
+        'pagina': departamento,
         'total_products': total_products,
         'departamento':departamento,
         'products': products,
@@ -153,6 +174,7 @@ def category_detail(request, slug):
         products = paginator.page(paginator.num_pages)
 
     context = {
+        'pagina': category,
         'total_products': total_products,
         'category':category,
         'products': products,

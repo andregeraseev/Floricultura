@@ -391,8 +391,13 @@
 /*-----------------------
 		opcoes quantidade e variaveis
 	------------------------ */
+let openOptions = null;
+
 function showOptions(button) {
     // Encontrar a div pai mais próxima com a classe 'product__item'
+    if (openOptions) {
+        openOptions.style.display = 'none';
+    }
     var parentDiv = button.closest('.product__item');
 
     if (parentDiv) {
@@ -403,6 +408,7 @@ function showOptions(button) {
             // Exibir as opções do produto
             optionsDiv.style.display = 'flex';
             selecionarPrimeiraOpcao(optionsDiv);
+            openOptions = optionsDiv;
         }
     }
 }
@@ -423,11 +429,18 @@ function selecionarPrimeiraOpcao(parentDiv) {
 }
 
 
-
+document.addEventListener('click', function(event) {
+    if (openOptions && !openOptions.contains(event.target) && !event.target.closest('.product__item')) {
+        openOptions.style.display = 'none';
+        openOptions = null; // Reseta a referência após o fechamento
+    }
+});
 
 // Fechar as opções
 function closeOptions(button) {
-    button.closest('.product-options').style.display = 'none';
+    let options = button.closest('.product-options');
+    options.style.display = 'none';
+    openOptions = null; // Reseta a referência quando o botão de fechar é clicado
 }
 
 //FAVORITE
@@ -449,6 +462,7 @@ function favorite(button) {
       showSuccessAlert(data.message);
       $('#favoritos-container').load(location.href + ' #favoritos-container');
       document.getElementById('favorite-counter').textContent = data.favorite_counter;
+      document.getElementById('favorite-counter-humberger').textContent = data.favorite_counter;
       // Alterna a cor do botão
             if (button.style.color === 'red') {
                 button.style.color = ''; // Define para a cor original

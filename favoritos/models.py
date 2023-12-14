@@ -10,6 +10,7 @@ class WishlistItem(models.Model):
     def __str__(self):
         return f"{self.product} - {self.user_profile.user.username}"
 
+
     @property
     def success_message(self):
         return f"Produto {self.product.name} adicionado aos favoritos com sucesso!"

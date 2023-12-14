@@ -113,8 +113,17 @@
                             <!-- Adicionar ao carrinho -->
                             <button type="submit" class="add-to-cart-btn site-btn form-group"><i class="fa fa-shopping-cart"></i> Adicionar
                             </button>
+                             {% if request.user.is_authenticated %}
+                {% if produto.id in wishlist_product_ids %}
+            <a class="favorite heart-icon" onclick="favorite(this)"
+                   data-product-id="{{ produto.id }}" style="color:red"><i class="fa fa-heart"></i></a>
+            {% else %}
+             <a class="favorite heart-icon" onclick="favorite(this)"
+                   data-product-id="{{ produto.id }}" ><i class="fa fa-heart"></i></a>
+            {% endif %}
 
-                            <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
+            {% endif %}
+
 
                         </form>
 

@@ -114,11 +114,11 @@
             <!-- Latest Products -->
             <div class="col-lg-4 col-md-6">
                 <div class="latest-product__text">
-                    <h4>Latest Products</h4>
+                    <h4>Ultimos produtos adicionados</h4>
                     <div class="latest-product__slider owl-carousel">
                         {% for product in latest_products %}
                         <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
+                            <a href="{{product.get_absolute_url}}" class="latest-product__item">
                                 <div class="latest-product__item__pic">
                                     <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                                 </div>
@@ -136,11 +136,11 @@
             <!-- Top Rated Products -->
             <div class="col-lg-4 col-md-6">
                 <div class="latest-product__text">
-                    <h4>Top Rated Products</h4>
+                    <h4>Produtos Mais vendidos</h4>
                     <div class="latest-product__slider owl-carousel">
                         {% for product in best_sellers_products %}
                         <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
+                            <a href="{{product.get_absolute_url}}" class="latest-product__item">
                                 <div class="latest-product__item__pic">
                                     <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                                 </div>
@@ -162,7 +162,7 @@
                     <div class="latest-product__slider owl-carousel">
                         {% for product in review_products %}
                         <div class="latest-prdouct__slider__item">
-                            <a href="#" class="latest-product__item">
+                            <a href="{{product.get_absolute_url}}" class="latest-product__item">
                                 <div class="latest-product__item__pic">
                                     <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                                 </div>

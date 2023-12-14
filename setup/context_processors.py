@@ -2,8 +2,7 @@ from carrinho.models import ShoppingCart
 from django.shortcuts import render
 from products.models import Product, Department, Category
 from site_config.models import SocialLink, ContactInfo,UsefulLink,SiteSettings
-from banners.models import HeroBanner, SecondaryBanner
-from blog.models import Post
+
 from collections import defaultdict
 from django.contrib.sessions.models import Session
 
@@ -54,21 +53,13 @@ def global_context(request):
         wishlist_product_ids = []
         favorite_counter = 0
     cart=get_cart(request)
-    posts = Post.objects.all()[:3]
+
     site_setting = SiteSettings.objects.first()
-    hero_banners = HeroBanner.objects.first()
-    secondary_banners = SecondaryBanner.objects.all()
+
     categories = Category.objects.all()
     departements = Department.objects.all()
     # Buscar dados dos modelos
     social_links = SocialLink.objects.all()
-    # Buscar os últimos 10 produtos criados
-    latest_products = Product.objects.all().order_by('-create_at')[:10]
-    # Buscar 10 produtos marcados como destaque
-    featured_products = Product.objects.filter(is_featured=True)[:10]
-    best_sellers_products = Product.objects.all().order_by('-sells')[:3]
-    # Buscar 10 produtos com mais avaliações
-    review_products = Product.objects.all()[:10]  # Similar para 'Review'
     footer_info = ContactInfo.objects.first()  # Assumindo uma única instância
     # Organizar os links úteis por categoria
     useful_links_raw = UsefulLink.objects.all()
@@ -79,17 +70,10 @@ def global_context(request):
     context = {
         'favorite_counter': favorite_counter,
         'cart': cart,
-        'posts': posts,
-        'best_sellers_products': best_sellers_products,
-        'hero_banners': hero_banners,
-        'secondary_banners': secondary_banners,
         'departements': departements,
         'site_setting': site_setting,
         'categories': categories,
         'social_links': social_links,
-        'latest_products': latest_products,
-        'featured_products': featured_products,
-        'review_products': review_products,
         'footer_info': footer_info,
         'footer_links': dict(footer_links),
         'wishlist_product_ids': wishlist_product_ids,

@@ -95,6 +95,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def add_sells(self, quantidade):
+        self.sells += quantidade
+        self.save()
+
     @property
     def get_firs_image(self):
         if self.images.first():
@@ -146,7 +151,13 @@ class Product(models.Model):
 
     @property
     def has_stock(self):
-        if self.product_materials.all():
+        if self.variations.all():
+            for variation in self.variations.all():
+                if variation.has_stock:
+                    return True
+            return False
+
+        elif self.product_materials.all():
             for material in self.product_materials.all():
                 if material.materia_prima.stock < material.quantity_used:
                     return False
@@ -295,6 +306,10 @@ class Department(models.Model):
     def get_absolute_url(self):
         return reverse('department_detail', kwargs={'slug': self.slug})
 
+    @property
+    def get_lalala(self):
+        return f'department + {self.slug}'
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     department  = models.ForeignKey('Department',  on_delete=models.CASCADE,related_name='categories', null=True, blank=True)
@@ -321,7 +336,8 @@ class Category(models.Model):
     @property
     def parent(self):
         if self.id_pai:
-            return self.objects.get(id=self.id_pai)
+            return Department.objects.get(id=self.id_pai)
+
         return None
 
     @property
