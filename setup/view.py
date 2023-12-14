@@ -9,16 +9,23 @@ from django.db.models.functions import Coalesce
 
 
 def home(request):
+
     posts = Post.objects.all()[:3]
     hero_banners = HeroBanner.objects.first()
     secondary_banners = SecondaryBanner.objects.all()
-    # Buscar os últimos 10 produtos criados
-    latest_products = Product.objects.all().order_by('-create_at')[:10]
+    produtos = Product.objects.all()
     # Buscar 10 produtos marcados como destaque
-    featured_products = Product.objects.filter(is_featured=True)[:10]
-    best_sellers_products = Product.objects.all().order_by('-sells')[:3]
+    featured_products = produtos.filter(is_featured=True)[:10]
+    featured_products = [product for product in featured_products if product.has_stock]
+    # Buscar os últimos 10 produtos criados
+    latest_products = produtos.order_by('-create_at')[:10]
+    latest_products = [product for product in latest_products if product.has_stock]
+    # Buscar 10 produtos com mais vendidos
+    best_sellers_products = produtos.order_by('-sells')[:3]
+    best_sellers_products = [product for product in best_sellers_products if product.has_stock]
     # Buscar 10 produtos com mais avaliações
-    review_products = Product.objects.all()[:10]  # Similar para 'Review'
+    review_products = produtos[:10]  # Similar para 'Review'
+    review_products = [product for product in review_products if product.has_stock]
     context = {
     'hero_banners': hero_banners,
     'secondary_banners': secondary_banners,
