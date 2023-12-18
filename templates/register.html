@@ -65,7 +65,7 @@ function verificaUsername(inputField) {
     if (!isValid) {
         inputField.setCustomValidity('Nome de usuário inválido. Use até 150 caracteres com letras, números e @/./+/-/_.');
     } else {
-        this.classList.remove('is-invalid');
+        inputField.classList.remove('is-invalid');
         inputField.setCustomValidity('');
     }
 }

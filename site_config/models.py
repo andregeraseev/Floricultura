@@ -47,6 +47,8 @@ class SiteSettings(models.Model):
     theme_font = models.CharField(max_length=50, default='Arial')
 
     # Pesonlização do Navbar
+    valor_carrinho_navegador = models.BooleanField(default=True)
+    cor_valor_carrinho_navegador = ColorField(max_length=7, default='#FFFFFF')  # Para cor
     menu_lateral =models.BooleanField(default=False)
     header = ColorField(max_length=7, default='#f5f5f5')  # Para cor
     header_secundario = ColorField(max_length=7, default='#FFFFFF')  # Para cor

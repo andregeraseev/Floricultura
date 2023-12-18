@@ -1,0 +1,159 @@
+<style>
+  .search .product__item__pic  {
+    flex-shrink: 0; /* Impede que a imagem encolha */
+    width: 120px; /* Largura da imagem */
+    height: 120px; /* Altura da imagem */
+    overflow: hidden;
+    margin-right: 15px; /* Espaço entre a imagem e o texto */
+}
+
+.linha {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: #ebebeb;
+    margin: 15px 0;
+}
+
+.search .add-to-cart-btn {
+
+    font-size: 0.8rem;
+}
+
+.search  .product__details__text .heart-icon {
+    font-size: 0.8rem;
+}
+
+.search .pro-qty input {
+    height: 100%;
+    width: 100%;
+    font-size: 0.8rem;
+    color: #6f6f6f;
+    width: 26px;
+    border: none;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.search .pro-qty {
+    width: 40px;
+    height: 36px;
+
+}
+
+.search .product__details__text .product__details__price span {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 400;
+    text-decoration: line-through;
+    margin-left: 10px;
+}
+
+
+.search .product__item{
+background: white;
+margin-bottom: 10px
+}
+.search .product__item__pic  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Garante que a imagem cubra o espaço disponível */
+}
+
+.search .product__details__text .product__details__price  {
+    font-size: 1rem;
+    color: #dd2222;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+</style>
+<div class="container search">
+<div class="product__details__text product__item row" id="product-item">
+
+
+     <div class="product__item__pic col-4">
+        <img src="{{ produto.images.first.image.url }}" alt="{{ product.name }}" class="{% if not produto.has_stock %} div-em-preto-e-branco {% endif %}" />
+        <!-- Adicione aqui outras marcações para descontos, favoritos, etc. -->
+     </div>
+    <div class="product__details__text col-6">
+    <h6>{{produto.name}}</h6>
+    <div class="product__details__price">{% if produto.variations.all %}
+        <div class="product__item__price" id="variation-price-{{ product.id }}">
+            R${{produto.variations.first.promotional_price | default:produto.variations.first.price }}
+            {%if produto.variations.first.promotional_price%}
+            <span>R${{ produto.variations.first.price }}</span>
+            {%endif%}
+        </div>
+        <!-- Inicialize com o preço da primeira variação -->
+        {% else %}
+        <div class="product__item__price">R${{ produto.promotional_price | default:produto.price }}
+            {%if produto.promotional_price%}<span>R${{ produto.price }}</span>{%endif%}
+        </div>
+        {% endif %}
+    </div>
+    <div class="product-options" id="options-{{ product.id }}" style="display: none;">
+    </div>
+
+    <div class="options-container">
+        {% if produto.variations.all %}
+        <select class="variation-select" onchange="updatePrice(this)">
+            {% for variation in produto.variations.all %}
+
+            <option value="{{ variation.id }}" data-desconto="{{ variation.porcentagem_de_desconto }}"
+                    data-price="{{ variation.promotional_price | default:variation.price }}
+            {%if variation.promotional_price%}<span>R${{ variation.price }}</span>{%endif%}"
+                    data-produto-id="{{produto.id}}">
+                {% if not variation.has_stock %}
+                Esgotado -
+                {% endif %}
+                {% for item in variation.get_grade %}
+                {{ item.chave }}: {{ item.valor }}{% if not forloop.last %} / {% endif%}
+                {% endfor %}
+            </option>
+
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        <form onsubmit="event.preventDefault(); addToCart(this); " class="form-inline" style="flex-wrap: nowrap">
+            <!-- Campo de id produto -->
+            <input type="hidden" name="productId" class="productId" value="{{ produto.id }}">
+            <!-- Campo de id variável -->
+            <input type="hidden" name="variationId" class="variationId" value="">
+            <!-- Campo de quantidade -->
+
+            <div class="product__details__quantity ">
+                <div class="quantity">
+                    <div class="pro-qty form-group">
+                        <input type="number" name="quantity" class="quantity-input" min="1" value="1">
+                    </div>
+                </div>
+            </div>
+            <!-- Adicionar ao carrinho -->
+            <button type="submit" class="add-to-cart-btn site-btn form-group"><i class="fa fa-shopping-cart"></i> Adicionar
+            </button>
+             {% if request.user.is_authenticated %}
+{% if produto.id in wishlist_product_ids %}
+<a class="favorite heart-icon" onclick="favorite(this)"
+   data-product-id="{{ produto.id }}" style="color:red"><i class="fa fa-heart"></i></a>
+{% else %}
+<a class="favorite heart-icon" onclick="favorite(this)"
+   data-product-id="{{ produto.id }}" ><i class="fa fa-heart"></i></a>
+{% endif %}
+
+{% endif %}
+
+
+        </form>
+
+
+    </div>
+
+
+
+</div>
+    </div>
+</div>
+<span class="linha"></span>
+

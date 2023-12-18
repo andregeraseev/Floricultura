@@ -32,16 +32,18 @@
 
     {% block extra_css %}{% endblock %}
 </head>
-    <header>
+
 
         <div id="preloder">
     <div class="loader"></div>
 </div>
 <div class="main-content"></div>
 <div id="cart-sidebar-container">
+
     {% include 'partials/_cart_sidebar.html' %}
 </div>
 {%if site_setting.navbar_fixo %}
+
 {% include 'partials/_navegador_fixedtop.html' %}
 
 {%elif site_setting.menu_lateral %}
@@ -58,7 +60,7 @@
 {% include 'partials/_whatsapp.html' %}
 
 
-    </header>
+
     <div id="alert-box" class="alert-box" style="display:none;"></div>
 
     {% block content %}

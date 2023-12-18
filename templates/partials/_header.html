@@ -21,23 +21,24 @@
                         </div>
                         <div class="header__top__right__auth">
                             {% if user.is_authenticated %}
-                            <a href="{% url 'dashboard' %}" class="mr-2"><i class="fa fa-dashboard" ></i> Painel do cliente </a>
+                            <a href="{% url 'dashboard' %}" class="mr-2"><i class="fa fa-dashboard"></i> Painel do
+                                cliente </a>
                             {% else %}
                             <a href="{% url 'cadastro' %}"><i class="fa fa-user"></i> Cadastrar</a>
                             {% endif %}
                         </div>
-<!--                        <div class="header__top__right__language">-->
-<!--                            <img src="{% static 'img/language.png' %}" alt="">-->
-<!--                            <div>English</div>-->
-<!--                            <span class="arrow_carrot-down"></span>-->
-<!--                            <ul>-->
-<!--                                <li><a href="{% static '#' %}">Spanis</a></li>-->
-<!--                                <li><a href="{% static '#' %}">English</a></li>-->
-<!--                            </ul>-->
-<!--                        </div>-->
+                        <!--                        <div class="header__top__right__language">-->
+                        <!--                            <img src="{% static 'img/language.png' %}" alt="">-->
+                        <!--                            <div>English</div>-->
+                        <!--                            <span class="arrow_carrot-down"></span>-->
+                        <!--                            <ul>-->
+                        <!--                                <li><a href="{% static '#' %}">Spanis</a></li>-->
+                        <!--                                <li><a href="{% static '#' %}">English</a></li>-->
+                        <!--                            </ul>-->
+                        <!--                        </div>-->
                         <div class="header__top__right__auth">
                             {% if user.is_authenticated %}
-                            <a href="{% url 'logout' %}"><i class="fa fa-user"></i> Logout</a>
+                            <a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Logout</a>
                             {% else %}
                             <a href="{% url 'login' %}"><i class="fa fa-user"></i> Login</a>
                             {% endif %}
@@ -47,32 +48,49 @@
             </div>
         </div>
     </div>
-    <div class="container">
+    <div class="nav__container container">
         <div class="row header__align">
-            <div class="col-5 col-6 col-sm-5">
+            <div class="col-4 col-md-4 col-lg-2 col-sm-6">
                 <div class="header__logo">
                     <a href="{% url 'home' %}"><img src="{{site_setting.logo.url}}" alt=""></a>
                 </div>
             </div>
-            <div class="col-1 col-sm-1 col-md-2 col-lg-3">
-                <nav class="header__menu">
-                    <ul>
-                        {% for link in navigation_links %}
-                        <li class="{% if link.is_active %}active{% endif %}"><a href="{{ link.url }}">
-                            {{ link.name }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </nav>
+
+            <div class="col-12 order-last order-md-0 text-center col-md-5 col-lg-6">
+                <form class="js-search-container js-search-form search-container" action="/search/" method="get">
+                    <div class="form-group m-0">
+                        <input class="js-search-input form-control search-input" autocomplete="off" type="search"
+                               name="q" placeholder="O que você está buscando?"
+                               aria-label="O que você está buscando?">
+
+                    </div>
+                </form>
+
             </div>
-            <div class="col-4 col-md-4 col-lg-4 col-sm-5" >
+
+            <!--            <div class="col-3 col-md-2 col-lg-4 col-sm-3 ">-->
+            <!--                <nav class="header__menu">-->
+            <!--                    <ul>-->
+            <!--                        {% for link in navigation_links %}-->
+            <!--                        <li class="{% if link.is_active %}active{% endif %}"><a href="{{ link.url }}">-->
+            <!--                            {{ link.name }}</a></li>-->
+            <!--                        {% endfor %}-->
+            <!--                    </ul>-->
+            <!--                </nav>-->
+            <!--            </div>-->
+            <div class="col-7 col-md-3 col-lg-4 col-sm-4 ">
                 <div class="header__cart">
                     <ul>
                         {% if user.is_authenticated %}
-                        <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter">{{favorite_counter}}</span></a></li>
+                        <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter">{{favorite_counter}}</span></a>
+                        </li>
                         {% endif %}
-                        <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter">{{cart.count_items_quantity}}</span></a></li>
+                        <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter">{{cart.count_items_quantity}}</span></a>
+                        </li>
                     </ul>
+                    {% if site_setting.valor_carrinho_navegador %}
                     <div class="header__cart__price">R$<span id="cart-total">{{cart.total}}</span></div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -81,4 +99,5 @@
         </div>
     </div>
 </header>
+<div></div>
 <!-- Header Section End -->

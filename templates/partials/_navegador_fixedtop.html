@@ -1,46 +1,165 @@
 {%load static%}
 
+{% load static %}
+<style>
+.search-results {
+    border: 1px solid #ddd;
+    border-top: none;
+    position: absolute;
+    width: 95%;
+    background: white;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1;
+    display: none; /* Inicialmente oculto */
+}
+
+
+/* Estiliza a barra de rolagem (scrollbar) */
+.search-results::-webkit-scrollbar {
+  width: 10px; /* Largura da barra de rolagem */
+}
+
+/* Estiliza a trilha da barra de rolagem */
+.search-results::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1); /* Cor de fundo da trilha */
+  border-radius: 10px; /* Borda arredondada */
+}
+
+/* Estiliza o manipulador da barra de rolagem */
+.search-results::-webkit-scrollbar-thumb {
+  background-color: #dc3545; /* Cor do manipulador */
+  border-radius: 10px; /* Borda arredondada */
+  border: 3px solid rgba(0, 0, 0, 0); /* Cor da borda do manipulador */
+}
+
+/* Estiliza o manipulador da barra de rolagem em hover */
+.search-results::-webkit-scrollbar-thumb:hover {
+  background-color: #a1232d; /* Cor do manipulador no hover */
+}
+
+
+.search-results div {
+    cursor: pointer;
+}
+
+.search-results div:hover {
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .search-results {
+    width: 150%;
+  }
+}
+</style>
+
 <div class="fixed-top mb-0 pb-0 bg-white" style="">
+<!-- Header Section Begin -->
+<header class="header">
+    <div class="header__top">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <div class="header__top__left">
+                        <ul>
+                            <li><i class="fa fa-envelope"></i> {{footer_info.email}}</li>
+                            <li>{{ footer_info.mensagem }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="header__top__right">
+                        <div class="header__top__right__social">
+                            {% for link in social_links %}
+                            <a href="{{ link.url }}"><i class="fa {{ link.icon_class }}"></i></a>
+                            {% endfor %}
+                        </div>
+                        <div class="header__top__right__auth">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="mr-2"><i class="fa fa-dashboard"></i> Painel do
+                                cliente </a>
+                            {% else %}
+                            <a href="{% url 'cadastro' %}"><i class="fa fa-user-plus"></i> Cadastrar</a>
+                            {% endif %}
+                        </div>
+                        <div class="header__top__right__auth">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Logout</a>
+                            {% else %}
+                            <a href="{% url 'login' %}"><i class="fa fa-sign-in""></i> Login</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</header>
+<div></div>
+<!-- Header Section End -->
+
+
 <!-- Humberger Begin -->
 <div class="humberger__menu__overlay"></div>
 <div class="humberger__menu__wrapper ">
     <div class="humberger__menu__logo">
-        <a href="#"><img src="{{site_setting.logo.url}}" alt=""></a>
+        <a href="{%url 'home'%}" ><img src="{{site_setting.logo.url}}" alt=""></a>
     </div>
-    <div class="humberger__menu__cart">
+      <div class="humberger__menu__cart">
         <ul>
-            <li><a href="#"><i class="fa fa-heart"></i> <span>1</span></a></li>
-            <li><a href="#"><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter-humberger">{{favorite_counter}}</span></a></li>
+            {% endif %}
+            <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter-humberger">{{cart.count_items_quantity}}</span></a></li>
         </ul>
-        <div class="header__cart__price">item: <span>$150.00</span></div>
+        <div class="header__cart__price">R$<span id="cart-total-humberger">{{cart.total}}</span></div>
     </div>
     <div class="humberger__menu__widget">
-        <div class="header__top__right__language">
-            <img src="{% static 'img/language.png' %}" alt="">
-            <div>English</div>
-            <span class="arrow_carrot-down"></span>
-            <ul>
-                <li><a href="#">Spanis</a></li>
-                <li><a href="#">English</a></li>
-            </ul>
+<!--        <div class="header__top__right__language">-->
+<!--            <img src="{% static 'img/language.png' %}" alt="">-->
+<!--            <div>English</div>-->
+<!--            <span class="arrow_carrot-down"></span>-->
+<!--            <ul>-->
+<!--                <li><a href="#">Spanis</a></li>-->
+<!--                <li><a href="#">English</a></li>-->
+<!--            </ul>-->
+<!--        </div>-->
+        <div class="header__top__right__auth">
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}"><i class="fa fa-dashboard"></i> Painel do cliente </a>
+            {% else %}
+            <a href="{% url 'cadastro' %}"><i class="fa fa-user"></i> Cadastrar</a>
+            {% endif %}
         </div>
         <div class="header__top__right__auth">
-            <a href="#"><i class="fa fa-user"></i> Login</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}"><i class="fa fa-user"></i> Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}"><i class="fa fa-user"></i> Login</a>
+            {% endif %}
         </div>
     </div>
     <nav class="humberger__menu__nav mobile-menu">
         <ul>
-            <li class="active"><a href="./index.html">Home</a></li>
-                <ul class="header__menu__dropdown">
-                    {% for departement in departements %}
-                        <li><a href="{{ category.link }}">{{ departement.name }}</a></li>
-                        {% endfor %}
-                </ul>
-            </li>
-            <li><a href="./blog.html">Blog</a></li>
-            <li><a href="./contact.html">{{ footer_info.phone }}</a></li>
+        <li class="active"><a href="{% url 'home' %}">Home</a></li>
+        {% for departement in departements %}
+    <li>
+        <a href="{{ departement.get_absolute_url }}">{{ departement.name }}</a>
+        <ul class="humberger-dropdown-menu">
+            {% for category in departement.categories.all %}
+                {% if category.name != departement.name %}
+                    <li><a class="humberger-dropdown-item" href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+                {% endif %}
+            {% endfor %}
         </ul>
+    </li>
+{% endfor %}
+        <li><a href="./blog.html">Blog</a></li>
+        <li><a href="./contact.html">{{ footer_info.phone }}</a></li>
+    </ul>
     </nav>
+
     <div id="mobile-menu-wrap"></div>
     <div class="header__top__right__social">
         {% for link in social_links %}
@@ -54,33 +173,70 @@
         </ul>
     </div>
 </div>
-<!-- Humberger End -->
+    <!-- Humberger End -->
 
-<!-- Header Section Begin -->
-<header class="header">
+    <!-- Header Section Begin -->
+    <header class="header">
 
-    <div class="container-flex">
-        <div class="row row header__align"  >
-            <div class="col-6 ">
-                <div class="header__logo">
-                    <a href="./index.html"><img src="{{site_setting.logo.url}}" alt=""></a>
+        <div class="container-flex">
+            <div class="row  header__align">
+                <div class="col-7 col-md-4 col-lg-2 col-sm-7">
+                    <div class="header__logo">
+                        <a href="{%url 'home'%}"><img src="{{site_setting.logo.url}}" alt=""></a>
+                    </div>
                 </div>
-            </div>
+
+<!--                SEARCH-->
+
+                <div class="col-12 order-last order-lg-0 text-center col-lg-6">
+    <form class="js-search-container js-search-form search-container" action="/search/" method="get">
+        <div class="form-group m-0">
+            <input id="searchInput" class="form-control search-input" autocomplete="off" type="search"
+                   name="q" placeholder="O que você está buscando?"
+                   aria-label="O que você está buscando?">
+        </div>
+    </form>
+    <div id="searchResults" class="search-results"></div>
+</div>
 
 
-            <div class="col-4 col-md-5 col-lg-6" >
+
+
+
+
+
+
+                <div class="col-4 col-md-7 col-lg-4 col-sm-3 ">
                 <div class="header__cart">
                     <ul>
-                        <li><a href="{% static '#' %}"><i class="fa fa-heart"></i> <span>1</span></a></li>
-                        <li><a href="{% static '#' %}"><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
+                        {% if user.is_authenticated %}
+                        <span class="nav_parece mr-3">
+                        <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> </a>
+                        </li>
+                        <li><a href="{% url 'dashboard' %}"><i class="fa fa-dashboard"></i></a>
+                        </li>
+                        </span>
+                        <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter">{{favorite_counter}}</span></a></li>
+                        {% else %}
+                        <span class="nav_parece mr-3">
+                        <li><a href="{% url 'cadastro' %}"><i class="fa fa-user-plus"></i> </a></li>
+                        <li><a href="{% url 'login' %}"><i class="fa fa-sign-in"></i> </a></li>
+                            </span>
+                        {% endif %}
+                        <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter">{{cart.count_items_quantity}}</span></a></li>
                     </ul>
-                    <div class="header__cart__price">item: <span>{{site_setting.theme_color}}</span></div>
+                    {% if site_setting.valor_carrinho_navegador %}
+                    <div class="header__cart__price">R$<span id="cart-total">{{cart.total}}</span></div>
+                    {% endif %}
+
                 </div>
+
             </div>
-        </div>
-        <div class="humberger__open">
+                <div class="humberger__open ">
             <i class="fa fa-bars"></i>
         </div>
+        </div>
+
     </div>
 </header>
 
@@ -90,49 +246,40 @@
 
 <section class="hero">
     <div class="container-flex ">
-        <nav class="navbar navbar-expand-lg navbar-dark "
+<nav class="navbar navbar-expand-lg navbar-dark "
              style="background-color:{{site_setting.navbar_color}}; font-family:{{site_setting.navbar_font}}; font_weight:{{site_setting.navbar_font_weight}}">
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
                     aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="collapse navbar-collapse " id="navbarNavAltMarkup" style="justify-content: space-around;">
                 <ul class="navbar-nav">
                     <li class="nav-item active">
-                        <a class="nav-link" href="#"
+                        <a class="nav-link" href="{% url 'home' %}"
                            style=" font-family:{{site_setting.navbar_font}};font-weight:{{site_setting.navbar_font_weight}}">
                             Home <span class="sr-only">(current)</span></a>
                     </li>
                     {% for departement in departements %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ category.link }}"
-                           style=" font-family:{{site_setting.navbar_font}};font-weight:{{site_setting.navbar_font_weight}}">
-                            {{departement.name }}</a>
+                        <a class="nav-link " href="{{ departement.get_absolute_url }}"
+                           style="font-family:{{ site_setting.navbar_font }}; font-weight:{{ site_setting.navbar_font_weight }}">
+                            {{ departement.name }}
+                        </a>
+                        <div class="dropdown-menu" >
+
+                            {% for category in departement.categories.all %}
+                            {% if category.name != departement.name %}
+                            <a class="dropdown-item" href="{{ category.get_absolute_url }} " >{{ category.name }}</a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+
                     </li>
 
 
                     {% endfor %}
-                    </ul>
-                    <div class="header__top__right "style=" flex:auto">
-                        <div class="header__top__right__social">
-                            {% for link in social_links %}
-                            <a href="{{ link.url }}"><i class="fa {{ link.icon_class }}"></i></a>
-                            {% endfor %}
-                        </div>
-                        <div class="header__top__right__language">
-                            <img src="{% static 'img/language.png' %}" alt="">
-                            <div>English</div>
-                            <span class="arrow_carrot-down"></span>
-                            <ul>
-                                <li><a href="{% static '#' %}">Spanis</a></li>
-                                <li><a href="{% static '#' %}">English</a></li>
-                            </ul>
-                        </div>
-                        <div class="header__top__right__auth">
-                            <a href="{% static '#' %}"><i class="fa fa-user"></i> Login</a>
-                        </div>
-                    </div>
+                </ul>
 
             </div>
         </nav>
@@ -140,33 +287,7 @@
         <div class="row">
 
 
-            <div class="col-lg "  >
-                <div class="hero__search">
-                    <div class="hero__search__form">
-                        <form action="#">
-                            <div class="hero__search__categories ">
-                                All Categories
-                                <span class="arrow_carrot-down"></span>
-                            </div>
-                            <input type="text" placeholder="What do yo u need?">
-                            <button type="submit" class="site-btn">SEARCH</button>
-                        </form>
-                    </div>
-                    <div class="hero__search__phone">
-                        <div class="hero__search__phone__icon">
-                            <i class="fa fa-phone"></i>
-                        </div>
-                        <div class="hero__search__phone__text">
 
-                            <h5>{{ footer_info.phone }}</h5>
-                            <span>suporte  </span>
-                        </div>
-                    </div>
-                </div>
-
-
-
-            </div>
         </div>
 
     </div>
@@ -200,3 +321,100 @@
                 </div>
                 {% endif %}
 {% endif %}
+<style>
+    .nav_parece {
+    display: none; /* Esconde por padrão */
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+    opacity: 0;
+    visibility: hidden;
+}
+
+@media (min-width: 992px) {
+    .nav_parece.show {
+        display: inline-flex; /* Apenas mostra em telas largas */
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.header {
+    transition: opacity 0.3s, visibility 0.3s; /* Transição suave */
+    opacity: 1;
+}
+
+.header.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+</style>
+<script>
+    window.onscroll = function() {
+    var header = document.querySelector('.header');
+    var navbar = document.querySelector('.navbar');
+    var nav_parece = document.querySelector('.nav_parece');
+
+    if (window.pageYOffset > 50) {
+        if (window.innerWidth >= 992) { // Verifica a largura da tela
+            nav_parece.classList.add('show');
+            header.style.display = 'none'; // Diminuir a margem;
+            navbar.style.padding = '0rem 1rem';
+        }
+        header.classList.add('hide'); // Esconde o header
+        navbar.style.padding = '0rem 1rem';
+    } else {
+        header.style.display = 'block'; // Voltar à margem original
+        nav_parece.classList.remove('show'); // Esconde nav_parece
+        header.classList.remove('hide'); // Mostra o header
+        navbar.style.padding = '0.5rem 1rem';
+    }
+};
+</script>
+
+<script>
+<!--SEARCH-->
+function displayResults(html) {
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = html;
+    resultsContainer.style.display = 'block'; // Mostrar resultados
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value;
+
+    if (searchTerm.length > 2) {
+        fetch(`/search/?q=${encodeURIComponent(searchTerm)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data.html);
+                selecionavariavel()
+            })
+            .catch(error => console.error('Error:', error));
+    } else {
+        resultsContainer.style.display = 'none'; // Ocultar resultados
+    }
+});
+
+
+ function selecionavariavel() {
+    console.log('loaded');
+    var variationSelects = document.querySelectorAll('.search .product-options');
+   console.log('Variation Selects:', variationSelects);
+    console.log('Variation Selects:', variationSelects);
+    variationSelects.forEach(function(select) {
+        var parentDiv = select.closest('.search .product__item');
+        console.log('Parent Div:', parentDiv);
+        selecionarPrimeiraOpcao(parentDiv);
+    });
+};
+
+document.addEventListener('click', function(event) {
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('searchResults');
+    const isClickInsideSearch = searchInput.contains(event.target) || resultsContainer.contains(event.target);
+
+    if (!isClickInsideSearch) {
+        resultsContainer.style.display = 'none';
+    }
+});
+
+</script>

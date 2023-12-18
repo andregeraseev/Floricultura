@@ -1,4 +1,6 @@
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from products.models import Product, Department, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -37,6 +39,24 @@ def home(request):
     }
     return render(request, 'index2.html', context)
 
+
+
+
+
+def search(request):
+    query = request.GET.get('q', '')
+    if query:
+        products = Product.objects.filter(name__icontains=query)
+        if products.exists():
+            rendered_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products])
+        else:
+            # Mensagem quando não há produtos encontrados
+            rendered_html = '<div class="no-results">Sem resultados</div>'
+    else:
+        # Mensagem padrão ou conteúdo vazio se não houver consulta
+        rendered_html = '<div class="no-results">Digite algo para buscar</div>'
+
+    return JsonResponse({'html': rendered_html})
 
 
 def department_detail(request, slug):
