@@ -40,6 +40,83 @@ def home(request):
     return render(request, 'index2.html', context)
 
 
+def search_view (request):
+    print(request.GET)
+    sort_by = request.GET.get('sort', 'default')
+    query = request.GET.get('q', '')
+    if query:
+
+
+        base_query = Product.objects.filter(name__icontains=query)
+
+        # Usar anotação para adicionar o menor preço da variação ou o preço do produto se não houver variação
+
+        annotated_query = base_query.annotate(
+            lowest_price=Coalesce(
+                # Primeiro, tenta pegar o menor preço promocional das variações, se a promoção estiver ativa
+                Min(
+                    Case(
+                        When(
+                            promotion_active=True,
+                            then='variations__promotional_price'
+                        ),
+                        default='variations__price',
+                        output_field=DecimalField(max_digits=10, decimal_places=2)
+                    )
+                ),
+                # Se não houver variações, verifica se há um preço promocional no produto
+                Case(
+                    When(
+                        promotion_active=True,
+                        then='promotional_price'
+                    ),
+                    default='price',
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                ),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        )
+
+        if sort_by == 'price_asc':
+            products = annotated_query.order_by('lowest_price')
+        elif sort_by == 'price_desc':
+            products = annotated_query.order_by('-lowest_price')
+        elif sort_by == 'name_asc':
+            products = base_query.order_by('name')  # Adicione mais condições conforme necessário
+
+        elif sort_by == 'name_desc':
+            products = base_query.order_by('-name')  # Adicione mais condições conforme necessário
+        elif sort_by == 'categoria_acs':
+            products = base_query.order_by('category__name')  # Adicione mais condições conforme necessário
+        elif sort_by == 'categoria_desc':
+            products = base_query.order_by('-category__name')  # Adicione mais condições conforme necessário
+
+
+
+        else:
+            products = Product.objects.filter(name__icontains=query).order_by('name')
+        # Paginação
+
+        page = request.GET.get('page', 1)
+        paginator = Paginator(products, 12)  # 10 produtos por página
+        total_products = products.count
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
+            products = paginator.page(1)
+        except EmptyPage:
+            products = paginator.page(paginator.num_pages)
+
+        context = {
+            'pagina': 'Busca',
+            'total_products': total_products,
+            'products': products,
+        }
+
+        return render(request, 'shop-grid.html', context)
+
+
+
 
 
 
@@ -48,7 +125,12 @@ def search(request):
     if query:
         products = Product.objects.filter(name__icontains=query)
         if products.exists():
-            rendered_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products])
+            # HTML da barra de pesquisa
+            search_bar_html = render_to_string('partials/search_bar.html', {'products_count': products.count()}, request)
+            # HTML dos produtos
+            products_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products])
+            # Combina os dois
+            rendered_html = search_bar_html + products_html
         else:
             # Mensagem quando não há produtos encontrados
             rendered_html = '<div class="no-results">Sem resultados</div>'

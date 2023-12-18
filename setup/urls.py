@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from setup.view import home, department_detail, category_detail, search
+from setup.view import home, department_detail, category_detail, search,search_view
 from banners.views import track_click
 from tiny_webhook.view import ProductWebhook
 
@@ -34,6 +34,7 @@ urlpatterns = [
     path('favoritos/', include('favoritos.urls')),
 
     path('search/', search, name='search'),
+    path('search_view/', search_view, name='search'),
 
     # path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('department/<slug:slug>/', department_detail, name='department_detail'),
