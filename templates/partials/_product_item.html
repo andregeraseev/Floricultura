@@ -7,6 +7,7 @@
 
     <div class="product__item__pic set-bg {% if not product.has_stock %} div-em-preto-e-branco {%endif%}" data-setbg="{{product.images.first.image.url}}">
         <a href="{{product.get_absolute_url}}"><div class="align-center" style="width: 100%;height: 90%;"></div></a>
+        {% if  product.has_stock %}
         {% if product.variations.all %}
         {% if product.variations.first.promotional_price %}
         <div class="product__discount__percent" id="discont-percent-{{product.id}}">
@@ -17,6 +18,11 @@
         {% elif product.porcentagem_de_desconto %}
         <div class="product__discount__percent">
             -{{ product.porcentagem_de_desconto }}%
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="product__no_stock">
+            Esgotado
         </div>
         {% endif %}
 

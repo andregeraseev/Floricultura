@@ -2,32 +2,120 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
-from products.models import Product, Department, Category
+from products.models import Product, Department, Category, ProductVariation, ProductMaterial
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from banners.models import HeroBanner, SecondaryBanner
 from blog.models import Post
 from django.db.models import Case, When, Value, F, Min, DecimalField
 from django.db.models.functions import Coalesce
+from django.db.models import Case, When, Value, BooleanField, F, Q, Exists, OuterRef
 
+
+def product_with_stock_order(base_query):
+    # Condição para variação com estoque
+    variation_stock_condition = Exists(
+        ProductVariation.objects.filter(
+            product_id=OuterRef('pk'),
+            estoqueAtual__gt=0
+        )
+    )
+
+    # Condição para variação com matéria-prima suficiente
+    variation_material_condition = Exists(
+        ProductVariation.objects.filter(
+            product_id=OuterRef('pk'),
+            variation_materials__materia_prima__stock__gte=F('variation_materials__quantity_used')
+        )
+    )
+
+    # Condição para produto com matéria-prima suficiente
+    material_stock_condition = ~Exists(
+        ProductMaterial.objects.filter(
+            product_id=OuterRef('pk'),
+            materia_prima__stock__lt=F('quantity_used')
+        )
+    )
+
+    # Anotação para verificar o estoque
+    products_with_stock = base_query.annotate(
+        has_stock_query=Case(
+            When(variations__isnull=False, then=Case(
+                When(variation_stock_condition, then=Value(True)),
+                When(variation_material_condition, then=Value(True)),
+                default=Value(False)
+            )),
+            When(product_materials__isnull=False, then=material_stock_condition),
+            default=Case(
+                When(estoqueAtual__gt=0, then=Value(True)),
+                default=Value(False)
+            ),
+            output_field=BooleanField()
+        )
+    ).order_by('-has_stock_query', 'name').distinct()
+
+    return products_with_stock
+
+
+def product_with_stock_filter(base_query):
+    # Condição para variação com estoque
+    variation_stock_condition = Exists(
+        ProductVariation.objects.filter(
+            product_id=OuterRef('pk'),
+            estoqueAtual__gt=0
+        )
+    )
+
+    # Condição para variação com matéria-prima suficiente
+    variation_material_condition = Exists(
+        ProductVariation.objects.filter(
+            product_id=OuterRef('pk'),
+            variation_materials__materia_prima__stock__gte=F('variation_materials__quantity_used')
+        )
+    )
+
+    # Condição para produto com matéria-prima suficiente
+    material_stock_condition = ~Exists(
+        ProductMaterial.objects.filter(
+            product_id=OuterRef('pk'),
+            materia_prima__stock__lt=F('quantity_used')
+        )
+    )
+
+    # Anotação para verificar o estoque
+    products_with_stock = base_query.annotate(
+        has_stock_query=Case(
+            When(variations__isnull=False, then=Case(
+                When(variation_stock_condition, then=Value(True)),
+                When(variation_material_condition, then=Value(True)),
+                default=Value(False)
+            )),
+            When(product_materials__isnull=False, then=material_stock_condition),
+            default=Case(
+                When(estoqueAtual__gt=0, then=Value(True)),
+                default=Value(False)
+            ),
+            output_field=BooleanField()
+        )
+    ).filter(has_stock_query=True).distinct()
+
+    return products_with_stock
 
 def home(request):
+
 
     posts = Post.objects.all()[:3]
     hero_banners = HeroBanner.objects.first()
     secondary_banners = SecondaryBanner.objects.all()
     produtos = Product.objects.all()
+    produtos = product_with_stock_filter(produtos)
     # Buscar 10 produtos marcados como destaque
     featured_products = produtos.filter(is_featured=True)[:10]
-    featured_products = [product for product in featured_products if product.has_stock]
     # Buscar os últimos 10 produtos criados
     latest_products = produtos.order_by('-create_at')[:10]
-    latest_products = [product for product in latest_products if product.has_stock]
     # Buscar 10 produtos com mais vendidos
     best_sellers_products = produtos.order_by('-sells')[:3]
-    best_sellers_products = [product for product in best_sellers_products if product.has_stock]
     # Buscar 10 produtos com mais avaliações
     review_products = produtos[:10]  # Similar para 'Review'
-    review_products = [product for product in review_products if product.has_stock]
     context = {
     'hero_banners': hero_banners,
     'secondary_banners': secondary_banners,
@@ -48,7 +136,8 @@ def search_view (request):
 
 
         base_query = Product.objects.filter(name__icontains=query)
-
+        products_with_stock = product_with_stock_order(base_query)
+        base_query= products_with_stock
         # Usar anotação para adicionar o menor preço da variação ou o preço do produto se não houver variação
 
         annotated_query = base_query.annotate(
@@ -94,7 +183,8 @@ def search_view (request):
 
 
         else:
-            products = Product.objects.filter(name__icontains=query).order_by('name')
+            products = base_query.filter(name__icontains=query)
+
         # Paginação
 
         page = request.GET.get('page', 1)
@@ -124,6 +214,8 @@ def search(request):
     query = request.GET.get('q', '')
     if query:
         products = Product.objects.filter(name__icontains=query)
+        products_with_stock = product_with_stock_order(products)
+        products = products_with_stock
         if products.exists():
             # HTML da barra de pesquisa
             search_bar_html = render_to_string('partials/search_bar.html', {'products_count': products.count()}, request)
@@ -147,10 +239,10 @@ def department_detail(request, slug):
                                                promotion_active=True)
     departamento = Department.objects.get(slug=slug)
     base_query = Product.objects.filter(departamento__slug=slug)
-
+    products_with_stock = product_with_stock_order(base_query)
     # Usar anotação para adicionar o menor preço da variação ou o preço do produto se não houver variação
 
-
+    base_query= products_with_stock
     annotated_query = base_query.annotate(
         lowest_price=Coalesce(
             # Primeiro, tenta pegar o menor preço promocional das variações, se a promoção estiver ativa
@@ -194,7 +286,8 @@ def department_detail(request, slug):
 
 
     else:
-        products = Product.objects.filter(departamento__slug=slug).order_by('name')
+        products = base_query.filter(departamento__slug=slug)
+
     # Paginação
 
     page = request.GET.get('page', 1)
@@ -224,6 +317,7 @@ def category_detail(request, slug):
                                                promotion_active=True)
 
     base_query = Product.objects.filter(category__slug=slug)
+    base_query = product_with_stock_order(base_query)
     category = Category.objects.get(slug=slug)
 
     annotated_query = base_query.annotate(
@@ -269,7 +363,8 @@ def category_detail(request, slug):
 
 
     else:
-        products = Product.objects.filter(category__slug=slug).order_by('name')
+        products = base_query.filter(category__slug=slug)
+
     # Paginação
 
     page = request.GET.get('page', 1)
