@@ -3,8 +3,9 @@
 from django.urls import path
 from .views import PedidoView, orders_view, orders_list, marcar_como_pago,visualizar_pedido,imprimir_selecionados,\
     mudar_endereco, toggle_producao,adicionar_rastreio,MercadoPagoView
-from mercadopago_pagamento.mercadopago_webhook import mercadopago_webhook
+from mercadopago_pagamento.mercadopago_webhook import MercadoPagoWebhook
 
+mercadopago_webhook = MercadoPagoWebhook.as_view()
 pedido_view = PedidoView.as_view()
 mercadopago = MercadoPagoView.as_view()
 urlpatterns = [
