@@ -18,13 +18,18 @@ import os
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('webhookspagamento')
 
 @csrf_exempt
 def mercadopago_webhook(request):
-    if not request.data:
-        logger.error("Corpo da requisição vazio.")
-        return Response({'error': 'Request body is empty.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        if request.data:
+            logger.info("data.", request.data)
+
+    except Exception as e:
+        logger.error(f"Erro ao processar o webhook: {e}")
+        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     data = request.data
     resource_type = data.get('type')
