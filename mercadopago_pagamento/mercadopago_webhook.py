@@ -110,6 +110,9 @@ class MercadoPagoWebhook(APIView):
             elif resource_type == 'point_integration_wh':
                 # data contains the information related to the notification
                 pass
+            elif resource_type == 'test':
+            # data contains the information related to the notification
+                pass
             else:
                 logger.error(f"Tipo de recurso inválido: {resource_type}")
                 return Response({'error': 'Invalid resource type.'}, status=status.HTTP_400_BAD_REQUEST)
