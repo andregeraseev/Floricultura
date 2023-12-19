@@ -24,7 +24,8 @@ class MercadoPagoWebhook(APIView):
     def post(self,request, *args, **kwargs):
         try:
             if request.data:
-                logger.info("data.", request.data)
+                data = request.data
+                logger.info("data.", data)
 
         except Exception as e:
             logger.error(f"Erro ao processar o webhook: {e} {request.POST}")
@@ -52,7 +53,7 @@ class MercadoPagoWebhook(APIView):
                     result = sdk.payment().get(resource_id)
 
                 except Exception as e:
-                    print(f"Erro ao buscar o pagamento: {e}")
+                    logger.error(f"Erro ao buscar o pagamento: {e}")
                     return JsonResponse({'error': 'Erro ao buscar o pagamento'}, status=500)
 
                 if result['status'] == 200:
@@ -97,6 +98,7 @@ class MercadoPagoWebhook(APIView):
                             print(f"Status de pagamento não reconhecido: {payment_status}")
 
                     except Order.DoesNotExist:
+                        logger.error(f"Pedido não encontrado: {external_reference}")
                         return HttpResponse(status=404)
 
             elif resource_type == 'plan':
@@ -109,7 +111,8 @@ class MercadoPagoWebhook(APIView):
                 # data contains the information related to the notification
                 pass
             else:
-                return JsonResponse({'error': 'Invalid resource type.'}, status=400)
+                logger.error(f"Tipo de recurso inválido: {resource_type}")
+                return Response({'error': 'Invalid resource type.'}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({'success': 'Notification received and processed.'}, status=status.HTTP_200_OK)
 
