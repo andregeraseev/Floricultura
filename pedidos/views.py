@@ -1,5 +1,6 @@
 from carrinho.models import ShoppingCart, ShoppingCartItem
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
 from enviadores.email import enviar_email_pedido_criado, enviar_email_rastreio
 from pedidos.models import Order
 from products.models import Product
@@ -15,6 +16,7 @@ from usuario.forms import AddressForm
 from usuario.models import Address
 from pedidos.forms import CheckoutForm
 from pedidos.correios import cotacao_frete_correios
+from mercadopago_pagamento.mercadopago_preference import cria_preferencia
 logger = logging.getLogger('pedido')
 
 def adicionar_rastreio(request):
@@ -182,7 +184,6 @@ class PedidoView(View):
                 session = Session.objects.get(session_key=request.session.session_key)
                 user = None
                 adress = Address.objects.filter(session=session, is_primary=True).first()
-                print(adress)
             cart = get_user_cart(request)
             try:
                 order = cart.finalize_purchase()  # Converte os itens do carrinho em itens da ordem
@@ -209,6 +210,12 @@ class PedidoView(View):
                 order.cep = adress.cep
                 order.save()
                 order.adicionar_valores()
+                try:
+                    mercadopagolink = cria_preferencia(request, order.total, order.id)
+                    print('mercadopagolink', mercadopagolink)
+                    return redirect(mercadopagolink)
+                except Exception as e:
+                    print('erros cria_preferencia', e)
                 try:
                     enviar_email_pedido_criado(order.email_pedido, order.destinatario, order)
                 except Exception as e:
@@ -524,5 +531,18 @@ def imprimir_selecionados(request):
 
 
     return render(request, 'dashboard_admin/imprimir_selecionados.html', context)
+
+
+class MercadoPagoView(View):
+    def get(self, request):
+        print(request.GET)
+        status = request.GET.get('status')
+        external_reference = request.GET.get('external_reference')
+
+        return render(request, 'pagamento/mercado_pago_retorno.html', {'status': status, 'pedido_id':external_reference })
+
+
+    def post(self, request):
+        return render(request, 'pagamento/mercadopago.html')
 
 

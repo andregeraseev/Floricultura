@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% block content %}
+    <style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.pagamento{
+    width: 80%;
+    margin: 0 auto 5%;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-radius: 8px;
+    margin-top: 50px;
+}
+
+.pagamento h1 {
+    color: #5D5C61;
+}
+
+.pagamento p {
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+
+
+
+
+</style>
+
+{% if status == 'pending' %}
+    <div class="container pagamento">
+        <h1>Pagamento Pendente</h1>
+        <p>Seu pagamento está sendo processado. Você receberá uma atualização assim que o processo for concluído.</p>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'detalhes_pedido' pedido_id %}"><button class="site-btn">Ver Pedidos</button></a>
+        {% else %}
+            <a href="{% url 'home' %}"><button class="site-btn">Voltar para a Página Inicial</button></a>
+        {% endif %}
+    </div>
+{% elif status == 'failure' %}
+<div class="container pagamento">
+        <h1>Falha no pagamento</h1>
+
+        <p>Infelizmente seu pagomento falhou, entre em contato com o mercadopago, operadora de cartão ou com nosso atendimento por whatsapp</p>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'detalhes_pedido' pedido_id %}"><button class="site-btn">Ver Pedidos</button></a>
+        {% else %}
+            <a href="{% url 'home' %}"><button class="site-btn">Voltar para a Página Inicial</button></a>
+        {% endif %}
+    </div>
+{% elif status == 'sucess' %}
+    <div class="container pagamento">
+        <h1>Pagamento Aprovado</h1>
+        <p>Seu pagamento foi aprovado. Enviaremos o rastreio para seu email o mais breve possivel.</p>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'detalhes_pedido' pedido_id %}"><button class="site-btn">Ver Pedidos</button></a>
+        {% else %}
+            <a href="{% url 'home' %}"><button class="site-btn">Voltar para a Página Inicial</button></a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

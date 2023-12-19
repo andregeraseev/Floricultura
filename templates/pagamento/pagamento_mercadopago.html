@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento - Mercado Pago</title>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Pagamento</h1>
+        <p>Seu pedido está pronto para ser finalizado. Por favor, clique no botão abaixo para realizar o pagamento.</p>
+         <div id="wallet_container"></div>
+    </div>
+
+<script>
+const mp = new MercadoPago('TEST-10ca222c-d0da-4724-b743-4b756d5ca89e');
+const bricksBuilder = mp.bricks();
+
+
+mp.bricks().create("wallet", "wallet_container", {
+   initialization: {
+       preferenceId: "<PREFERENCE_ID>",
+   },
+});
+
+</script>
+</body>
+</html>
