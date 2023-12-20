@@ -289,6 +289,7 @@ class AddressRegistrationView(View):
 
 
 class UserDashboard(View):
+    @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
         form_celular = UserPhoneForm(instance=request.user.profile)
         pedidos = request.user.profile.orders.all()

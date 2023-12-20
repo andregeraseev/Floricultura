@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+
+
+<style>
+.payment-container {
+    background-color: #ffffff;
+    padding: 3%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-option {
+    margin-bottom: 20px;
+}
+
+.payment-option h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.pix-key {
+    font-weight: bold;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+form {
+    margin-top: 20px;
+}
+
+.payment-form {
+    margin-bottom: 20px;
+}
+
+.payment-form h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.checkout__order {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.checkout__order h4 {
+    color: #333333;
+    margin-bottom: 15px;
+}
+
+.checkout__order__products,
+.checkout__order__subtotal,
+.checkout__order__shipping,
+.checkout__order__total {
+    margin-bottom: 10px;
+}
+
+.checkout__order__products span,
+.checkout__order__subtotal span,
+.checkout__order__shipping span,
+.checkout__order__total span {
+    float: right;
+}
+
+</style>
+<div class="container">
+    <div class="row">
+    <div class="payment-container col-6">
+        <h2>Opções de Pagamento:</h2><br>
+        {% if order.payment_method == 'pix' %}
+        <!-- Pix -->
+        <div class="payment-option">
+            <h3>Pagamento via Pix</h3>
+            <p>Copie e cole a chave Pix abaixo para realizar o pagamento:</p>
+            <p class="pix-key">xflavors@gmail.com</p>
+        </div>
+        {% else %}
+        <!-- Depósito Bancário -->
+        <div class="payment-option">
+            <h3>Depósito Bancário</h3>
+            <p>Realize um depósito usando as seguintes informações bancárias:</p>
+            <ul>
+                <li>Banco: Nu Pagamentos S.A. (260)</li>
+                <li>Agência: 0001</li>
+                <li>Conta Corrente: 27794362-7</li>
+                <li>CNPJ: 30059334/0001-00</li>
+                <li>Titular da conta: André Moreira Geraseev</li>
+            </ul>
+        </div>
+        {% endif %}
+        <!-- Upload do Comprovante -->
+        <!-- upload_comprovante.html -->
+    <div class="payment-form">
+        <h3>Envie o comprovante de pagamento</h3>
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <button class="site-btn" type="submit">Enviar Comprovante</button>
+        </form>
+    </div>
+    </div>
+
+        <div class="col-lg-4 col-md-6">
+                        <div class="checkout__order">
+                            <h4>PEDIDO {{order.id}}</h4>
+                            <div class="checkout__order__products">Produtos <span>Total</span></div>
+                            <ul>
+                                {% for item in order.items.all %}
+                                <li>{{item.quantity}} - {{item.product.name}} <span>{{item.total_price_or_promotional_price}}</span>
+                                </li>
+                                {% endfor %}
+
+                            </ul>
+                            <div class="checkout__order__subtotal">Subtotal <span id="valor_subtotal">R${{order.subtotal}}</span></div>
+                            <div class="checkout__order__shipping">Frete <span id="valor_frete">R${{order.valor_frete|default:0.00}}</span></div>
+                            <div class="checkout__order__total">Total <span id="valor_total">R${{order.total}}</span></div>
+
+
+                        </div>
+                    </div>
+
+
+    </div>
+</div>
+{% endblock %}
+

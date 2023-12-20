@@ -93,7 +93,6 @@
                         {% crispy form %}
                     </form>
                     {% endif %}
-                    <h5>Endereço de envio</h5>
                     {% if adress %}
                     {% if user.is_authenticated %}
                     <div id="endereco_de_envio" class="my-3">
@@ -116,7 +115,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="form_type" value="order">
                             {% crispy form_pedido %}
-                            <button type="submit" id="order-submit" class="site-btn">Salvar</button>
+
                         </div>
                     </form>
                     {% endif %}
@@ -138,7 +137,9 @@
                         <div class="checkout__order__shipping">Frete <span id="valor_frete">R${{cart.frete|default:0.00}}</span></div>
                         <div class="checkout__order__total">Total <span id="valor_total">R${{cart.total}}</span></div>
 
-                        <button type="submit" class="site-btn">FINALIZAR PEDIDO</button>
+                        {% if adress %}
+                        <button type="submit" id="order-submit" class="site-btn" form="order-form">FINALIZAR PEDIDO</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

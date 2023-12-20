@@ -1,4 +1,6 @@
+
 from django import forms
+from .models import Order
 from pedidos.correios import cotacao_frete_correios
 
 
@@ -15,7 +17,7 @@ class CheckoutForm(forms.Form):
         label='Observações'
     )
     metodo_pagamento = forms.ChoiceField(
-        choices=[('cartao_credito', 'Cartão de Crédito'), ('boleto', 'Boleto'), ('paypal', 'PayPal')],
+        choices=[('mercado_pago', 'Mercado Pago'), ('pix', 'PIX'), ('deposito', 'Depósito Bancário')],
         label='Método de Pagamento'
     )
 
@@ -62,4 +64,48 @@ class CheckoutForm(forms.Form):
             self.fields['email_pedido'].initial = user.email
         if 'frete_choices' in kwargs:
             self.fields['frete'].choices = kwargs.pop('frete_choices')
+
+
+from django.core.exceptions import ValidationError
+
+
+
+
+
+
+
+class ComprovanteForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(ComprovanteForm, self).__init__(*args, **kwargs)
+        self.fields['comprovante'].required = True
+
+    class Meta:
+        model = Order
+        fields = ['comprovante']
+
+
+
+    def clean_comprovante(self):
+        comprovante = self.cleaned_data.get('comprovante')
+
+        # Verificar se o comprovante foi fornecido
+        if not comprovante:
+            print('comprovante nao enviado',comprovante)
+            raise ValidationError('O upload do comprovante é obrigatório.')
+        else:
+            # Verificar se o arquivo possui o atributo 'content_type'
+            if hasattr(comprovante, 'content_type'):
+                # Validar o tipo de arquivo
+                if not comprovante.content_type in ['image/jpeg', 'image/png']:
+                    raise ValidationError('Apenas imagens JPEG e PNG são aceitas.')
+
+                # Validar o tamanho do arquivo (2MB)
+                if comprovante.size > 1024 * 1024 * 2:  # 2MB limit
+                    raise ValidationError('O tamanho do arquivo não pode exceder 2MB.')
+            else:
+                # Se o arquivo não tiver 'content_type', é inválido
+                raise ValidationError('Arquivo inválido.')
+
+            return comprovante
 

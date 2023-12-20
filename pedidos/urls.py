@@ -2,9 +2,10 @@
 
 from django.urls import path
 from .views import PedidoView, orders_view, orders_list, marcar_como_pago,visualizar_pedido,imprimir_selecionados,\
-    mudar_endereco, toggle_producao,adicionar_rastreio,MercadoPagoView
+    mudar_endereco, toggle_producao,adicionar_rastreio,MercadoPagoView,PagamentoDepositoPixView
 from mercadopago_pagamento.mercadopago_webhook import MercadoPagoWebhook
 
+pagamento_deposito_pix = PagamentoDepositoPixView.as_view()
 mercadopago_webhook = MercadoPagoWebhook.as_view()
 pedido_view = PedidoView.as_view()
 mercadopago = MercadoPagoView.as_view()
@@ -27,6 +28,7 @@ urlpatterns = [
     path('pagamento/mercadopago/failure', mercadopago, name='pagamento_mercadopago'),
     path('pagamento/mercadopago/pending', mercadopago, name='pagamento_mercadopago'),
     path('pagamento/mercadopago_webhook', mercadopago_webhook, name='mercadopago_webhook'),
+    path('pagamento/pagamento_deposito_pix/<int:order_id>', pagamento_deposito_pix, name='pagamento_deposito_pix'),
 
 
 

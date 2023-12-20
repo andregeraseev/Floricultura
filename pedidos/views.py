@@ -14,7 +14,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.http import JsonResponse
 from usuario.forms import AddressForm
 from usuario.models import Address
-from pedidos.forms import CheckoutForm
+from pedidos.forms import CheckoutForm, ComprovanteForm
 from pedidos.correios import cotacao_frete_correios
 from mercadopago_pagamento.mercadopago_preference import cria_preferencia
 logger = logging.getLogger('pedido')
@@ -196,7 +196,6 @@ class PedidoView(View):
                 order.tipo_frete = codigo_servico
                 order.valor_frete = float(valor_frete)
                 order.email_pedido = form_pedido.cleaned_data['email_pedido']
-                print('email_pedido', order.email_pedido)
                 order.payment_method = form_pedido.cleaned_data['metodo_pagamento']
                 order.observacoes = form_pedido.cleaned_data['observacoes']
                 order.destinatario = adress.destinatario
@@ -214,13 +213,18 @@ class PedidoView(View):
                     mercadopagolink = cria_preferencia(request, order.total, order.id)
                     order.mercadopago_link = mercadopagolink
                     order.save()
-                    return redirect(mercadopagolink)
                 except Exception as e:
                     print('erros cria_preferencia', e)
                 try:
                     enviar_email_pedido_criado(order.email_pedido, order.destinatario, order)
                 except Exception as e:
                     print('erros enviar_email_pedido_criado', e)
+
+                if order.payment_method == 'mercado_pago':
+                    return redirect(mercadopagolink)
+                else :
+                    return redirect('pagamento_deposito_pix', order.id)
+
             except Exception as e:
                 print('erros', e)
                 return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})
@@ -550,5 +554,57 @@ class MercadoPagoView(View):
 
     def post(self, request):
         return render(request, 'pagamento/mercadopago.html')
+
+
+class PagamentoDepositoPixView(View):
+    def get(self,  request, order_id):
+        print("order_id",order_id)
+        form = ComprovanteForm()
+        order = Order.objects.get(id=order_id)
+
+        # Verificar se o pedido pertence ao usuário logado ou à sessão do usuário
+        if request.user.is_authenticated:
+            print('autorizado')
+            if order.user_profile != request.user.profile:
+                print('redirecionando')
+                return redirect('home')
+        else:
+            print('nao autorizado')
+            session_key = request.session.session_key
+            session = Session.objects.get(session_key=session_key)
+            print('sessao',session)
+            print('order session',order.session)
+            if order.session != session:
+                print('redirecionando')
+
+                return redirect('home')
+
+        print("user eh igual", order.user_profile == request.user)
+        print("sessao eh igual", order.session == request.session.session_key)
+        return render(request, 'pagamento/pagamento_deposito_pix.html', {'order': order, 'form': form} )
+
+
+    def post(self,request, order_id):
+        print("Post")
+        order = get_object_or_404(Order, id=order_id)
+
+        form = ComprovanteForm(request.POST, request.FILES, instance=order)
+        if form.is_valid():
+            form.save()
+            # Redirecione para uma página de sucesso ou de detalhes do pedido
+            return redirect('home')
+
+        else:
+
+            return render(request, 'pagamento/pagamento_deposito_pix.html', {'order': order, 'form': form})
+
+
+
+
+
+
+
+
+
 
 

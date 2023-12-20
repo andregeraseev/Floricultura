@@ -142,7 +142,11 @@ class ShoppingCart(models.Model):
         return sum(item.quantity for item in self.items.all())
 
     def finalize_purchase(self):
-        order = Order.objects.create(user_profile=self.user_profile)
+
+        if self.session:
+            order = Order.objects.create(user_profile=self.user_profile, session=self.session, session_key=self.session.session_key)
+        else:
+            order = Order.objects.create(user_profile=self.user_profile, session=None, session_key=None)
         for item in self.items.all():
             try:
                 item.product.add_sells(item.quantity)

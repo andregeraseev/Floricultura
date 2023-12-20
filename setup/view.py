@@ -215,14 +215,23 @@ def search(request):
     if query:
         products = Product.objects.filter(name__icontains=query)
         products_with_stock = product_with_stock_order(products)
-        products = products_with_stock
+        products_limitado = products_with_stock[:5]
+        produtos_restantes = products_with_stock.count() - products_limitado.count()
+        if produtos_restantes > 0:
+            produtos_restantes = f' +{produtos_restantes} produtos'
+        else:
+            produtos_restantes = ''
+
+
         if products.exists():
             # HTML da barra de pesquisa
             search_bar_html = render_to_string('partials/search_bar.html', {'products_count': products.count()}, request)
             # HTML dos produtos
-            products_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products])
+            products_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products_limitado])
+
+            search_bar_footer_html = render_to_string('partials/search_bar_footer.html', {'products_count': produtos_restantes}, request)
             # Combina os dois
-            rendered_html = search_bar_html + products_html
+            rendered_html = search_bar_html + products_html + search_bar_footer_html
         else:
             # Mensagem quando não há produtos encontrados
             rendered_html = '<div class="no-results">Sem resultados</div>'

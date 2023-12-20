@@ -1,0 +1,25 @@
+<style>
+.search-results-bar-footer {
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.search-results-bar-footer .site-btn {
+    border: 1px solid;
+}
+
+.results-text{
+    font-size: 0.8rem;
+    }
+    </style>
+<div class="search-results-bar-footer">
+
+    <button class="site-btn" type="submit" form="form_search">Ver Reultado </button>
+    <span class="results-text"> {{ products_count }}</span>
+</div>

@@ -3,12 +3,12 @@
 {% load static %}
 <style>
 .search-results {
-    border-start-end-radius: 2%;
+
     border-end-end-radius: 2%;
     border: 1px solid #dc3545;
     border-top: none;
     position: absolute;
-    width: 95%;
+    width: 96%;
     background: white;
     max-height: 300px;
     overflow-y: auto;
@@ -26,13 +26,13 @@
 /* Estiliza a trilha da barra de rolagem */
 .search-results::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1); /* Cor de fundo da trilha */
-  border-radius: 10px; /* Borda arredondada */
+  border-end-end-radius: 6px;
 }
 
 /* Estiliza o manipulador da barra de rolagem */
 .search-results::-webkit-scrollbar-thumb {
   background-color: #dc3545; /* Cor do manipulador */
-  border-radius: 10px; /* Borda arredondada */
+  border-end-end-radius: 6px;
   border: 3px solid rgba(0, 0, 0, 0); /* Cor da borda do manipulador */
 }
 
@@ -157,7 +157,11 @@ margin-bottom: 10px
                 <div class="col-lg-6 col-md-6">
                     <div class="header__top__left">
                         <ul>
-                            <li><i class="fa fa-envelope"></i> {{footer_info.email}}</li>
+                            {% if user.is_authenticated %}
+                            <li><i class="fa fa-user"></i> {{user.profile}}</li>
+                            {% else %}
+                            <li> Se cadastre para ter todas vantagens da loja</li>
+                            {% endif %}
                             <li>{{ footer_info.mensagem }}</li>
                         </ul>
                     </div>
@@ -211,15 +215,6 @@ margin-bottom: 10px
         <div class="header__cart__price">R$<span id="cart-total-humberger">{{cart.total}}</span></div>
     </div>
     <div class="humberger__menu__widget">
-<!--        <div class="header__top__right__language">-->
-<!--            <img src="{% static 'img/language.png' %}" alt="">-->
-<!--            <div>English</div>-->
-<!--            <span class="arrow_carrot-down"></span>-->
-<!--            <ul>-->
-<!--                <li><a href="#">Spanis</a></li>-->
-<!--                <li><a href="#">English</a></li>-->
-<!--            </ul>-->
-<!--        </div>-->
         <div class="header__top__right__auth">
             {% if user.is_authenticated %}
             <a href="{% url 'dashboard' %}"><i class="fa fa-dashboard"></i> Painel do cliente </a>
@@ -275,71 +270,64 @@ margin-bottom: 10px
 
         <div class="container-flex">
             <div class="row  header__align">
+                <!--LOGO-->
                 <div class="col-7 col-md-4 col-lg-3 col-sm-7">
                     <div class="header__logo">
                         <a href="{%url 'home'%}"><img src="{{site_setting.logo.url}}" alt=""></a>
                     </div>
                 </div>
+                <!--FIM DO LOGO-->
 
-<!--                SEARCH-->
+                <!--SEARCH-->
 
-                <div class="col-12 order-last order-lg-0  col-lg-7">
-    <form class="js-search-container js-search-form search-container" action="/search_view/" method="get">
-        <div class="form-group m-0">
-            <input id="searchInput" class="form-control search-input" autocomplete="off" type="search"
-                   name="q" placeholder="O que você está buscando?"
-                   aria-label="O que você está buscando?">
-        </div>
-    </form>
-    <div id="searchResults" class="search-results">
+                <div class="col-12 order-last order-lg-0 mt-2 col-lg-7">
+                    {% include 'partials/search.html' %}
+                    </form>
+                </div>
+                <!--FIM DO SEARCH-->
 
-        <div class="search-results-bar">
-
-</div>
-
-    </div>
-</div>
-
-
-
-
-
-
-
-
+                <!--CART FAVORTIO ECT-->
                 <div class="col-4 col-md-7 col-lg-2 col-sm-3 ">
-                <div class="header__cart">
-                    <ul>
-                        {% if user.is_authenticated %}
-                        <span class="nav_parece mr-3">
+                    <div class="header__cart">
+                        <ul>
+                            {% if user.is_authenticated %}
+                            <span class="nav_parece mr-3">
                         <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> </a>
                         </li>
                         <li><a href="{% url 'dashboard' %}"><i class="fa fa-dashboard"></i></a>
                         </li>
                         </span>
-                        <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter">{{favorite_counter}}</span></a></li>
-                        {% else %}
-                        <span class="nav_parece mr-3">
+                            <li><a href="{% url 'favoritos' %}"><i class="fa fa-heart"></i> <span id="favorite-counter">
+                            {{favorite_counter}}</span></a></li>
+                            {% else %}
+                            <span class="nav_parece mr-3">
                         <li><a href="{% url 'cadastro' %}"><i class="fa fa-user-plus"></i> </a></li>
                         <li><a href="{% url 'login' %}"><i class="fa fa-sign-in"></i> </a></li>
                             </span>
+                            {% endif %}
+                            <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span
+                                    id="cart-counter">
+                            {{cart.count_items_quantity}}</span></a></li>
+                        </ul>
+                        {% if site_setting.valor_carrinho_navegador %}
+                        <div class="header__cart__price">R$<span id="cart-total">{{cart.total}}</span></div>
                         {% endif %}
-                        <li><a><i class="fa fa-shopping-bag" onclick="toggleCartSidebar()"></i> <span id="cart-counter">{{cart.count_items_quantity}}</span></a></li>
-                    </ul>
-                    {% if site_setting.valor_carrinho_navegador %}
-                    <div class="header__cart__price">R$<span id="cart-total">{{cart.total}}</span></div>
-                    {% endif %}
+
+                    </div>
 
                 </div>
+                <!--FIM DO CART FAVORTIO ECT-->
+
+                <!--                HUMBERGER BUTTOM-->
+                <div class="humberger__open ">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <!--FIM HUMBERGER BUTTOM-->
 
             </div>
-                <div class="humberger__open ">
-            <i class="fa fa-bars"></i>
-        </div>
-        </div>
 
-    </div>
-</header>
+        </div>
+    </header>
 
 
 
@@ -469,60 +457,4 @@ margin-bottom: 10px
         navbar.style.padding = '0.5rem 1rem';
     }
 };
-</script>
-
-<script>
-<!--SEARCH-->
-function displayResults(html) {
-    const resultsContainer = document.getElementById('searchResults');
-    resultsContainer.innerHTML = html;
-    resultsContainer.style.display = 'block'; // Mostrar resultados
-}
-
-document.getElementById('searchInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value;
-
-    if (searchTerm.length > 2) {
-        fetch(`/search/?q=${encodeURIComponent(searchTerm)}`)
-            .then(response => response.json())
-            .then(data => {
-                displayResults(data.html);
-                selecionavariavel()
-            })
-            .catch(error => console.error('Error:', error));
-    } else {
-        resultsContainer.style.display = 'none'; // Ocultar resultados
-    }
-});
-
-
- function selecionavariavel() {
-    console.log('loaded');
-    var variationSelects = document.querySelectorAll('.search .product-options');
-   console.log('Variation Selects:', variationSelects);
-    console.log('Variation Selects:', variationSelects);
-    variationSelects.forEach(function(select) {
-        var parentDiv = select.closest('.search .product__item');
-        console.log('Parent Div:', parentDiv);
-        selecionarPrimeiraOpcao(parentDiv);
-    });
-};
-
-document.addEventListener('click', function(event) {
-    const searchInput = document.getElementById('searchInput');
-    const resultsContainer = document.getElementById('searchResults');
-    const isClickInsideSearch = searchInput.contains(event.target) || resultsContainer.contains(event.target);
-
-    if (!isClickInsideSearch) {
-        resultsContainer.style.display = 'none';
-    }
-});
-
-
-    function closeSearchBar() {
-    document.getElementById('searchResults').style.display = 'none';
-}
-
-
-
 </script>

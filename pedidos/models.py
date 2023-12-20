@@ -23,7 +23,8 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # Informações de envio
-    session = models.ForeignKey(Session, related_name='session_order_addresses', on_delete=models.CASCADE, null=True,
+    session_key = models.CharField(max_length=40, blank=True, null=True)
+    session = models.ForeignKey(Session, related_name='session_order_addresses', on_delete=models.SET_NULL, null=True,
                                 blank=True)
     destinatario = models.CharField(max_length=50)
     email_pedido = models.EmailField(max_length=254, blank=True, null=True)
@@ -41,6 +42,7 @@ class Order(models.Model):
     rastreio = models.CharField(max_length=50, blank=True, null=True)
 
     # Informações de pagamento
+    comprovante = models.ImageField(upload_to='comprovantes/', null=True, blank=True)
     mercadopago_link = models.CharField(max_length=200, blank=True, null=True)
     mercado_pago_id = models.CharField(max_length=100, blank=True, null=True)
     taxa_gateway = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

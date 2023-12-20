@@ -1,0 +1,71 @@
+<form id="form_search"class="js-search-container js-search-form search-container" action="/search_view/" method="get">
+    <div class="form-group m-0">
+        <input id="searchInput" class="form-control search-input" autocomplete="off" type="search"
+               name="q" placeholder="O que você está buscando?"
+               aria-label="O que você está buscando?">
+    </div>
+
+</form>
+<div id="searchResults" class="search-results">
+
+        <div class="search-results-bar"></div>
+
+    </div>
+
+
+
+<script>
+<!--SEARCH-->
+function displayResults(html) {
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = html;
+    resultsContainer.style.display = 'block'; // Mostrar resultados
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value;
+
+    if (searchTerm.length > 2) {
+        fetch(`/search/?q=${encodeURIComponent(searchTerm)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data.html);
+                selecionavariavel()
+            })
+            .catch(error => console.error('Error:', error));
+    } else {
+        resultsContainer.style.display = 'none'; // Ocultar resultados
+    }
+});
+
+
+ function selecionavariavel() {
+    console.log('loaded');
+    var variationSelects = document.querySelectorAll('.search .product-options');
+   console.log('Variation Selects:', variationSelects);
+    console.log('Variation Selects:', variationSelects);
+    variationSelects.forEach(function(select) {
+        var parentDiv = select.closest('.search .product__item');
+        console.log('Parent Div:', parentDiv);
+        selecionarPrimeiraOpcao(parentDiv);
+    });
+};
+
+document.addEventListener('click', function(event) {
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('searchResults');
+    const isClickInsideSearch = searchInput.contains(event.target) || resultsContainer.contains(event.target);
+
+    if (!isClickInsideSearch) {
+        resultsContainer.style.display = 'none';
+    }
+});
+
+
+    function closeSearchBar() {
+    document.getElementById('searchResults').style.display = 'none';
+}
+
+
+
+</script>
