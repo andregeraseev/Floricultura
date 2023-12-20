@@ -41,10 +41,14 @@ class Order(models.Model):
     rastreio = models.CharField(max_length=50, blank=True, null=True)
 
     # Informações de pagamento
+    mercadopago_link = models.CharField(max_length=200, blank=True, null=True)
+    mercado_pago_id = models.CharField(max_length=100, blank=True, null=True)
+    taxa_gateway = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     payment_method = models.CharField(max_length=100)  # Ex: 'credit_card', 'paypal', 'bank_transfer'
     payment_status = models.CharField(max_length=100, default='pending')  # Ex: 'pending', 'completed', 'failed'
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total =models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     # Cupom de desconto
     coupon = models.CharField(max_length=100)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

@@ -212,7 +212,8 @@ class PedidoView(View):
                 order.adicionar_valores()
                 try:
                     mercadopagolink = cria_preferencia(request, order.total, order.id)
-                    print('mercadopagolink', mercadopagolink)
+                    order.mercadopago_link = mercadopagolink
+                    order.save()
                     return redirect(mercadopagolink)
                 except Exception as e:
                     print('erros cria_preferencia', e)
@@ -427,10 +428,15 @@ def serialize_orders(orders):
         'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' onclick='alterarProducaoStatus({ order.id })' {'checked' if order.em_producao else ''}>",
         'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button> <span class='badge bg-warning' data-action='observacao' title='observação:\n {order.observacoes}'>Obs</span> " if  order.observacoes  else f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
                               'user_details': {
+
         'cpf': order.user_profile.cpf if order.user_profile else '',
         'phone_number': order.user_profile.phone_number if order.user_profile else '',
         'whatsapp': order.user_profile.whatsapp if order.user_profile else '',
-        'email': order.user_profile.user.email if order.user_profile else '',}} for order in orders
+        'email': order.user_profile.user.email if order.user_profile else '',
+        'link_mercado_pago': order.mercadopago_link if order.mercadopago_link else '',
+        'taxa_gateway': order.taxa_gateway if order.taxa_gateway else '0.00',}
+        } for order in orders
+
     ]
 
 def orders_list(request):

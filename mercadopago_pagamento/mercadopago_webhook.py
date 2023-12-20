@@ -44,26 +44,23 @@ class MercadoPagoWebhook(APIView):
             sdk = mercadopago.SDK(MERCADOPAGOTOLKEN)
 
             resource_type = data['type']
-            print('resource_type', resource_type)
             resource_id = data['data']['id']
 
-            print('resource_id',resource_id)
+
             if resource_type == 'payment':
                 try:
                     result = sdk.payment().get(resource_id)
 
                 except Exception as e:
                     logger.error(f"Erro ao buscar o pagamento: {e}")
-                    return JsonResponse({'error': 'Erro ao buscar o pagamento'}, status=500)
+                    return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 if result['status'] == 200:
                     payment = result['response']
-                    print('payment', payment)
                     logger.info(f"Referencias MercadoPago: {payment}")
 
                     # Obtenha a external_reference da resposta
                     external_reference = payment.get("external_reference")
-                    print("ID do pedido", external_reference)
 
                     # Atualize o status do Pedido com base no status do pagamento
                     payment_status = payment['status']
@@ -86,24 +83,23 @@ class MercadoPagoWebhook(APIView):
                         }
 
                         pedido.status = status_map.get(payment_status, 'Status não reconhecido')
+                        pedido.taxa_gateway = payment['amounts']['original']
                         pedido.save()
                         if payment_status == 'approved' and pedido.status != 'Pago':
                             pedido.status = 'Pago'
                             # enviar_pedido_para_tiny(pedido)
                             print(external_reference, 'PEDIDO, STATUS MUDADO PARA PAGO')
 
-
-
                         else:
-                            print(f"Status de pagamento não reconhecido: {payment_status}")
+                            logger.warning(f"Status de pagamento não reconhecido: {payment_status}")
 
                     except Order.DoesNotExist:
                         logger.error(f"Pedido não encontrado: {external_reference}")
-                        return HttpResponse(status=404)
+                        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             elif resource_type == 'plan':
                 plan = sdk.plan().get(resource_id)
-                print('plan',plan)
+
             elif resource_type == 'subscription':
                 subscription = sdk.subscription().get(resource_id)
 
