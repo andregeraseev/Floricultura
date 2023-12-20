@@ -83,7 +83,7 @@ class MercadoPagoWebhook(APIView):
                         }
 
                         pedido.status = status_map.get(payment_status, 'Status não reconhecido')
-                        pedido.taxa_gateway = payment['amounts']['original']
+                        pedido.taxa_gateway = payment['charges_details'][0].get('amounts', {}).get('original', 0)
                         pedido.save()
                         if payment_status == 'approved' and pedido.status != 'Pago':
                             pedido.status = 'Pago'
