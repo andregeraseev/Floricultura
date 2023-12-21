@@ -81,7 +81,7 @@ class ComprovanteForm(forms.ModelForm):
         self.fields['comprovante'].required = True
         self.fields['comprovante'].label = 'Comprovante de Pagamento'
         self.fields['comprovante'].help_text = 'Envie o comprovante de pagamento para que possamos identificar seu pedido.'
-        self.fields['comprovante'].widget.attrs.update({'capture': 'environment'})
+
     class Meta:
         model = Order
         fields = ['comprovante']
