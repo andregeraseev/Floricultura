@@ -547,6 +547,7 @@ function addToCart(formElement) {
       console.log('Item adicionado ao carrinho.');
       updateCartSidebar(data.cart_sidebar);
       updateCartCounter(data.cart_counter_items)
+      updateCartPage(data);
       showSuccessAlert(data.message);
     } else {
       console.error('Falha ao adicionar ao carrinho:', data.error);
@@ -580,6 +581,9 @@ function removeItem(itemId) {
       updateCartSidebar(data.cart_sidebar);
       updateCartCounter(data.cart_counter_items);
       showSuccessAlert(data.message);
+      updateCartPage(data);
+      // Atualiza a tabela do carrinho se ela existir
+
     } else {
       console.error('Falha ao remover ao carrinho:', data.error);
       showErrorAlert(data.error);
@@ -589,6 +593,14 @@ function removeItem(itemId) {
     console.error('Erro na requisição:', error);
   });
 }
+
+//Atuliza a pagina do carrinho
+function updateCartPage(data) {
+if(document.querySelector('.shoping__cart__table')) {
+        document.querySelector('.shoping__cart__table').innerHTML = data.cart_partial;
+      }
+}
+
 
 // Atualizar o contador do carrinho
 function updateCartCounter(data) {
@@ -653,6 +665,7 @@ function updateItemQuantity(itemId, change) {
         if (data.success) {
             updateCartSidebar(data.cart_sidebar);
             updateCartCounter(data.cart_counter_items);
+            updateCartPage(data);
             showSuccessAlert(data.message);
         } else {
             showErrorAlert(data.error);

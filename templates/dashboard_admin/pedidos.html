@@ -52,6 +52,26 @@
     background-color: #007BAC;
 }
 
+#comprovanteModal .modal-dialog {
+    max-width: 40%;
+    margin: 30px auto;
+}
+
+#comprovanteModal .modal-content {
+    overflow: hidden;
+}
+
+#comprovanteModal .modal-body {
+    max-height: 80vh; /* 80% da altura da viewport */
+    overflow-y: auto; /* Barra de rolagem vertical se necessário */
+}
+
+#comprovanteImage {
+    width: 100%;
+    height: auto;
+}
+
+
 </style>
     <link href="{% static 'css/style.css' %}?v={{ site_settings.version_number }}" rel="stylesheet" type="text/css">
 
@@ -105,6 +125,24 @@
         </thead>
     </table>
 
+<div class="modal fade" id="comprovanteModal" tabindex="-1" role="dialog" aria-labelledby="comprovanteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="comprovanteModalLabel">Comprovante de Pagamento</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="" id="comprovanteImage" class="img-fluid" alt="Comprovante">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
     <!-- Incluir jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -119,6 +157,7 @@
      var table = $('#ordersTable').DataTable({
         "processing": true,
         "serverSide": true,
+        "order": [[0, "desc"]],
 
         "ajax": function(data, callback, settings) {
             console.log("Parâmetros enviados:", data);
@@ -388,5 +427,13 @@ function getCookie(name) {
     return cookieValue;
 }
 
+</script>
+
+<!--ABRIR COMPROVANTE-->
+<script>
+function abrir_modal(comprovanteUrl) {
+    document.getElementById('comprovanteImage').src = comprovanteUrl;
+    $('#comprovanteModal').modal('show');
+}
 </script>
 {% endblock %}

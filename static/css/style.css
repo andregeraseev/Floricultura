@@ -3998,7 +3998,7 @@ display: none;
 		text-align: center;
 		border: 1px solid #1c1c1c;
 		cursor: pointer;
-		position: absolute;
+		position: relative;
 		right: 15px;
 		top: 25%;
 	}
@@ -4174,6 +4174,9 @@ display: none;
     background-color: var(--mobili-header-secundario-color);
 }
 
+    .header__align .col-7{
+    max-width: 55%;}
+
 	.header__cart {
 		text-align: center;
 		padding: 0px 0 0px;
@@ -4212,6 +4215,10 @@ display: none;
     font-size: 0.8rem;
 
 }
+
+
+
+
 
 }
 

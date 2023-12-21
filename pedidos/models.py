@@ -98,6 +98,11 @@ class Order(models.Model):
         verbose_name = _('order')
         verbose_name_plural = _('orders')
 
+    property
+    def str_comprovante(self):
+        if self.comprovante:
+            return str(self.comprovante.url)
+        return ''
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)

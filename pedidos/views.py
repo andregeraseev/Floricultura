@@ -401,6 +401,7 @@ def apply_ordering(query, request):
     order_column = int(request.GET.get('order_colum', 0))
     order_direction = request.GET.get('order_dir', 'desc')
     order_column_name = COLUMN_NAMES[order_column]
+
     if order_direction == 'desc':
         order_column_name = f'-{order_column_name}'
 
@@ -422,13 +423,13 @@ def serialize_orders(orders):
     return [
         {
         'id':  order.id,
-        'check':   f"<input type='checkbox' class='order-checkbox' data-id='{order.id}'> <a href='visualizar_pedido/{order.id}' class='fa fa-eye' ><a>",
+        'check':   f"""<input type='checkbox' class='order-checkbox' data-id='{order.id}'> <a href='visualizar_pedido/{order.id}' class='fa fa-eye' ><a>  <i class='fa fa-money-bill' onclick='abrir_modal("{order.comprovante.url}")' style='cursor: pointer;'></i>""" if order.comprovante else f"<input type='checkbox' class='order-checkbox' data-id='{order.id}'> <a href='visualizar_pedido/{order.id}' class='fa fa-eye' ><a>",
         'full_name': order.user_profile.user.get_full_name() if order.user_profile and order.user_profile.user.get_full_name() else order.destinatario,
         'status': order.status,
         'final_total': order.final_total,
         'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),  # Formato de data
         'rastreio': order.rastreio or f"<input type='text' class='tracking-input' placeholder='Código de rastreio' id='tracking-{ order.id }'><button class='track-btn' data-id='{order.id}'onclick='adicionarCodigoRastreio({ order.id }, this)'>Adicionar</button>",
-        'actions':  f"<button class='pay-btn' data-id='{order.id}'>PAGAR</button>  " if order.status == 'pending' or order.status == 'aguardando pagamento'else f"<button class='btn-success' data-id='{order.id}' disabled>PAGO</button>  ",
+        'actions':  f"<button class='pay-btn' data-id='{order.id}'>PAGAR</button>  " if order.status == 'pending' or order.status == 'Pagamento em Analize'else f"<button class='btn-success' data-id='{order.id}' disabled>PAGO</button>  ",
         'producao': f"<input type='checkbox' class='producao-checkbox' data-id='{order.id}' onclick='alterarProducaoStatus({ order.id })' {'checked' if order.em_producao else ''}>",
         'details': f"<button class='details-btn' data-id='{order.id}'>Detalhes</button> <span class='badge bg-warning' data-action='observacao' title='observação:\n {order.observacoes}'>Obs</span> " if  order.observacoes  else f"<button class='details-btn' data-id='{order.id}'>Detalhes</button>",
                               'user_details': {
@@ -591,6 +592,8 @@ class PagamentoDepositoPixView(View):
         form = ComprovanteForm(request.POST, request.FILES, instance=order)
         if form.is_valid():
             form.save()
+            order.status = 'Pagamento em Analize'
+            order.save()
             # Redirecione para uma página de sucesso ou de detalhes do pedido
             return redirect('home')
 

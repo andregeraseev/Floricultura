@@ -8,12 +8,12 @@
         <img src="{{ produto.images.first.image.url }}" alt="{{ product.name }}" class="{% if not produto.has_stock %} div-em-preto-e-branco {% endif %}" />
         <!-- Adicione aqui outras marcações para descontos, favoritos, etc. -->
      </div>
-    <div class="product__details__text col-6 row">
-    <div class="col-12">
+    <div class="product__details__text col-8 row">
+    <div class="col-12 text-center">
     <h6>{{produto.name}}</h6>
     </div>
-    <div class="product__details__price col-12">{% if produto.variations.all %}
-        <div class="product__item__price" id="variation-price-{{ product.id }}">
+    <div class="product__details__price col-12 ">{% if produto.variations.all %}
+        <div class="product__item__price text-center" id="variation-price-{{ product.id }}">
             R${{produto.variations.first.promotional_price | default:produto.variations.first.price }}
             {%if produto.variations.first.promotional_price%}
             <span>R${{ produto.variations.first.price }}</span>
@@ -21,7 +21,7 @@
         </div>
         <!-- Inicialize com o preço da primeira variação -->
         {% else %}
-        <div class="product__item__price">R${{ produto.promotional_price | default:produto.price }}
+        <div class="product__item__price text-center">R${{ produto.promotional_price | default:produto.price }}
             {%if produto.promotional_price%}<span>R${{ produto.price }}</span>{%endif%}
         </div>
         {% endif %}
