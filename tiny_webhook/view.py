@@ -18,6 +18,15 @@ class ProductWebhook(APIView):
         if serializer.is_valid():
             serializer.save()
             print(serializer.data)
-            return HttpResponse(serializer.data, content_type="application/json", status=200 )
+            # Construir a resposta esperada pelo Tiny
+            print("MAPEAMENTO",serializer.data['idMapeamento'],serializer.data['skuMapeamento'])
+            mapeamentos = {
+                "idMapeamento": serializer.data['idMapeamento'],
+                "skuMapeamento": serializer.data['skuMapeamento'],
+
+            }
+
+
+            return HttpResponse(json.dumps(mapeamentos), content_type="application/json", status=200)
         else:
             return HttpResponse(serializer.errors, content_type="application/json", status=400)

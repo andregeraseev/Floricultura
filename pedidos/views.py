@@ -114,7 +114,10 @@ class PedidoView(View):
     """
 
     def get(self, request, *args, **kwargs):
+        request.GET.get('cart')
+        cart = get_user_cart(request)
         kwargs = {'user': request.user}
+        kwargs['cart_id'] = cart.id
         form = AddressForm(initial=kwargs)
 
         if request.user.is_authenticated:
@@ -125,14 +128,14 @@ class PedidoView(View):
 
 
         if adress:
-            print(get_user_cart(request))
-            print('adress',adress.cep)
+            # print(get_user_cart(request))
+            # print('adress',adress.cep)
             try:
                 response = cotacao_frete_correios(request, get_user_cart(request), adress)
             except Exception as e:
                 print('erros cotacao_frete_correios', e)
                 return render(request, 'checkout.html', {'form': form, 'adress': adress, })
-            print('response',response)
+            # print('response',response)
             data = json.loads(response.content.decode('utf-8'))
             frete_choices = [
                 (f"{item['codigo']}-{item['valor']}", f"{item['codigo']} - {item['valor']} - {item['prazodeentrega']}") for

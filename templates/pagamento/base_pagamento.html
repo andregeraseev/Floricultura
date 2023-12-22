@@ -38,25 +38,7 @@
     <div class="loader"></div>
 </div>
 <div class="main-content"></div>
-<div id="cart-sidebar-container">
 
-    {% include 'partials/_cart_sidebar.html' %}
-</div>
-{%if site_setting.navbar_fixo %}
-
-{% include 'partials/_navegador_fixedtop.html' %}
-
-{%elif site_setting.menu_lateral %}
-{% include 'partials/_humberger.html' %}
-{% include 'partials/_header.html' %}
-{% include 'partials/_alldepartments.html' %}
-
-{% else %}
-{% include 'partials/_humberger.html' %}
-{% include 'partials/_header.html' %}
-{% include 'partials/_navegator.html' %}
-
-{% endif %}
 {% include 'partials/_whatsapp.html' %}
 
 
@@ -66,79 +48,25 @@
 
     <div id="alert-box" class="alert-box" style="display:none;"></div>
 
+
+<style>
+    .logo-div {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+}
+</style>
+<div class="cointainer">
+
+        <div class="col-md-12 logo-div" style=" display: flex; justify-content: space-around">
+            <a href="{% url 'home' %}"><img src="{{site_setting.logo.url}}" alt=""></a>
+        </div>
+
+</div>
     {% block content %}
     <!-- Conteúdo principal da página -->
     {% endblock %}
 
-    <footer>
-       <!-- Footer Section Begin -->
-<footer class="footer spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="footer__about">
-                    <div class="footer__about__logo">
-                        <a href="./index.html"><img src="{{site_setting.logo.url}}" alt=""></a>
-                    </div>
-                    <ul>
-                        <li>Endereço: {{ footer_info.address }}</li>
-                        <li>Telefone: {{ footer_info.phone }}</li>
-                        <li>Email: {{ footer_info.email }}</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
-                <div class="footer__widget">
-                    <h6>Links</h6>
-                    {% for category, links in footer_links.items %}
-                    <ul>
-                        {% for link in links %}
-                        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-                        {% endfor %}
-                    </ul>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-12">
-                <div class="footer__widget">
-                    <h6>Instreva-se na nossa Newsletter</h6>
-                    <p>Adicione seu email para receber nossas promoções.</p>
-                    <form action="#">
-                        <input type="text" placeholder="Colocoque seu email">
-                        <button type="submit" class="site-btn">Inscreva-se</button>
-                    </form>
-                    <div class="footer__widget__social">
-                        {% for link in social_links %}
-                        <a href="{{ link.url }}"><i class="fa {{ link.icon_class }}"></i></a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="footer__copyright">
-                    <div class="footer__copyright__text">
-                        <p>
-                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                            Copyright &copy;<script>document.write(new Date().getFullYear());</script>
-                            All rights reserved | Esse site foi feito com <i class="fa fa-heart"
-                                                                                aria-hidden="true"></i> by <a
-                                href="https://colorlib.com" target="_blank">Andre Geraseev</a>
-                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                        </p>
-                    </div>
-                    <div class="footer__copyright__payment"><img src="{% static 'img/payment-item.png' %}" alt=""></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
-<!-- Footer Section End -->
-
-
-    </footer>
 
     <!-- JS Comum Aqui -->
     <!-- Js Plugins -->

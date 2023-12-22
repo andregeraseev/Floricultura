@@ -1,10 +1,12 @@
-
+from carrinho.models import ShoppingCart
 from django import forms
 from .models import Order
 from pedidos.correios import cotacao_frete_correios
 
 
 class CheckoutForm(forms.Form):
+    cart_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     email_pedido = forms.EmailField(
         label='E-mail para envio do pedido',
         required=True,
@@ -28,6 +30,46 @@ class CheckoutForm(forms.Form):
 
     )
     coupon = forms.CharField(required=False, label='Cupom de Desconto')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        print('cleaned_data',self.cleaned_data)
+        cart_id = self.cleaned_data.get('cart_id')
+        print('cart_id',cart_id)
+        if cart_id:
+            try:
+                cart = ShoppingCart.objects.get(id=cart_id)
+                if cart.items.count() == 0:
+                    raise forms.ValidationError("Seu carrinho está vazio. Adicione itens antes de prosseguir.")
+            except ShoppingCart.DoesNotExist:
+                raise forms.ValidationError("Carrinho inválido.")
+
+
+            try:
+                cart = ShoppingCart.objects.get(id=cart_id)
+                if cart.items.count() == 0:
+                    raise forms.ValidationError("Seu carrinho está vazio. Adicione itens antes de prosseguir.")
+                for item in cart.items.all():
+                    print('item',item)
+                    if item.variation:
+
+                        variation = item.variation
+                        print('variation',variation)
+                    else:
+                        variation = None
+                    try:
+                        cart.verifica_estoque_suficiente_para_adicao(item.product, variation, 0)
+                    except Exception as e:
+                        erro = str(e)
+                        self.add_error(None, erro)
+
+            except ShoppingCart.DoesNotExist:
+                raise forms.ValidationError("Carrinho inválido.")
+
+        else:
+            raise forms.ValidationError("ID do carrinho não fornecido.")
+
+        return cleaned_data
 
     def clean_frete(self):
         print('clean_frete')

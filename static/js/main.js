@@ -16,7 +16,7 @@
     --------------------*/
     $(window).on('load', function () {
         $(".loader").fadeOut();
-        $("#preloder").delay(200).fadeOut("slow");
+        $("#preloder").delay(100).fadeOut("slow");
         var fixedTopElement = document.querySelector('.fixed-top'); // Seletor do elemento fixo
   var mainContent = document.querySelector('.main-content'); // Seletor do elemento principal
 
@@ -723,4 +723,13 @@ function showErrorAlert(message) {
   showAlert(message, 'error');
 }
 
+// Função carregar
+function toggleCarregando(show) {
+    const carregando = document.getElementById('carregando');
+    if (show) {
+        carregando.style.display = 'block';
+    } else {
+        carregando.style.display = 'none';
+    }
+}
 

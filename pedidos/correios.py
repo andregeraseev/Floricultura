@@ -55,14 +55,14 @@ def cotacao_frete_correios(request, cart, adress):
     Returns:
     - JsonResponse com os resultados da cotação ou uma mensagem de erro.
     """
-    print('cotacao_frete_correios')
+    # print('cotacao_frete_correios')
 
-    print('cart')
+    # print('cart')
     itens = cart.items.all()
 
     # Calcula o peso dos itens do carrinho caso o peso for menor que 300 gramas o total peso fica igual a 300 gramas
     total_peso = 0
-    print('itens')
+    # print('itens')
     try:
         for item in itens:
             peso = item.product.pesoBruto
@@ -74,7 +74,7 @@ def cotacao_frete_correios(request, cart, adress):
         total_peso = 0.3
 
     # Definindo as informações para a consulta
-    print('adress')
+    # print('adress')
     cep_origem = '12233400'
     cep_destino = adress.cep
     if cep_destino is None:
@@ -85,7 +85,7 @@ def cotacao_frete_correios(request, cart, adress):
 
     # Aqui estamos definindo o token para autorização
     Token_Api_Correios = obter_novo_token_correios_com_cartao()
-    print(Token_Api_Correios)
+    # print(Token_Api_Correios)
     token = Token_Api_Correios
     headers = {
         'Authorization': f'Bearer {token}',

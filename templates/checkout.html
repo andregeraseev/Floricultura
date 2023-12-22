@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "pagamento/base_pagamento.html" %}
 
 {% load static %}
 {% load crispy_forms_tags %}
@@ -113,7 +113,17 @@
                     <form id="order-form" method="post">
                         <div class="form-group">
                             {% csrf_token %}
+
+                            {% if 'estoque' in form_pedido.errors.as_text %}
+                            <div class="error-messages">
+
+                                <a href="{% url 'cart' %}" class="btn btn-danger">Ajustar Itens no Carrinho</a>
+                            </div>
+                            {% endif %}
+
+                            <input type="hidden" name="cart_id" value="{{ cart.id }}">
                             <input type="hidden" name="form_type" value="order">
+
                             {% crispy form_pedido %}
 
                         </div>
@@ -149,6 +159,12 @@
 <!-- Checkout Section End -->
 
 
+<!--Carregando-->
+<script>
+document.getElementById('order-form').addEventListener('submit', function() {
+    toggleCarregando(true); // Mostra o loader
+});
+</script>
 <script>
 <!--    VALIDA CEP -->
     function createErrorSpan(message,cep,cepField,errorContainerId,errorContainer) {
@@ -360,6 +376,7 @@ function atualizarTotal() {
 <script>
 
 function atualizarEnderecoPrimario() {
+
     var enderecoId = document.getElementById('endereco_de_envio_select').value;
     console.log(enderecoId);
     fetch('/pedidos/mudar_endereco', {
@@ -374,14 +391,17 @@ function atualizarEnderecoPrimario() {
     .then(data => {
         if (data.success) {
             console.log('Endereço atualizado com sucesso.');
+            toggleCarregando(false)
             showSuccessAlert(data.message);
             // Código adicional em caso de sucesso (opcional)
         } else {
+
             console.error('Erro ao atualizar o endereço:', data.error);
             // Código adicional em caso de erro (opcional)
         }
     })
     .catch(error => {
+
         console.error('Erro:', error);
     });
 }

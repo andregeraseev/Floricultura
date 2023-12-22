@@ -84,13 +84,13 @@ class ShoppingCart(models.Model):
             quantidade_no_carrinho = self.items.filter(variation=variation).aggregate(
                 total_quantidade=models.Sum('quantity'))['total_quantidade'] or 0
             if variation.estoqueAtual < quantidade_adicional + quantidade_no_carrinho:
-                raise Exception('Estoque insuficiente para o produto')
+                raise Exception(f' ESTOQUE INSUFICIENTE: {variation} - estoque do produto é de {variation.estoqueAtual}un,  unidades no carrinho {quantidade_no_carrinho}, ')
 
         else:
             quantidade_no_carrinho = self.items.filter(product=product).aggregate(total_quantidade=models.Sum('quantity'))[
                                          'total_quantidade'] or 0
             if product.estoqueAtual < quantidade_adicional + quantidade_no_carrinho:
-                raise Exception('Estoque insuficiente para o produto')
+                raise Exception(f'ESTOQUE INSUFICIENTE: {product} - - estoque do produto é de {product.estoqueAtual}un,  unidades no carrinho {quantidade_no_carrinho},')
 
     def add_item(self, product, quantity=1, variant_id=None):
 
