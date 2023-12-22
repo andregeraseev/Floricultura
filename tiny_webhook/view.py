@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from products.models import Product
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from tiny_webhook.serializers import ProductSerializer
@@ -17,14 +18,25 @@ class ProductWebhook(APIView):
         serializer = ProductSerializer(data=payload['dados'], context={'request': payload['dados']})
         if serializer.is_valid():
             serializer.save()
-            print(serializer.data)
-            # Construir a resposta esperada pelo Tiny
-            print("MAPEAMENTO",serializer.data['idMapeamento'],serializer.data['skuMapeamento'])
-            mapeamentos = {
-                "idMapeamento": serializer.data['idMapeamento'],
-                "skuMapeamento": serializer.data['skuMapeamento'],
 
-            }
+            idmapeamento = serializer.data['idMapeamento']
+            skumapeamento = serializer.data['skuMapeamento']
+            mapeamentos = [
+                {"idMapeamento": idmapeamento,
+                "skuMapeamento": skumapeamento,}
+            ]
+
+
+            produto = Product.objects.get(skuMapeamento=skumapeamento)
+
+            for variation in produto.variations.all():
+                skumapeamento = variation.skuMapeamento
+                idmapeamento = variation.idMapeamento
+                mapeamentos.append({"idMapeamento": idmapeamento,
+                "skuMapeamento": skumapeamento,})
+
+            print("MAPEAMENTO",serializer.data['idMapeamento'],serializer.data['skuMapeamento'])
+
 
 
             return HttpResponse(json.dumps(mapeamentos), content_type="application/json", status=200)
