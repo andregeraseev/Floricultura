@@ -33,8 +33,8 @@ urlpatterns = [
     path('pedidos/', include('pedidos.urls')),
     path('favoritos/', include('favoritos.urls')),
 
-    path('search/', search, name='search'),
-    path('search_view/', search_view, name='search'),
+    path('search/<str:q>', search, name='search'),
+    path('search_view/<str:q>', search_view, name='search'),
 
     # path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('department/<slug:slug>/', department_detail, name='department_detail'),
@@ -46,6 +46,7 @@ urlpatterns = [
 
     # WEBHOOKS
     path('webhook/tiny_produtos/' , ProductWebhook.as_view(), name='product-webhook'),
+    # path('webhook/envia_pedido/' , envia_pedido, name='envia_pedido'),
 
 #     TRACKING BANNER
     path('track-click/<int:banner_id>/<str:banner_type>/', track_click, name='track-click'),

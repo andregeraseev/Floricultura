@@ -12,6 +12,7 @@ import logging
 from django.views import View
 from django.shortcuts import render, redirect,get_object_or_404
 from django.http import JsonResponse
+from tiny_webhook.envia_pedido import enviar_pedido_para_tiny
 from usuario.forms import AddressForm
 from usuario.models import Address
 from pedidos.forms import CheckoutForm, ComprovanteForm
@@ -442,7 +443,8 @@ def serialize_orders(orders):
         'whatsapp': order.user_profile.whatsapp if order.user_profile else '',
         'email': order.user_profile.user.email if order.user_profile else '',
         'link_mercado_pago': order.mercadopago_link if order.mercadopago_link else '',
-        'taxa_gateway': order.taxa_gateway if order.taxa_gateway else '0.00',}
+        'taxa_gateway': order.taxa_gateway if order.taxa_gateway else '0.00',
+        'id_tiny': order.id_tiny if order.id_tiny else '',}
         } for order in orders
 
     ]
@@ -480,16 +482,20 @@ def orders_list(request):
 
 
 def marcar_como_pago(request):
-    print('marcar como pago')
     order_id = request.POST.get('order_id')
-    print(order_id)
     try:
         order = Order.objects.get(id=order_id)
-        print(order)
         order.status = 'pago'
         order.save()
-        print(order.status)
-        return JsonResponse({'success': True, 'message': 'Pedido atualizado com sucesso'})
+        message = f'Pedido {order} marcado como pago, Porem não foi enviado para o tiny'
+        try:
+            messagem, id_tiny = enviar_pedido_para_tiny(order)
+            order.id_tiny = id_tiny
+            order.save()
+        except Exception as e:
+            print('erros enviar_pedido_para_tiny', e)
+
+        return JsonResponse({'success': True, 'message': messagem})
     except Order.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
     except Exception as e:
@@ -552,7 +558,7 @@ class MercadoPagoView(View):
         print(request.GET)
         status = request.GET.get('status')
         external_reference = request.GET.get('external_reference')
-
+        print(external_reference)
         return render(request, 'pagamento/mercado_pago_retorno.html', {'status': status, 'pedido_id':external_reference })
 
 

@@ -4,17 +4,24 @@
 <style>
 .search-results {
 
-    border-end-end-radius: 2%;
-    border: 1px solid #dc3545;
+
     border-top: none;
     position: absolute;
     width: 96%;
     background: white;
     max-height: 300px;
-    overflow-y: auto;
     z-index: 1;
     align-content: center;
     display: none; /* Inicialmente oculto */
+}
+.products-search {
+
+    border: 1px solid #dc3545;
+    align-content: center;
+    background: white;
+    max-height: 300px;
+    overflow-y: auto;
+
 }
 
 .search .options-container {
@@ -28,25 +35,25 @@
 }
 
 /* Estiliza a barra de rolagem (scrollbar) */
-.search-results::-webkit-scrollbar {
+.products-search::-webkit-scrollbar {
   width: 10px; /* Largura da barra de rolagem */
 }
 
 /* Estiliza a trilha da barra de rolagem */
-.search-results::-webkit-scrollbar-track {
+.products-search::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1); /* Cor de fundo da trilha */
-  border-end-end-radius: 6px;
+
 }
 
 /* Estiliza o manipulador da barra de rolagem */
-.search-results::-webkit-scrollbar-thumb {
+.products-search::-webkit-scrollbar-thumb {
   background-color: #dc3545; /* Cor do manipulador */
-  border-end-end-radius: 6px;
+
   border: 3px solid rgba(0, 0, 0, 0); /* Cor da borda do manipulador */
 }
 
 /* Estiliza o manipulador da barra de rolagem em hover */
-.search-results::-webkit-scrollbar-thumb:hover {
+.products-search::-webkit-scrollbar-thumb:hover {
   background-color: #a1232d; /* Cor do manipulador no hover */
 }
 

@@ -57,6 +57,9 @@ class Order(models.Model):
     observacoes = models.TextField(blank=True, null=True)
     em_producao = models.BooleanField(default=False)
 
+    # tiny
+    id_tiny = models.CharField(max_length=100, blank=True, null=True)
+
     def adicionar_valores(self):
         self.subtotal = sum([item.total_price_or_promotional_price for item in self.items.all()])
         self.total = self.final_total

@@ -58,6 +58,22 @@
             <a href="{% url 'home' %}"><button class="site-btn">Voltar para a Página Inicial</button></a>
         {% endif %}
     </div>
+{% elif status == 'null' %}
+<div class="container pagamento">
+    <h1>Pagamento Não Concluído</h1>
+    <p class="my-5">O seu pedido não foi concluído no Mercado Pago.<br>
+        {% if request.user.is_authenticated %}
+        Você pode acessar a área de cliente para tentar refazer o pagamento do seu pedido.<br>
+        {%else%}
+        Se você ainda não tem cadastro na loja, um link de pagamento foi enviado para o email {{order.email}}}.
+        {%endif%}
+        Em caso de dúvidas ou necessidade de assistência, entre em contato com o atendimento da Xflavors pelo botão lateral do WhatsApp.</p>
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'detalhes_pedido' pedido_id %}"><button class="site-btn">Ver Pedidos</button></a>
+    {% else %}
+        <a href="{% url 'home' %}"><button class="site-btn">Voltar para a Página Inicial</button></a>
+    {% endif %}
+</div>
 {% elif status == 'sucess' %}
     <div class="container pagamento">
         <h1>Pagamento Aprovado</h1>

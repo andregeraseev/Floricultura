@@ -23,13 +23,13 @@ def cria_preferencia(request,total, id_pedido):
                 {'currency_id': 'BRL', 'description': 'pagamento XF', 'title': 'Produto XF',
                  'quantity': 1, 'unit_price': float(total)}],
             "back_urls": {
-                "success": f"{SITE}/pedidos/mercadopago/success",
-                "failure": f"{SITE}/pedidos/mercadopago/failure",
+                "success": f"{SITE}pedidos/mercadopago/success",
+                "failure": f"{SITE}pedidos/mercadopago/failure",
                 "pending": f"{SITE}pedidos/mercadopago/pending"
             },
             'redirect_urls': {
-                "success": f"{SITE}/pedidos/mercadopago/success",
-                "failure": f"{SITE}/pedidos/mercadopago/failure",
+                "success": f"{SITE}pedidos/mercadopago/success",
+                "failure": f"{SITE}pedidos/mercadopago/failure",
                 "pending": f"{SITE}pedidos/mercadopago/pending"
             },
             "external_reference": id_pedido,

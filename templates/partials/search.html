@@ -26,7 +26,7 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
     const searchTerm = e.target.value;
 
     if (searchTerm.length > 2) {
-        fetch(`/search/?q=${encodeURIComponent(searchTerm)}`)
+        fetch(`/search/${encodeURIComponent(searchTerm)}`)
             .then(response => response.json())
             .then(data => {
                 displayResults(data.html);
@@ -66,6 +66,11 @@ document.addEventListener('click', function(event) {
     document.getElementById('searchResults').style.display = 'none';
 }
 
+document.getElementById('form_search').addEventListener('submit', function(event) {
+    event.preventDefault(); // Previne a submissão padrão do formulário
+    const searchTerm = document.getElementById('searchInput').value;
+    window.location = `/search_view/${encodeURIComponent(searchTerm)}`; // Redireciona para a URL formatada
+});
 
 
 </script>

@@ -164,6 +164,29 @@
 document.getElementById('order-form').addEventListener('submit', function() {
     toggleCarregando(true); // Mostra o loader
 });
+
+
+const carregandoTexto = document.getElementById('carregandoTexto');
+const mensagens = [
+    'Verificando produtos',
+    'Verificando endereço',
+    'Confirmando dados',
+    // Adicione mais mensagens conforme necessário
+];
+
+let mensagemAtual = 0;
+let pontoAtual = 0;
+
+function atualizarCarregamento() {
+    carregandoTexto.textContent = mensagens[mensagemAtual] + '.'.repeat(pontoAtual + 1);
+    pontoAtual = (pontoAtual + 1) % 3;
+    if (pontoAtual === 0) {
+        mensagemAtual = (mensagemAtual + 1) % mensagens.length;
+    }
+}
+
+setInterval(atualizarCarregamento, 1000); // Atualiza a cada segundo
+
 </script>
 <script>
 <!--    VALIDA CEP -->
@@ -289,7 +312,7 @@ document.getElementById('order-form').addEventListener('submit', function() {
         console.log('Success:', data);
         // Redirecionar o usuário ou mostrar uma mensagem, dependendo da resposta
         if (data.success) {
-            window.location.href = '{% url "checkout"%}';  // Substitua com o URL correto
+            window.location.href = '{% url "checkout"%}';
         } else {
             alert('Falha no login: ' + data.message);
         }

@@ -128,10 +128,10 @@ def home(request):
     return render(request, 'index2.html', context)
 
 
-def search_view (request):
+def search_view (request, q):
     print(request.GET)
     sort_by = request.GET.get('sort', 'default')
-    query = request.GET.get('q', '')
+    query = q
     if query:
 
 
@@ -139,7 +139,7 @@ def search_view (request):
         products_with_stock = product_with_stock_order(base_query)
         base_query= products_with_stock
         # Usar anotação para adicionar o menor preço da variação ou o preço do produto se não houver variação
-
+        print('base_query',base_query)
         annotated_query = base_query.annotate(
             lowest_price=Coalesce(
                 # Primeiro, tenta pegar o menor preço promocional das variações, se a promoção estiver ativa
@@ -186,7 +186,7 @@ def search_view (request):
             products = base_query.filter(name__icontains=query)
 
         # Paginação
-
+        print('products',products)
         page = request.GET.get('page', 1)
         paginator = Paginator(products, 12)  # 10 produtos por página
         total_products = products.count
@@ -210,10 +210,14 @@ def search_view (request):
 
 
 
-def search(request):
-    query = request.GET.get('q', '')
+def search(request, q):
+
+    query = q
+    print('query',query)
+    print('q',q)
     if query:
         products = Product.objects.filter(name__icontains=query)
+        print('products',products)
         products_with_stock = product_with_stock_order(products)
         products_limitado = products_with_stock[:5]
         produtos_restantes = products_with_stock.count() - products_limitado.count()
@@ -228,7 +232,7 @@ def search(request):
             search_bar_html = render_to_string('partials/search_bar.html', {'products_count': products.count()}, request)
             # HTML dos produtos
             products_html = ''.join([render_to_string('partials/_product_item_search.html', {'produto': product}, request) for product in products_limitado])
-
+            products_html = f"<div class='products-search'>{products_html}</div>"
             search_bar_footer_html = render_to_string('partials/search_bar_footer.html', {'products_count': produtos_restantes}, request)
             # Combina os dois
             rendered_html = search_bar_html + products_html + search_bar_footer_html

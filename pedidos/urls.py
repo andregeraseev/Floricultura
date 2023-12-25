@@ -24,9 +24,15 @@ urlpatterns = [
 
     # PAGAMENTOS
     path('pagamento/mercadopago/', mercadopago, name='pagamento_mercadopago'),
+    path('mercadopago/failure', mercadopago, name='pagamento_mercadopago'),
     path('mercadopago/pending', mercadopago, name='pagamento_mercadopago'),
+    path('mercadopago/success', mercadopago, name='pagamento_mercadopago'),
+
+
     path('pagamento/mercadopago/failure', mercadopago, name='pagamento_mercadopago'),
     path('pagamento/mercadopago/pending', mercadopago, name='pagamento_mercadopago'),
+    path('pagamento/mercadopago/success', mercadopago, name='pagamento_mercadopago'),
+
     path('pagamento/mercadopago_webhook', mercadopago_webhook, name='mercadopago_webhook'),
     path('pagamento/pagamento_deposito_pix/<int:order_id>', pagamento_deposito_pix, name='pagamento_deposito_pix'),
 
