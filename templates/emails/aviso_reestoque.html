@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmação de Pedido - xflavors.net</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: white; color: black; }
+        .email-container { max-width: 600px; margin: auto; background-color: #f8f8f8; border: 1px solid #dddddd; }
+        .header { background-color: red; padding: 10px; text-align: center; }
+        .header img { max-width: 200px; }
+        .content { margin: 20px; padding: 20px; }
+        .footer { text-align: center; padding: 10px; font-size: 0.8em; color: #666; }
+        .product-image { width: 30px; height: auto; }
+
+
+
+
+        @media only screen and (max-width: 600px) {
+            .email-container { width: 100%; }
+            .header img { max-width: 150px; }
+            .content, .footer { padding: 10px; }
+            .product-image { width: 20px; }
+            th, td { padding: 5px; font-size: 14px; }
+            .total-line, .frete-details { font-size: 14px; }
+            .totals-table th, .totals-table td { padding: 5px; font-size: 14px; }
+            .grand-total { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="https://www.xflavors.net/static/imagens/xflavors_logo_comprido.3433ff189a79.png" alt="xflavors.net">
+        </div>
+        <div class="content">
+            <h2>Aviso: {{ product.name }} está em estoque novamente!</h2>
+            <p>Olá {{ nome }}, o produto {{ product.name }} está em nossas prateleiras novamente. Aproveite para fazer a compra enquanto ele está disponível.</p>
+
+            <!-- Card do Produto -->
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="display: inline-block; max-width: 300px; border: 1px solid #ddd; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3>{{ product.name }}</h3>
+                    <a href="{{site}}{{ product.get_absolute_url }}">
+                        <img src="{{site}}{{ product.images.first.image.url }}" alt="{{ product.name }}" style="max-width: 100%; height: auto; border-radius: 5px;">
+                    </a>
+                    <p>{{ product.description }}</p>
+                    <a href="{{site}}{{ product.get_absolute_url }}" style="display: inline-block; background-color: red; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Ver Produto</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            &copy; 2023 xflavors.net | Todos os direitos reservados
+        </div>
+    </div>
+</body>
+</html>

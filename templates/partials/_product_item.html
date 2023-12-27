@@ -5,9 +5,10 @@
 </style>
 <div class="product__item" id="product-item">
 
-    <div class="product__item__pic set-bg {% if not product.has_stock %} div-em-preto-e-branco {%endif%}" data-setbg="{{product.images.first.image.url}}">
-        <a href="{{product.get_absolute_url}}"><div class="align-center" style="width: 100%;height: 90%;"></div></a>
+    <div class="product__item__pic">
         {% if  product.has_stock %}
+        <a href="{{product.get_absolute_url}}"><div class="align-center set-bg"  data-setbg="{{product.images.first.image.url}}" style="width: 100%;height: 90%; "></div></a>
+
         {% if product.variations.all %}
         {% if product.variations.first.promotional_price %}
         <div class="product__discount__percent" id="discont-percent-{{product.id}}">
@@ -21,9 +22,33 @@
         </div>
         {% endif %}
         {% else %}
+         <a href="{{product.get_absolute_url}}"><div class="align-center set-bg   {% if not product.has_stock %} div-em-preto-e-branco {%endif%}"  data-setbg="{{product.images.first.image.url}}" style="width: 100%;height: 90%; "></div></a>
+
         <div class="product__no_stock">
             Esgotado
         </div>
+        {% if request.user.is_authenticated %}
+
+        {% if product.id in request.user.profile.lista_avise %}
+        {% if product.lista_avise %}
+            <button class="product__no_stock__button btn btn-warning align-center col-12">Aguardando reestoque</button>
+        {% else %}
+            <button class="product__no_stock__button btn btn-warning align-center col-12" onclick="avise({{product.id}})"
+                    data-product-id="{{ product.id }}">Avisar Reestoque</button>
+        {% endif %}
+            {% else %}
+            <button class="product__no_stock__button btn btn-warning align-center col-12" onclick="avise({{product.id}})"
+                    data-product-id="{{ product.id }}">Avisar Reestoque</button>
+        {% endif %}
+
+
+
+            {% else %}
+            <button class="product__no_stock__button btn btn-warning align-center col-12" onclick="avise({{product.id}})"
+                    data-product-id="{{ product.id }}">Avisar Reestoque</button>
+            {% endif %}
+
+
         {% endif %}
 
         <ul class="product__item__pic__hover">

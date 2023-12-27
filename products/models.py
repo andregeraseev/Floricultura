@@ -167,6 +167,16 @@ class Product(models.Model):
                 return True
             return False
 
+    @property
+    def lista_avise(self):
+        from avise.models import AviseItem
+        lista_avise = AviseItem.objects.filter(product=self)
+        product_in_avise = [product.product_id for product in lista_avise]
+        if self.id in product_in_avise:
+            return True
+        else:
+            return False
+
 class ProductVariation(models.Model):
     product = models.ForeignKey(Product, related_name='variations', on_delete=models.CASCADE)
     idMapeamento = models.CharField(max_length=255)
@@ -347,6 +357,8 @@ class Category(models.Model):
     @property
     def get_absolute_url(self):
         return reverse('category_detail', kwargs={'slug': self.slug})
+
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)

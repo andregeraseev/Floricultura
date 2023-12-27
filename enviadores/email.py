@@ -1,7 +1,8 @@
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from setup.settings import EMAIL_HOST_USER
+from setup.settings import EMAIL_HOST_USER, SITE
+
 
 
 
@@ -24,7 +25,7 @@ def enviar_email_confirmacao(destinatario, nome):
     # send_mail(assunto, html_content, remetente, [destinatario], fail_silently=False)
 
 
-def enviar_email_pedido_criado(destinatario, nome, order ,site='https://andregeraseev.pythonanywhere.com/'):
+def enviar_email_pedido_criado(destinatario, nome, order ,site=SITE):
     print('enviado email')
     assunto = 'Pedido Criado'
     mensagem = f'Olá {nome}, \n\nSeu pedido #{order} foi criado com sucesso.'
@@ -50,7 +51,7 @@ def enviar_email_rastreio(destinatario, nome, pedido_id, rastreio):
     # send_mail(assunto, mensagem, remetente, [destinatario], fail_silently=False)
 
     # Define o conteúdo do e-mail em HTML e texto puro
-    html_content = render_to_string('emails/rastreio.html', {'nome': nome,'pedido_id':pedido_id, "rastreio": rastreio })
+    html_content = render_to_string('emails/rastreio.html', {'nome': nome,'pedido_id':pedido_id, "rastreio": rastreio, 'site':SITE })
     text_content = strip_tags(html_content)
 
     # Cria a mensagem
@@ -62,16 +63,16 @@ def enviar_email_rastreio(destinatario, nome, pedido_id, rastreio):
 
 
 
-def send_email_aviso_estoque(aviso):
+def send_email_aviso_estoque(avise):
 
-    assunto = 'Produto em estoque'
-    message = f"Olá {aviso.cliente.username}, o produto {aviso.produto.name} está em estoque novamente!"
+    assunto = f"Olá {avise.user_profile.user.first_name}, o produto {avise.product.name} está em estoque novamente!"
+    message = f"Olá {avise.user_profile.user.first_name}, o produto {avise.product.name} está em estoque novamente!"
     remetente = EMAIL_HOST_USER
-    destinatario = [aviso.cliente.email]
+    destinatario = [avise.user_profile.user.email]
     # send_mail(subject, message, from_email, recipient_list)
 
     html_content = render_to_string('emails/aviso_reestoque.html',
-                                    {'aviso': aviso,})
+                                    {'product': avise.product, 'nome': avise.user_profile.user.first_name, 'site':SITE})
     text_content = strip_tags(html_content)
 
     # Cria a mensagem
@@ -90,7 +91,7 @@ def enviar_email_rastreio(destinatario, nome, pedido, rastreio):
     # send_mail(assunto, mensagem, remetente, [destinatario], fail_silently=False)
 
     # Define o conteúdo do e-mail em HTML e texto puro
-    html_content = render_to_string('emails/rastreio.html', {'nome': nome,'order':pedido, "rastreio": rastreio })
+    html_content = render_to_string('emails/rastreio.html', {'nome': nome,'order':pedido, "rastreio": rastreio, 'site':SITE })
     text_content = strip_tags(html_content)
 
     # Cria a mensagem

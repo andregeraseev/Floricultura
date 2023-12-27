@@ -69,6 +69,9 @@ class UserProfile(models.Model):
     def get_wishlist_items(self):
         return self.wishlist.all()
 
+    def get_avise_items(self):
+        return self.avise.filter(email_sent=False)
+
     # Em UserProfile
     def clear_wishlist(self):
         self.wishlist.all().delete()
@@ -103,6 +106,15 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = _('user profile')
         verbose_name_plural = _('user profiles')
+
+
+    def lista_avise(self):
+        print('lista avise USUARIO')
+        lista_avise = self.avise.filter(email_sent=False)
+
+        lista_avise = [avise.product.id for avise in lista_avise]
+        print('lista',lista_avise)
+        return lista_avise
 
 class Address(models.Model):
     ESTADOS_BRASIL = [

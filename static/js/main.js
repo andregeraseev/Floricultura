@@ -443,6 +443,76 @@ function closeOptions(button) {
     openOptions = null; // Reseta a referência quando o botão de fechar é clicado
 }
 
+
+//Avise
+function avise(product_id) {
+    var produto_id = product_id;
+    console.log(produto_id);
+    fetch('/avise/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // Obter o token CSRF
+        },
+        body: JSON.stringify({ 'produto_id': produto_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+    if(data.success) {
+
+      showSuccessAlert(data.message);
+
+    } else {
+
+      showErrorAlert(data.error);
+    }
+  })
+
+    .catch(error => {
+        console.error('Erro:', error);
+
+    }
+    );
+}
+
+
+//delete avise
+function delete_avise(button) {
+    var produto_id = button.getAttribute('data-product-id');
+    console.log(produto_id);
+    fetch('/avise/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // Obter o token CSRF
+        },
+        body: JSON.stringify({ 'produto_id': produto_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+    if(data.success) {
+      showSuccessAlert(data.message);
+      showSuccessAlert(data.message);
+      $('#avise-container').load(location.href + ' #avise-container');
+
+    } else {
+
+      showErrorAlert(data.error);
+    }
+  })
+
+    .catch(error => {
+        console.error('Erro:', error);
+
+    }
+    );
+}
+
+
+
+
 //FAVORITE
 function favorite(button) {
     var produto_id = button.getAttribute('data-product-id');

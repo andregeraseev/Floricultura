@@ -32,6 +32,7 @@ urlpatterns = [
     path('produtos/', include('products.urls')),
     path('pedidos/', include('pedidos.urls')),
     path('favoritos/', include('favoritos.urls')),
+    path('avise/', include('avise.urls')),
 
     path('search/<str:q>', search, name='search'),
     path('search_view/<str:q>', search_view, name='search'),

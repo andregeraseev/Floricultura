@@ -36,34 +36,7 @@
                     <!--                    AVISOS        -->
 
                     <div class="tab-pane fade" id="reestoque">
-                        <div class="card-body card-aviso">
-                            <p class="card-text">Lista de produtos para serem notificados ao ter reestoque </p>
-                            <ul class="list-group" style="max-height: 400px; overflow-y: auto;">
-                                <div id="avisos-container">
-                                    {% for aviso in avisos %}
-                                    <li class="list-group-item d-flex" style="font-size: 14px">
-                                        <div class="col-4 col-lg-2">
-                                            <img src="{{ aviso.produto.image.url }}" alt="{{ aviso.produto.name }}"
-                                                 width="100" height="100">
-                                        </div>
-                                        <div class="col-6 col-lg-7 mx-2">
-                                            <strong>Produto:</strong><br> {{ aviso.produto.name }}<br>
-                                            <strong>Data do aviso:</strong><br> {{ aviso.created_at|date:"d/m/Y" }}
-                                        </div>
-                                        <div class="col-1  ms-auto">
-
-                                            <button id="excluir-aviso" data-aviso-id="{{ aviso.id }}"
-                                                    class="btn btn-danger mt-3">x
-                                            </button>
-                                        </div>
-                                    </li>
-                                    {% empty %}
-                                    <li class="list-group-item">Nenhum aviso cadastrado.</li>
-                                    {% endfor %}
-                                </div>
-                            </ul>
-
-                        </div>
+                        {% include 'usuario/avise_cliente.html' %}
                     </div>
 
 

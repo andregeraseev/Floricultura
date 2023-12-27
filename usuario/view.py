@@ -296,6 +296,7 @@ class UserDashboard(View):
         context = {'cliente': request.user.profile,
                    'enderecos': request.user.profile.addresses.all(),
                    'produtos_favoritos': request.user.profile.get_wishlist_items(),
+                   'produtos_avise': request.user.profile.get_avise_items(),
                    'form_celular': form_celular,
                    'pedidos': pedidos
                    }
