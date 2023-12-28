@@ -4277,6 +4277,12 @@ display: none;
 
 }
 
+.product__item__pic {
+	height: 250px;
+	position: relative;
+	overflow: hidden;
+}
+
 
 
 
@@ -4364,4 +4370,9 @@ display: none;
 .header__cart .header__cart__price {
   font-size: 0.8rem;
   }
+  .product__item__pic {
+	height: 200px;
+	position: relative;
+	overflow: hidden;
+}
 }

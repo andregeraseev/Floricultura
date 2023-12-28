@@ -178,6 +178,7 @@ class Product(models.Model):
             return False
 
 class ProductVariation(models.Model):
+    nome = models.CharField(max_length=255, blank=True, null=True)
     product = models.ForeignKey(Product, related_name='variations', on_delete=models.CASCADE)
     idMapeamento = models.CharField(max_length=255)
     skuMapeamento = models.CharField(max_length=255, blank=True, null=True)
