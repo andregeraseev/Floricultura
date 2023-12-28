@@ -27,7 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
             data['price'] = data.pop('preco', None)
             print('data',data['price'])
             data['name'] = data.pop('nome', None)
-            data['description'] = data.pop('descricao', None)
+            data['description'] = data.pop('descricaoComplementar', None)
             # Garantir que pesoLiquido e pesoBruto tenham no máximo duas casas decimais
             data['pesoLiquido'] = round(float(data.get('pesoLiquido', 0)), 2)
             data['pesoBruto'] = round(float(data.get('pesoBruto', 0)), 2)
