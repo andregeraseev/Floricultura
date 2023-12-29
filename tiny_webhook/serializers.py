@@ -98,8 +98,8 @@ class ProductSerializer(serializers.ModelSerializer):
         try:
             for anexo in anexos:
                 url_imagem = anexo.get('url', '')
-                if url_imagem:
-                    nome_imagem = url_imagem.split('/')[-1]
+                nome_imagem = anexo.get('nome', '')
+                if url_imagem and nome_imagem:
                     try:
                         resposta = requests.get(url_imagem)
                         if resposta.status_code == 200:
