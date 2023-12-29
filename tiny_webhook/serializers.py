@@ -119,6 +119,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         for variacao_data in variacoes_data:
             logger.info(f"Variacao recebida: {variacao_data}")
+
             try:
                 variacao, _ = ProductVariation.objects.update_or_create(
                     idMapeamento=variacao_data['idMapeamento'],
@@ -139,7 +140,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         return {
             'id': variacao_data['id'],
-            'nome': variacao_data['nome'],
+            # 'nome': variacao_data['nome'],
             'product': product,
             'skuMapeamento': variacao_data['skuMapeamento'],
             'codigo': variacao_data['codigo'],
@@ -158,7 +159,12 @@ class ProductSerializer(serializers.ModelSerializer):
                 logger.error(f"Erro ao processar kit: {response}")
                 raise APIException(f"Erro na API Tiny: {response}")
 
-            # Verifique se 'kit' existe na resposta
+            try:
+                logger.info(f"variacao obtida: {response['produto']}")
+            except Exception as e:
+                logger.error(f"Erro ao processar kit: {e}")
+                raise APIException("Erro ao obter variacao")
+
             if response['produto']['classe_produto'] == 'K':
 
                 for item in response['produto']['kit']:
