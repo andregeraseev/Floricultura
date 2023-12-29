@@ -11,10 +11,7 @@ from django.contrib.auth.models import User
 
 
 def path_and_rename(instance, filename):
-    upload_to = 'images'
-    ext = filename.split('.')[-1]
-    # Gera um ID único para o arquivo
-    filename = '{}.{}'.format(uuid4().hex, ext)
+    upload_to = 'product_images'
     return os.path.join(upload_to, filename)
 from django.db import models
 
@@ -369,6 +366,17 @@ class ProductImage(models.Model):
                                      format='JPEG',
                                      options={'quality': 60})
     image_url = models.URLField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # Verifica se uma imagem com o mesmo nome já existe
+        existing_image = ProductImage.objects.filter(product=self.product, image=self.image.name).first()
+        if existing_image:
+            # Substitui a imagem existente
+            existing_image.image.delete(save=False)  # Deleta a imagem antiga
+            existing_image.image = self.image  # Atualiza para a nova imagem
+            existing_image.save()
+        else:
+            super().save(*args, **kwargs)
 
 
 class ProductReview(models.Model):
