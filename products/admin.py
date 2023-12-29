@@ -15,7 +15,7 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available']
+    list_display = ['name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'skuMapeamento', 'idMapeamento']
     inlines = [ProductImageInline, ProductVariationInline]
     def image_thumbnail_tag(self, obj):
         first_image = obj.images.first()  # Obtém a primeira imagem do produto
