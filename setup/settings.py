@@ -24,7 +24,27 @@ from decouple import config
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+LOGIN_URL = '/usuario/login'
+SITE= "http://127.0.0.1:8000"
+
 TINY_API_TOKEN = config('TINY_API_TOKEN')
+USUARIO_CORREIOS= config('USUARIO_CORREIOS')
+SENHA_COREIOS = config('SENHA_COREIOS')
+MERCADOPAGOPUBLICKEY = config('MERCADOPAGOPUBLICKEY')
+MERCADOPAGOTOLKEN= config('MERCADOPAGOTOLKEN')
+# EMAIL
+
+EMAIL_HOST = 'smtp.titan.email'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'contato@xflavors.net'  # Substitua por seu e-mail real
+EMAIL_HOST_PASSWORD = config('Senha_email') # Substitua por sua senha real
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+ADMIN_EMAIL = "contato@xflavors.net"  # Substitua por seu e-mail real
+SUPPORT_EMAIL = "contato@xflavors.net"  # Substitua por seu e-mail real
+DEFAULT_FROM_EMAIL = ADMIN_EMAIL
+SERVER_EMAIL = ADMIN_EMAIL
 
 ALLOWED_HOSTS = []
 
@@ -50,6 +70,8 @@ INSTALLED_APPS = [
     'products',
     'banners',
     'blog',
+    'mercadopago',
+    'avise',
 ]
 
 
@@ -201,6 +223,12 @@ LOGGING = {
                 'filename': os.path.join(LOG_DIR, 'webhookstiny.log'),
                 'formatter': 'verbose',
             },
+'file_webhookspagamento': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(LOG_DIR, 'webhookspagamento.log'),
+                'formatter': 'verbose',
+            },
 
         # Repita para outras categorias como carrinho, produtos, etc.
     },
@@ -234,6 +262,11 @@ LOGGING = {
         },
     'webhookstiny': {
                 'handlers': ['file_webhookstiny'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+'webhookspagamento': {
+                'handlers': ['file_webhookspagamento'],
                 'level': 'INFO',
                 'propagate': False,
             },

@@ -27,6 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
             data['price'] = data.pop('preco', None)
             print('data',data['price'])
             data['name'] = data.pop('nome', None)
+
             data['description'] = data.pop('descricaoComplementar', None)
             # Garantir que pesoLiquido e pesoBruto tenham no máximo duas casas decimais
             data['pesoLiquido'] = round(float(data.get('pesoLiquido', 0)), 2)
@@ -41,23 +42,26 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Cria um novo produto ou atualiza um existente.
         """
-        logger.info(f"Obejto recebido: {validated_data}")
-        arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
-        print('arvore_categorias',arvore_categorias)
-        departamento, categoria = self.process_departamento_e_categoria(arvore_categorias)
+        try:
+            logger.info(f"Obejto recebido: {validated_data}")
+            arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
+            print('arvore_categorias',arvore_categorias)
+            departamento, categoria = self.process_departamento_e_categoria(arvore_categorias)
 
-        validated_data['category'] = categoria
-        validated_data['departamento'] = departamento
+            validated_data['category'] = categoria
+            validated_data['departamento'] = departamento
 
-        product, _ = Product.objects.update_or_create(
-            id=validated_data.get('idMapeamento'),
-            defaults=validated_data
-        )
+            product, _ = Product.objects.update_or_create(
+                id=validated_data.get('idMapeamento'),
+                defaults=validated_data
+            )
 
-        self.process_images(product, self.context['request'].get('anexos', []))
-        self.process_variacoes(product, self.context.get("request").get('variacoes', []))
+            self.process_images(product, self.context['request'].get('anexos', []))
+            self.process_variacoes(product, self.context.get("request").get('variacoes', []))
 
-        return product
+            return product
+        except Exception as e:
+            logger.error(f"Erro ao criar/atualizar o produto: {e}")
 
     def process_departamento_e_categoria(self, arvore_categorias):
         """
@@ -91,20 +95,23 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Processa e salva as imagens anexadas ao produto, evitando duplicatas.
         """
-        existing_images = set(product.images.values_list('image', flat=True))
-        for anexo in anexos:
-            url_imagem = anexo.get('url', '')
-            if url_imagem:
-                try:
-                    nome_imagem = url_imagem.split('/')[-1]
-                    if nome_imagem not in existing_images:
-                        resposta = requests.get(url_imagem)
-                        if resposta.status_code == 200:
-                            product_image = ProductImage(product=product)
-                            product_image.image.save(nome_imagem, ContentFile(resposta.content), save=True)
-                            existing_images.add(nome_imagem)
-                except requests.RequestException as e:
-                    logger.error(f"Erro ao processar imagem: {e}")
+        try:
+            existing_images = set(product.images.values_list('image', flat=True))
+            for anexo in anexos:
+                url_imagem = anexo.get('url', '')
+                if url_imagem:
+                    try:
+                        nome_imagem = url_imagem.split('/')[-1]
+                        if nome_imagem not in existing_images:
+                            resposta = requests.get(url_imagem)
+                            if resposta.status_code == 200:
+                                product_image = ProductImage(product=product)
+                                product_image.image.save(nome_imagem, ContentFile(resposta.content), save=True)
+                                existing_images.add(nome_imagem)
+                    except requests.RequestException as e:
+                        logger.error(f"Erro ao processar imagem: {e}")
+        except Exception as e:
+            logger.error(f"Erro ao processar imagens: {e}")
 
     def process_variacoes(self, product, variacoes_data):
         """
