@@ -96,18 +96,24 @@ class ProductSerializer(serializers.ModelSerializer):
         Processa e salva as imagens anexadas ao produto, evitando duplicatas.
         """
         try:
-            existing_images = set(product.images.values_list('image', flat=True))
             for anexo in anexos:
                 url_imagem = anexo.get('url', '')
                 if url_imagem:
+                    nome_imagem = url_imagem.split('/')[-1]
                     try:
-                        nome_imagem = url_imagem.split('/')[-1]
-                        if nome_imagem not in existing_images:
-                            resposta = requests.get(url_imagem)
-                            if resposta.status_code == 200:
+                        resposta = requests.get(url_imagem)
+                        if resposta.status_code == 200:
+                            # Verificar se já existe uma imagem com o mesmo nome
+                            existing_image = ProductImage.objects.filter(product=product,
+                                                                         image__endswith=nome_imagem).first()
+                            if existing_image:
+                                # Substitui a imagem existente
+                                existing_image.image.delete(save=False)  # Deleta a imagem antiga
+                                existing_image.image.save(nome_imagem, ContentFile(resposta.content), save=True)
+                            else:
+                                # Cria uma nova imagem
                                 product_image = ProductImage(product=product)
                                 product_image.image.save(nome_imagem, ContentFile(resposta.content), save=True)
-                                existing_images.add(nome_imagem)
                     except requests.RequestException as e:
                         logger.error(f"Erro ao processar imagem: {e}")
         except Exception as e:
