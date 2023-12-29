@@ -161,6 +161,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
             try:
                 logger.info(f"variacao obtida: {response['produto']}")
+                variacao.nome = response['produto']['nome']
+                variacao.save()
             except Exception as e:
                 logger.error(f"Erro ao processar kit: {e}")
                 raise APIException("Erro ao obter variacao")

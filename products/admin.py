@@ -5,7 +5,7 @@ from django.utils.html import format_html
 class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
     extra = 0  # Você pode ajustar o número de formulários extras
-    fields = ['idMapeamento', 'skuMapeamento', 'codigo', 'gtin', 'price', 'promotional_price', 'estoqueAtual', 'grade']
+    fields = ['nome','idMapeamento', 'skuMapeamento', 'codigo', 'gtin', 'price', 'promotional_price', 'estoqueAtual', 'grade']
 
 
 class ProductImageInline(admin.TabularInline):
