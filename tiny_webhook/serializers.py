@@ -118,6 +118,7 @@ class ProductSerializer(serializers.ModelSerializer):
         Processa as variações do produto, incluindo a matéria-prima relacionada.
         """
         for variacao_data in variacoes_data:
+            logger.info(f"Variacao recebida: {variacao_data}")
             try:
                 variacao, _ = ProductVariation.objects.update_or_create(
                     idMapeamento=variacao_data['idMapeamento'],
