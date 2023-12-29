@@ -370,13 +370,14 @@ class ProductImage(models.Model):
     def save(self, *args, **kwargs):
         # Verifica se uma imagem com o mesmo nome já existe
         existing_image = ProductImage.objects.filter(product=self.product, image=self.image.name).first()
-        if existing_image:
+        if existing_image and existing_image != self:
             # Substitui a imagem existente
             existing_image.image.delete(save=False)  # Deleta a imagem antiga
             existing_image.image = self.image  # Atualiza para a nova imagem
             existing_image.save()
         else:
             super().save(*args, **kwargs)
+
 
 
 class ProductReview(models.Model):
