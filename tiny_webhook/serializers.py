@@ -149,7 +149,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'id': variacao_data['id'],
             # 'nome': variacao_data['nome'],
             'product': product,
-            'skuMapeamento': variacao_data['skuMapeamento'],
+            'skuMapeamento': variacao_data['codigo'],
             'codigo': variacao_data['codigo'],
             'gtin': variacao_data['gtin'],
             'price': variacao_data['preco'],
