@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from setup.view import home, department_detail, category_detail, search,search_view
 from banners.views import track_click
 from tiny_webhook.view import ProductWebhook
-
+from tiny_webhook.estoque_tiny import tiny_webhook_stock_update
 
 urlpatterns = [
     path('', home, name='home'),
@@ -47,6 +47,8 @@ urlpatterns = [
 
     # WEBHOOKS
     path('webhook/tiny_produtos/' , ProductWebhook.as_view(), name='product-webhook'),
+    path('webhook/tiny_webhook_stock_update/' , tiny_webhook_stock_update, name='tiny_webhook_stock_update'),
+
     # path('webhook/envia_pedido/' , envia_pedido, name='envia_pedido'),
 
 #     TRACKING BANNER
