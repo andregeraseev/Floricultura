@@ -50,6 +50,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
             validated_data['category'] = categoria
             validated_data['departamento'] = departamento
+            validated_data['skuMapeamento'] = validated_data['codigo']
 
             product, _ = Product.objects.update_or_create(
                 id=validated_data.get('idMapeamento'),
