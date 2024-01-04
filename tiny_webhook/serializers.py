@@ -230,6 +230,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 raise APIException(f"Erro na API Tiny: {response}")
             # Verifique se 'stock' existe na resposta
             if 'saldo' in response['produto']:
+                print('Materia prima',response['produto'])
                 try:
                     raw_material, _ = MateriaPrima.objects.get_or_create(
                         id=raw_material_id,
