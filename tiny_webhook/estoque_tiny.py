@@ -16,7 +16,7 @@ def tiny_webhook_stock_update(request):
     # Lê o corpo da solicitação e decodifica o JSON
     try:
         payload = json.loads(request.body.decode("utf-8"))
-        logger.info("payload",payload)
+        logger.info(f"payload: {payload}")
     except json.JSONDecodeError:
         logger.error("Falha ao decodificar JSON")
         return HttpResponseBadRequest("Falha ao decodificar JSON")
@@ -24,17 +24,17 @@ def tiny_webhook_stock_update(request):
     # Processa o evento de atualização de estoque
 
     if payload['tipo'] == 'estoque':
-        logger.info('ATUALIZANDO ESTOQUE')
-
+        logger.info(f'ATUALIZANDO ESTOQUE{payload}')
+        print('Estoque',payload)
         try:
             estoque = payload['dados']
-            logger.info("Estoque payload:",estoque)
+            logger.info(f"Estoque payload: {estoque}")
             # id_mapeamento = estoque['idMapeamento']
             # print(id_mapeamento)
             estoque_atual = estoque['saldo']
-            logger.info("Estoque atual:",estoque_atual)
+            logger.info(f"Estoque atual:{estoque_atual}")
             id_produto = estoque['idProduto']
-            logger.info("Id produto:",id_produto)
+            logger.info(f"Id produto: {id_produto}")
 
 
 
@@ -43,19 +43,19 @@ def tiny_webhook_stock_update(request):
             # Tenta atualizar a MateriaPrima
             try:
                 materia_prima = MateriaPrima.objects.get(id=id_produto)
-                logger.info("Materia prima:",materia_prima)
+                logger.info(f"Materia prima:{materia_prima}")
                 materia_prima.stock = estoque_atual
-                logger.info("Estoque atual:",estoque_atual)
+                logger.info(f"Estoque atual:{estoque_atual}")
                 materia_prima.save()
-                logger.info("Materia prima salva com novo estoque :",materia_prima)
+                logger.info(f"Materia prima salva com novo estoque :{materia_prima}")
             except MateriaPrima.DoesNotExist:
                 logger.info("Materia prima não encontrada")
                 try:
-                    logger.info("Produto:",id_produto)
+                    logger.info(f"Produto:{id_produto}")
                     produto = Product.objects.get(id=id_produto)
                     produto.stock = estoque_atual
                     produto.save()
-                    logger.info("Produto salvo com estoque novo:",produto)
+                    logger.info(f"Produto salvo com estoque novo: {produto}")
 
                 except Product.DoesNotExist:
                     logger.info("Produto não encontrado")
@@ -64,7 +64,7 @@ def tiny_webhook_stock_update(request):
                         product_variation = ProductVariation.objects.get(id=id_produto)
                         product_variation.stock = estoque_atual
                         product_variation.save()
-                        logger.info("Produto variação salva com novo estoque :",product_variation)
+                        logger.info(f"Produto variação salva com novo estoque :{product_variation}")
                     except ProductVariation.DoesNotExist:
                         logger.info("Produto variação não encontrado")
                         logger.error("Nenhum produto encontrado para atualizar estoque")
@@ -77,7 +77,7 @@ def tiny_webhook_stock_update(request):
             return HttpResponse(status=200)
 
         except Exception as e:
-            logger.error("Erro ao processar evento de atualização de estoque: {}".format(str(e)))
+            logger.error(f"Erro ao processar evento de atualização de estoque: {e}")
             return HttpResponseBadRequest("Erro ao processar evento de atualização de estoque: {}".format(str(e)))
 
     else:
