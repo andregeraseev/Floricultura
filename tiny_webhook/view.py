@@ -93,7 +93,7 @@ class ProductWebhook(APIView):
                     print('erro total2',e)
                     return HttpResponse(e, content_type="application/json", status=400)
 
-
+                logger.info(f'MAPEAMENTOS {mapeamentos}')
                 return HttpResponse(json.dumps(mapeamentos), content_type="application/json", status=200)
             else:
                 print('serializer Invalido')
