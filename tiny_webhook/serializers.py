@@ -276,6 +276,10 @@ class ProductSerializer(serializers.ModelSerializer):
                     # Adicione aqui outros campos relevantes do modelo MateriaPrima
                 }
             )
+            if created:
+                logger.info(f"Materia prima criada com sucesso: {materia_prima.id}")
+            else:
+                logger.info(f"Materia prima atualizada com sucesso: {materia_prima.id}")
             return materia_prima
         except Exception as e:
             logger.error(f"Erro ao criar/atualizar a matéria-prima: {e}")
