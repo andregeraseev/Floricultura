@@ -266,7 +266,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
             # Criar ou atualizar o objeto MateriaPrima
             materia_prima, created = MateriaPrima.objects.update_or_create(
-                idMapeamento=id_mapeamento,
+                id=id,
                 defaults={
                     'id':id,
                     'idMapeamento': id_mapeamento,
