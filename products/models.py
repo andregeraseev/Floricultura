@@ -266,6 +266,8 @@ class ProductVariation(models.Model):
 
 class MateriaPrima(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
+    idMapeamento = models.CharField(max_length=255, blank=True, null=True)
+    skuMapeamento = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255)
     stock = models.PositiveIntegerField()
 

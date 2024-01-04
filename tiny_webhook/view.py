@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from products.models import Product
+from products.models import Product, MateriaPrima
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from tiny_webhook.serializers import ProductSerializer
@@ -11,10 +11,10 @@ logger = logging.getLogger('webhookstiny')
 
 def parse_payload(request_body):
     try:
-        logger.info('payload',request_body)
+        logger.info(f'payload {request_body}')
         return json.loads(request_body.decode("utf-8"))
     except json.JSONDecodeError:
-        logger.error('payload',request_body)
+        logger.error(f'payload {request_body}')
         return None
 
 class ProductWebhook(APIView):
@@ -24,35 +24,69 @@ class ProductWebhook(APIView):
             print('payload',payload)
             serializer = ProductSerializer(data=payload['dados'], context={'request': payload['dados']})
             if serializer.is_valid():
+                print('serializer VALIDO')
                 try:
-                    serializer.save()
+                    try:
+                        serializer.save()
+                        print('serializer SALVO')
+                    except Exception as e:
+                        print('erro pos-salvar',e)
+                    try:
+                        idmapeamento = serializer.context['request']['idMapeamento']
+                        mapeamentos = []
+                    except Exception as e:
+                        print('erro mapeamento',e)
+                        logger.error(f'postTiny {e}')
+                        return HttpResponse(e, content_type="application/json", status=400)
 
-                    idmapeamento = serializer.data['idMapeamento']
-                    skumapeamento = serializer.data['skuMapeamento']
-                    mapeamentos = [
-                        {"idMapeamento": idmapeamento,
-                        "skuMapeamento": skumapeamento,}
-                    ]
 
+                    try:
+                        print('TENTANDO')
+                        if serializer.context['request']['classeProduto'] == 'M':
+                            print('MATERIA PRIMA')
+                            try:
+                                produto = MateriaPrima.objects.get(idMapeamento=idmapeamento)
+                                skumapeamento = produto.skuMapeamento
+                                idmapeamento = produto.idMapeamento
+                                mapeamentos.append({"idMapeamento": idmapeamento,
+                                                    "skuMapeamento": skumapeamento, })
 
-                    produto = Product.objects.get(skuMapeamento=skumapeamento)
+                            except Exception as e:
+                                print('erro mapeamento',e)
+                                logger.error(f'postTiny {e}')
+                                return HttpResponse(e, content_type="application/json", status=400)
+                        else:
+                            try:
+                                produto = Product.objects.get(idMapeamento=idmapeamento)
+                                # print('produto',produto)
 
-                    for variation in produto.variations.all():
-                        skumapeamento = variation.skuMapeamento
-                        idmapeamento = variation.idMapeamento
-                        mapeamentos.append({"idMapeamento": idmapeamento,
-                        "skuMapeamento": skumapeamento,})
+                                if produto.variations.all():
+                                    for variation in produto.variations.all():
+                                        skumapeamento = variation.skuMapeamento
+                                        idmapeamento = variation.idMapeamento
+                                        mapeamentos.append({"idMapeamento": idmapeamento,
+                                        "skuMapeamento": skumapeamento,})
+                            except Exception as e:
+                                print('erro variations',e)
+                                return HttpResponse(e, content_type="application/json", status=400)
 
-                    print("MAPEAMENTO",serializer.data['idMapeamento'],serializer.data['skuMapeamento'])
+                    except Exception as e:
+                        print('erro total',e)
+                        logger.error(f'postTiny {e}')
+                        return HttpResponse(e, content_type="application/json", status=400)
+
                 except Exception as e:
-                    logger.error('postTiny',e)
+                    logger.error(f'postTiny {e}')
+                    print('erro total2',e)
                     return HttpResponse(e, content_type="application/json", status=400)
 
 
                 return HttpResponse(json.dumps(mapeamentos), content_type="application/json", status=200)
             else:
-                logger.error('postTiny',serializer.errors)
+                print('serializer Invalido')
+
+                logger.error(f'postTiny {serializer.errors}')
                 return HttpResponse(serializer.errors, content_type="application/json", status=400)
         except Exception as e:
-            logger.error('postTiny',e)
+            logger.error(f'postTiny {e}')
             return HttpResponse(e, content_type="application/json", status=400)

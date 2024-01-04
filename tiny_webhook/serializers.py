@@ -42,6 +42,16 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         Cria um novo produto ou atualiza um existente.
         """
+
+        # Verificar se o produto é matéria-prima
+        if validated_data.get('classeProduto') == 'M':
+            try:
+                logger.info(f"Criando Materia prima: {validated_data}")
+                # Tratar como matéria-prima
+                return self.handle_materia_prima(validated_data)
+            except Exception as e:
+                logger.error(f"Erro ao criar matéria-prima: {e}")
+                raise APIException("Erro ao criar matéria-prima")
         try:
             logger.info(f"Obejto recebido: {validated_data}")
             arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
@@ -238,7 +248,37 @@ class ProductSerializer(serializers.ModelSerializer):
             logger.error(f"Erro na requisição à API Tiny: {e}")
             raise APIException("Erro de comunicação com a API Tiny")
 
+    def handle_materia_prima(self, validated_data):
+        logger.info(f"Criando Handle Materia Prima:{validated_data}")
+        try:
+            # Extrair os dados relevantes do validated_data
+            payload = self.context.get("request", {})
 
+            # Extraindo o 'id' do payload original
+            id = payload.get('id', None)
+
+            id_mapeamento = validated_data['idMapeamento']
+            name = validated_data['name']
+            stock = validated_data['estoqueAtual']
+            sku_mapeamento = validated_data['codigo']
+
+
+            # Criar ou atualizar o objeto MateriaPrima
+            materia_prima, created = MateriaPrima.objects.update_or_create(
+                idMapeamento=id_mapeamento,
+                defaults={
+                    'id':id,
+                    'idMapeamento': id_mapeamento,
+                    'name': name,
+                    'stock': stock,
+                    'skuMapeamento': sku_mapeamento
+                    # Adicione aqui outros campos relevantes do modelo MateriaPrima
+                }
+            )
+            return materia_prima
+        except Exception as e:
+            logger.error(f"Erro ao criar/atualizar a matéria-prima: {e}")
+            raise APIException("Erro ao criar/atualizar a matéria-prima")
 
     def processar_item_kit(self, variacao, item_kit, raw_material):
         """
