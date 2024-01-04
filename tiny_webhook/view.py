@@ -72,7 +72,10 @@ class ProductWebhook(APIView):
                                     # print('produto',produto)
                                 except:
                                     produto = Product.objects.get(skuMapeamento=serializer.context['request']['codigo'])
-
+                                skumapeamento = produto.skuMapeamento
+                                idmapeamento = produto.idMapeamento
+                                mapeamentos.append({"idMapeamento": idmapeamento,
+                                                    "skuMapeamento": skumapeamento, })
                                 if produto.variations.all():
                                     for variation in produto.variations.all():
                                         skumapeamento = variation.skuMapeamento
