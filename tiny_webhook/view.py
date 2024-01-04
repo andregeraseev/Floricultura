@@ -53,7 +53,7 @@ class ProductWebhook(APIView):
                                     logger.info(f'Não encontrou por idMapeamento, tentando por id')
                                     produto = MateriaPrima.objects.get(id=serializer.context['request']['id'])
 
-
+                                logger.info(f'produto {produto}')
                             except Exception as e:
                                 logger.error(f'postTiny buscando id {e}')
                             try:
