@@ -46,13 +46,14 @@ class ProductWebhook(APIView):
                         if serializer.context['request']['classeProduto'] == 'M':
                             print('MATERIA PRIMA')
                             try:
-                                # Tentar buscar pela chave idMapeamento primeiro
-                                produto = MateriaPrima.objects.get(idMapeamento=idmapeamento)
-                            except Exception as e:
-                                logger.error(f'postTiny buscando idmapeamento{e}')
-                            try:
-                                # Se não encontrar por idMapeamento, tentar pelo id
-                                produto = MateriaPrima.objects.get(id=serializer.context['request']['id'])
+                                try:
+                                    logger.info(f'Buscando por idMapeamento')
+                                    produto = MateriaPrima.objects.get(idMapeamento=idmapeamento)
+                                except:
+                                    logger.info(f'Não encontrou por idMapeamento, tentando por id')
+                                    produto = MateriaPrima.objects.get(id=serializer.context['request']['id'])
+
+
                             except Exception as e:
                                 logger.error(f'postTiny buscando id {e}')
                             try:
