@@ -24,7 +24,7 @@ def enviar_pedido_para_tiny(order):
             },
             'itens': [{
                 'item': {
-                    'codigo': item.product_or_variation.id,
+                    'codigo': item.product_or_variation.codigo,
                     'descricao': item.product_or_variation.name,
                     'unidade': 'UN',
                     'quantidade': item.quantity,
