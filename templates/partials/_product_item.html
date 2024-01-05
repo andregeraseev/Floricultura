@@ -10,7 +10,7 @@
         <a href="{{product.get_absolute_url}}"><div class="align-center set-bg"  data-setbg="{{product.images.first.image.url}}" style="width: 100%;height: 90%; "></div></a>
 
         {% if product.variations.all %}
-        {% if product.variations.first.promotional_price %}
+        {% if product.variations.first.promotional_price and product.promotion_active %}
         <div class="product__discount__percent" id="discont-percent-{{product.id}}">
             -{{ product.variations.first.porcentagem_de_desconto}}%
         </div>

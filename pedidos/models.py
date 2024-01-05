@@ -61,7 +61,7 @@ class Order(models.Model):
     id_tiny = models.CharField(max_length=100, blank=True, null=True)
 
     def adicionar_valores(self):
-        self.subtotal = sum([item.total_price_or_promotional_price for item in self.items.all()])
+        self.subtotal = sum([item.total for item in self.items.all()])
         self.total = self.final_total
         self.save()
 
@@ -130,7 +130,7 @@ class OrderItem(models.Model):
 
     @property
     def total(self):
-        return self.product_or_variation.price * self.quantity
+        return self.price * self.quantity
 
     @property
     def total_price_or_promotional_price(self):

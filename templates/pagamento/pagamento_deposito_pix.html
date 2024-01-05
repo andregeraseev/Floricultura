@@ -131,10 +131,10 @@ form {
         <div class="col-lg-4 col-md-6 ">
                         <div class="checkout__order my-3 my-md-0">
                             <h4>PEDIDO {{order.id}}</h4>
-                            <div class="checkout__order__products">Produtos <span>Total</span></div>
+                            <div class="checkout__order__products">Qtd. Produtos <span> Total</span></div>
                             <ul>
                                 {% for item in order.items.all %}
-                                <li>{{item.quantity}} - {{item.product.name}} <span>{{item.total_price_or_promotional_price}}</span>
+                                <li>{{item.quantity}} - {{item.product.name}}  <span>R${{item.total}}</span>
                                 </li>
                                 {% endfor %}
 
