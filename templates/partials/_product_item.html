@@ -112,7 +112,7 @@
         <div class="product__item__text">
         <div class="product__item__marca">{{product.marca | default_if_none:"-"}}</div>
         <h5><a href={{ product.get_absolute_url }}>{{ product.name }}</a></h5>
-        <span class="product__item__descripition" ><h6>{{product.description}}</h6></span>
+        <span class="product__item__descripition" ><h6>{{product.description|safe}}</h6></span>
 
         {% if product.variations.all %}
         <div class="product__item__price" id="variation-price-{{ product.id }}">R${{ product.variations.first.price_or_promocional_price | default:product.variations.first.price }}
