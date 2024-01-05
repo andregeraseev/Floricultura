@@ -1,5 +1,9 @@
+from PIL import UnidentifiedImageError
 from django.contrib import admin
-from .models import Product, ProductImage, ProductVariation,MateriaPrima, ProductMaterial, ProductVariationRawMaterial
+from django.contrib.contenttypes.models import ContentType
+
+from .models import Product, ProductImage, ProductVariation, MateriaPrima, ProductMaterial, ProductVariationRawMaterial, \
+    StockHistory
 from django.utils.html import format_html
 
 class ProductVariationInline(admin.TabularInline):
@@ -15,14 +19,28 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'skuMapeamento', 'idMapeamento']
+    list_display = ['name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'is_featured','skuMapeamento', 'idMapeamento']
+    list_filter = ('is_available', 'promotion_active', 'is_featured',)
+    list_editable = ('is_available', 'promotion_active', 'is_featured',)
+    search_fields = ('name',)
+
     inlines = [ProductImageInline, ProductVariationInline]
     def image_thumbnail_tag(self, obj):
-        first_image = obj.images.first()  # Obtém a primeira imagem do produto
-        if first_image and first_image.image_thumbnail.url:
-            return format_html('<img src="{}" style="width: 50px; height: auto;"/>'.format(first_image.image_thumbnail.url))
+        try:
+            first_image = obj.images.first()  # Obtém a primeira imagem do produto
+            if first_image and first_image.image_thumbnail.url:
+                return format_html(
+                    '<img src="{}" style="width: 50px; height: auto;"/>'.format(first_image.image_thumbnail.url))
+        except UnidentifiedImageError:
+            # Se houver um erro ao identificar a imagem, retorna um texto alternativo
+            return "Imagem não identificada"
+        except Exception as e:
+            # Trata outros tipos de erros, se necessário
+            return f"Erro: {e}"
         return "-"
-    image_thumbnail_tag.short_description = 'Thumbnail'
+
+        image_thumbnail_tag.short_description = 'Thumbnail'
+
 
 admin.site.register(Product, ProductAdmin)
 
@@ -68,7 +86,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class MateriaPrimaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'stock')
+    list_display = ('id', 'name', 'stock', 'skuMapeamento', 'idMapeamento')
     search_fields = ('name',)
 
 class ProductMaterialAdmin(admin.ModelAdmin):
@@ -83,3 +101,30 @@ class ProductVariationRawMaterialAdmin(admin.ModelAdmin):
 admin.site.register(MateriaPrima, MateriaPrimaAdmin)
 admin.site.register(ProductMaterial, ProductMaterialAdmin)
 admin.site.register(ProductVariationRawMaterial, ProductVariationRawMaterialAdmin)
+
+
+class StockTypeFilter(admin.SimpleListFilter):
+    title = 'stock type'
+    parameter_name = 'stock_type'
+
+    def lookups(self, request, model_admin):
+        # Retorna uma lista de tuplas. Cada tupla contém o ID do ContentType e o nome do modelo.
+        content_types = ContentType.objects.filter(model__in=['product', 'productvariation', 'materiaprima'])
+        return [(ctype.id, ctype.model) for ctype in content_types]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            # Filtra o queryset com base no ID do ContentType selecionado.
+            return queryset.filter(content_type_id=self.value())
+        return queryset
+class StockHistoryAdmin(admin.ModelAdmin):
+    list_display = ('content_object', 'date_changed', 'old_stock', 'new_stock', 'stock_change')
+    list_filter = (StockTypeFilter, 'date_changed')
+    search_fields = ('content_type__model', 'object_id')
+    readonly_fields = ('content_object', 'date_changed', 'old_stock', 'new_stock', 'stock_change')
+
+    def stock_change(self, obj):
+        return obj.new_stock - obj.old_stock
+    stock_change.short_description = 'Change in Stock'
+
+admin.site.register(StockHistory, StockHistoryAdmin)

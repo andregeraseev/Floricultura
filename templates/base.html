@@ -63,8 +63,72 @@
     <div id="carregando">
     <div id="carregandoTexto">Carregando</div>
 </div>
-
+<!--ALERT-->
     <div id="alert-box" class="alert-box" style="display:none;"></div>
+
+<!--MESSAGE-->
+<style>
+    #message-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999999;
+    width: auto;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    background-color: #dff0d8; /* Cor de fundo verde claro */
+    color: #3c763d; /* Cor do texto verde escuro */
+    text-align: center;
+}
+
+.alert {
+    margin: 0;
+    padding: 8px 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    position: relative;
+}
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%; /* Inicia cheia */
+    height: 5px; /* Altura da barra de progresso */
+    background-color: #4caf50; /* Cor da barra de progresso */
+    animation: shrink 5s linear; /* Animação que reduz a largura */
+}
+
+/* Animação que reduz a largura da barra de 0% a 100% em 5 segundos */
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0; }
+}
+</style>
+    {% if messages %}
+    <div id="message-container">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+                <div class="progress-bar"></div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if messages %}
+    <script>
+        setTimeout(function() {
+            var messageContainer = document.getElementById('message-container');
+            if (messageContainer) {
+                messageContainer.style.display = 'none';
+            }
+        }, 5000); // 5000 milissegundos = 5 segundos
+    </script>
+{% endif %}
+
+
 
     {% block content %}
     <!-- Conteúdo principal da página -->

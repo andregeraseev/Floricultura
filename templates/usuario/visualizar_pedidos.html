@@ -1,5 +1,5 @@
 
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <div class="card">
         <div class="card-header">
                     <h1>Meus Pedidos</h1>
@@ -40,7 +40,7 @@
 
         <!--        Info-->
 
-        {% if pedido.payment_method == "Pix"  or pedido.payment_method == "Deposito" %}
+        {% if pedido.payment_method == "pix"  or pedido.payment_method == "Deposito" %}
         {% if pedido.comprovante %}
         <td>
         <a href="{{ pedido.comprovante.url }}">Ver comprovante: <button class="btn btn-sm" style="border-radius: 0px; background-color: #d8d8d8;"><i class="far fa-eye text-dark"  ></i></button></a>
@@ -62,7 +62,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
               </div>
-                <form action="{% url 'paga_pix' %}" method="post" enctype="multipart/form-data">
+                <form action="{% url 'pagamento_deposito_pix' pedido.id %}" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
 
                         {% csrf_token %}

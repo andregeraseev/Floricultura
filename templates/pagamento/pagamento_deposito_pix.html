@@ -68,6 +68,20 @@ form {
     float: right;
 }
 
+.comprovante-wrapper {
+
+    height: 200px;
+    overflow-x: auto;
+    border: 1px solid #000; /* Para o retângulo */
+}
+
+.comprovante-img {
+    width: auto; /* Mantém a proporção da imagem */
+    height: auto; /* Mantém a proporção da imagem */
+    max-width: -webkit-fill-available; /* Garante que a imagem não exceda a largura do wrapper */
+    cursor: pointer; /* Muda o cursor para indicar que a imagem pode ser clicada */
+}
+
 </style>
 <div class="container my-3">
     <div class="row">
@@ -105,6 +119,12 @@ form {
 
             <button class="site-btn" type="submit">Enviar Comprovante</button>
         </form>
+        {% if order.comprovante %}
+<p>Comprovante enviado:</p>
+<div class="comprovante-wrapper">
+    <img src="{{ order.comprovante.url }}" alt="Comprovante" class="comprovante-img" onclick="ampliarImagem(this)">
+</div>
+        {% endif %}
     </div>
     </div>
 
@@ -140,6 +160,35 @@ function copiarTexto() {
     document.execCommand('copy');
     document.body.removeChild(elem);
     showSuccessAlert('Chave Pix copiada com sucesso! ' + texto);
+}
+</script>
+
+<script>
+function ampliarImagem(imgElement) {
+    // Cria um novo elemento de imagem para exibir em tamanho maior
+    var img = document.createElement("img");
+    img.src = imgElement.src;
+    img.style.width = "auto";
+    img.style.height = "auto";
+    img.style.maxWidth = "50%";
+    img.style.maxHeight = "50%";
+
+    // Cria um modal ou um novo elemento para mostrar a imagem ampliada
+    var modal = document.createElement("div");
+    modal.style.position = "fixed";
+    modal.style.left = "0";
+    modal.style.top = "0";
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    modal.style.display = "flex";
+    modal.style.justifyContent = "center";
+    modal.style.alignItems = "center";
+    modal.style.zIndex = "1000";
+    modal.onclick = function() { this.remove(); }; // Fecha o modal ao clicar fora da imagem
+
+    modal.appendChild(img);
+    document.body.appendChild(modal);
 }
 </script>
 {% endblock %}

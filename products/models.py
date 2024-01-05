@@ -274,6 +274,24 @@ class MateriaPrima(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        print('save')
+
+
+
+        if self.pk:
+            old_stock = MateriaPrima.objects.get(pk=self.pk).stock
+        else:
+            old_stock = None
+
+        super().save(*args, **kwargs)
+
+        if old_stock is not None and old_stock != self.stock:
+            print('update_stock_history')
+            update_stock_history(self, old_stock, self.stock)
+        else:
+            print('not update_stock_history')
+
 class ProductMaterial(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_materials')
     materia_prima = models.ForeignKey(MateriaPrima, on_delete=models.CASCADE)
@@ -393,3 +411,30 @@ class ProductReview(models.Model):
 
     def __str__(self):
         return f"Review by {self.user_profile.user.username} on {self.product.name}"
+
+
+
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
+class StockHistory(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    date_changed = models.DateTimeField(auto_now_add=True)
+    old_stock = models.IntegerField()
+    new_stock = models.IntegerField()
+
+    def __str__(self):
+        return f"Stock history for {self.content_object} on {self.date_changed}"
+
+def update_stock_history(instance, old_stock, new_stock):
+    print('update_stock_history')
+    content_type = ContentType.objects.get_for_model(instance)
+    StockHistory.objects.create(
+        content_type=content_type,
+        object_id=instance.id,
+        old_stock=old_stock,
+        new_stock=new_stock
+    )

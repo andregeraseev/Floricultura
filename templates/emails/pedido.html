@@ -44,7 +44,10 @@
         </div>
         <div class="content">
             <h2>Confirmação de Pedido</h2>
-            <p>Obrigado {{ nome }} por comprar com a xflavors.net. Aqui estão os detalhes do seu pedido:</p>
+            <p>Obrigado {{ nome }} por comprar com a xflavors.net.</p>
+            <p>Para acompanhar o status do seu pedido {% if order.payment_method != 'mercado_pago'%}e adicionar um comprovante{% endif %} acesse: <a href="{{site}}/usuario/dashboard/detalhe/pedido/{{ order.id }}{%if order.session%}?session={{ order.session }}{%endif%}">Acompanhar pedido</a>.</p>
+            {% if order.payment_method == 'mercado_pago'%}<p><a href="{{order.mercadopago_link}}">link de pagamento do mercado pago</a></p> {%endif%}
+            <p>Detalhes do seu pedido:</p>
 
             <!-- Itens do Pedido -->
             <table>

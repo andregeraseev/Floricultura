@@ -89,6 +89,7 @@
                 {% endif %}
 
                 <form onsubmit="event.preventDefault(); addToCart(this); ">
+                    {% csrf_token %}
                   <!-- Campo de id produto -->
                   <input type="hidden" name="productId" class="productId" value="{{ product.id }}">
                   <!-- Campo de id variável -->

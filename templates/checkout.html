@@ -96,6 +96,7 @@
                     {% if adress %}
                     {% if user.is_authenticated %}
                     <div id="endereco_de_envio" class="my-3">
+                        <label for="endereco_de_envio_select">Endereco de envio</label>
                         <select class="custom-select" id="endereco_de_envio_select"
                                 onchange="atualizarEnderecoPrimario()">
                             {% for adress in user.profile.addresses.all %}

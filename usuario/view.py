@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from enviadores.email import enviar_email_confirmacao
+from pedidos.models import Order
 
 logger = logging.getLogger('usuarios')
 
@@ -320,12 +321,23 @@ class UserDashboard(View):
         except Exception as e:
             return JsonResponse({'success': False, 'message': 'Erro interno do servidor: ' + str(e)})
 
+
+
+from django.shortcuts import get_object_or_404
 class PedidoUserDetailView(View):
     def get(self, request, *args, **kwargs):
         print('request',request)
         print('args',args)
         print('kwargs',kwargs)
+        session_param = request.GET.get('session', None)
+        print('session_param',session_param)
         pedido_id = kwargs.get('pedido_id')
-        pedido = request.user.profile.orders.get(id=pedido_id)
+        if session_param:
+            pedido = get_object_or_404(Order, id=pedido_id, session=session_param)
+        else:
+            pedido = get_object_or_404(Order, id=pedido_id, user_profile=request.user.profile)
+        # pedido = request.user.profile.orders.get(id=pedido_id)
         context = {'pedido': pedido}
         return render(request, 'usuario/detalhes_pedido.html', context)
+
+

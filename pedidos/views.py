@@ -11,7 +11,7 @@ import json
 import logging
 from django.views import View
 from django.shortcuts import render, redirect,get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from tiny_webhook.envia_pedido import enviar_pedido_para_tiny
 from usuario.forms import AddressForm
 from usuario.models import Address
@@ -182,11 +182,14 @@ class PedidoView(View):
             if request.user.is_authenticated:
                 user = request.user.profile
                 session = None
+                anonimo = False
+
                 adress = request.user.profile.addresses.get(is_primary=True)
 
             else:
                 session = Session.objects.get(session_key=request.session.session_key)
                 user = None
+                anonimo = True
                 adress = Address.objects.filter(session=session, is_primary=True).first()
             cart = get_user_cart(request)
             try:
@@ -595,7 +598,9 @@ class PagamentoDepositoPixView(View):
 
 
     def post(self,request, order_id):
-        print("Post")
+        from django.urls import reverse
+        from django.contrib import messages
+
         order = get_object_or_404(Order, id=order_id)
 
         form = ComprovanteForm(request.POST, request.FILES, instance=order)
@@ -603,8 +608,13 @@ class PagamentoDepositoPixView(View):
             form.save()
             order.status = 'Pagamento em Analize'
             order.save()
-            # Redirecione para uma página de sucesso ou de detalhes do pedido
-            return redirect('home')
+            # Obter o URL de referência
+            referer_url = request.META.get('HTTP_REFERER')
+
+            messages.success(request, 'Comprovante enviado com sucesso!')
+
+            # Redirecionar para o referer ou para uma URL padrão
+            return HttpResponseRedirect(referer_url if referer_url else reverse('home'))
 
         else:
 
