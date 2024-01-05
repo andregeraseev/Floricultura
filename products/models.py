@@ -187,6 +187,10 @@ class ProductVariation(models.Model):
     grade = models.TextField()
 
 
+    @property
+    def name(self):
+        return self.product.nome
+
     def stock_suficiente(self, quantidade):
         if self.has_stock:
             if self.variation_materials.all():
