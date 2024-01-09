@@ -17,6 +17,7 @@ from django.db import models
 
 
 class Product(models.Model):
+    external_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -175,6 +176,7 @@ class Product(models.Model):
             return False
 
 class ProductVariation(models.Model):
+    external_id = models.CharField(max_length=255, blank=True, null=True)
     nome = models.CharField(max_length=255, blank=True, null=True)
     product = models.ForeignKey(Product, related_name='variations', on_delete=models.CASCADE)
     idMapeamento = models.CharField(max_length=255)
@@ -269,7 +271,7 @@ class ProductVariation(models.Model):
 
 
 class MateriaPrima(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    external_id = models.CharField(max_length=255, blank=True, null=True)
     idMapeamento = models.CharField(max_length=255, blank=True, null=True)
     skuMapeamento = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255)

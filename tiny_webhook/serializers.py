@@ -51,7 +51,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 return self.handle_materia_prima(validated_data)
             except Exception as e:
                 logger.error(f"Erro ao criar matéria-prima: {e}")
-                raise APIException("Erro ao criar matéria-prima")
+                raise APIException(f"Erro ao criar matéria-prima: {e}")
         try:
             logger.info(f"Obejto recebido: {validated_data}")
             arvore_categorias = self.context.get("request").get('arvoreCategoria', [])
@@ -61,9 +61,10 @@ class ProductSerializer(serializers.ModelSerializer):
             validated_data['category'] = categoria
             validated_data['departamento'] = departamento
             validated_data['skuMapeamento'] = validated_data['codigo']
-
+            payload = self.context.get("request", {})
+            id = payload.get('id')
             product, _ = Product.objects.update_or_create(
-                id=validated_data.get('idMapeamento'),
+                external_id=id,
                 defaults=validated_data
             )
 
@@ -139,7 +140,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
             try:
                 variacao, _ = ProductVariation.objects.update_or_create(
-                    idMapeamento=variacao_data['idMapeamento'],
+                    external_id=variacao_data['id'],
                     defaults=self.get_variation_defaults(variacao_data, product)
                 )
                 logger.info(f"Variação processada com sucesso: {variacao.id}")
@@ -157,6 +158,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """
         return {
             'id': variacao_data['id'],
+            'external_id': variacao_data['id'],
             # 'nome': variacao_data['nome'],
             'product': product,
             'skuMapeamento': variacao_data['codigo'],
@@ -233,8 +235,8 @@ class ProductSerializer(serializers.ModelSerializer):
                 print('Materia prima',response['produto'])
                 try:
                     raw_material, _ = MateriaPrima.objects.get_or_create(
-                        id=raw_material_id,
-                        defaults={'name': response['produto']['nome'], 'stock': response['produto']['saldo']}
+                        name=response['produto']['nome'],
+                        defaults={'external_id':response['produto']['id'], 'name': response['produto']['nome'], 'stock': response['produto']['saldo']}
                     )
                     logger.info(f"Materia prima criada com sucesso: {raw_material.id}")
                     return raw_material
@@ -250,40 +252,54 @@ class ProductSerializer(serializers.ModelSerializer):
             raise APIException("Erro de comunicação com a API Tiny")
 
     def handle_materia_prima(self, validated_data):
-        logger.info(f"Criando Handle Materia Prima:{validated_data}")
+        logger.info(f"Criando Handle Materia Prima: {validated_data}")
         try:
-            # Extrair os dados relevantes do validated_data
             payload = self.context.get("request", {})
+            id = payload.get('id')
+            print('id',id)
+            # Verificar se 'id' é válido e existe
 
-            # Extraindo o 'id' do payload original
-            id = payload.get('id', None)
+            if id is not None and MateriaPrima.objects.filter(external_id=id).exists():
+                print('material prima existe')
+                try:
+                    # Atualizar o registro existente
+                    materia_prima = MateriaPrima.objects.get(external_id=id)
+                    print('materia_prima',materia_prima)
 
-            id_mapeamento = validated_data['idMapeamento']
-            name = validated_data['name']
-            stock = validated_data['estoqueAtual']
-            sku_mapeamento = validated_data['codigo']
+                    materia_prima.idMapeamento = validated_data['idMapeamento']
+                    materia_prima.name = validated_data['name']
+                    materia_prima.stock = validated_data['estoqueAtual']
+                    materia_prima.skuMapeamento = validated_data['codigo']
+                    materia_prima.save()
+                    created = False
+                except Exception as e:
+                    logger.error(f"Erro ao atualizar matéria-primaBBBBB: {e}")
+                    raise APIException(f"Erro ao atualizar matéria-prima: {e}")
+            else:
+                try:
+                    print('material prima nao existe')
+                    # Criar um novo registro
+                    materia_prima = MateriaPrima.objects.create(
 
-
-            # Criar ou atualizar o objeto MateriaPrima
-            materia_prima, created = MateriaPrima.objects.update_or_create(
-                id=id,
-                defaults={
-                    'id':id,
-                    'idMapeamento': id_mapeamento,
-                    'name': name,
-                    'stock': stock,
-                    'skuMapeamento': sku_mapeamento
-                    # Adicione aqui outros campos relevantes do modelo MateriaPrima
-                }
-            )
+                        external_id=id,
+                        idMapeamento=validated_data['idMapeamento'],
+                        name=validated_data['name'],
+                        stock=validated_data['estoqueAtual'],
+                        skuMapeamento=validated_data['codigo']
+                    )
+                    created = True
+                except Exception as e:
+                    logger.error(f"Erro ao criar matéria-prima: {e}")
+                    raise APIException(f"Erro ao criar matéria-primaAAAAA{e}")
             if created:
                 logger.info(f"Materia prima criada com sucesso: {materia_prima.id}")
             else:
                 logger.info(f"Materia prima atualizada com sucesso: {materia_prima.id}")
+
             return materia_prima
         except Exception as e:
             logger.error(f"Erro ao criar/atualizar a matéria-prima: {e}")
-            raise APIException("Erro ao criar/atualizar a matéria-prima")
+            raise APIException(f"Erro ao criar/atualizar a matéria-prima {e}")
 
     def processar_item_kit(self, variacao, item_kit, raw_material):
         """

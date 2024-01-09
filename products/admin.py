@@ -9,7 +9,7 @@ from django.utils.html import format_html
 class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
     extra = 0  # Você pode ajustar o número de formulários extras
-    fields = ['nome','idMapeamento', 'skuMapeamento', 'codigo', 'gtin', 'price', 'promotional_price', 'estoqueAtual', 'grade']
+    fields = ['external_id','nome','idMapeamento', 'skuMapeamento', 'codigo', 'gtin', 'price', 'promotional_price', 'estoqueAtual', 'grade']
 
 
 class ProductImageInline(admin.TabularInline):
@@ -19,7 +19,7 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'is_featured','skuMapeamento', 'idMapeamento']
+    list_display = ['external_id','name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'is_featured','skuMapeamento', 'idMapeamento']
     list_filter = ('is_available', 'promotion_active', 'is_featured',)
     list_editable = ('is_available', 'promotion_active', 'is_featured',)
     search_fields = ('name',)
@@ -86,7 +86,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class MateriaPrimaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'stock', 'skuMapeamento', 'idMapeamento')
+    list_display = ('external_id', 'name', 'stock', 'skuMapeamento', 'idMapeamento')
     search_fields = ('name',)
 
 class ProductMaterialAdmin(admin.ModelAdmin):

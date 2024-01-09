@@ -33,6 +33,7 @@ class ProductWebhook(APIView):
                         print('erro pos-salvar',e)
                     try:
                         idmapeamento = serializer.context['request']['idMapeamento']
+                        id = serializer.context['request']['id']
                         mapeamentos = []
                     except Exception as e:
                         print('erro mapeamento',e)
@@ -48,10 +49,10 @@ class ProductWebhook(APIView):
                             try:
                                 try:
                                     logger.info(f'Buscando por idMapeamento')
-                                    produto = MateriaPrima.objects.get(idMapeamento=idmapeamento)
+                                    produto = MateriaPrima.objects.get(idmapeamento=idmapeamento)
                                 except:
                                     logger.info(f'Não encontrou por idMapeamento, tentando por id')
-                                    produto = MateriaPrima.objects.get(id=serializer.context['request']['id'])
+                                    produto = MateriaPrima.objects.get(external_id=serializer.context['request']['id'])
 
                                 logger.info(f'produto {produto}')
                             except Exception as e:
@@ -73,7 +74,7 @@ class ProductWebhook(APIView):
                                     produto = Product.objects.get(idMapeamento=idmapeamento)
                                     # print('produto',produto)
                                 except:
-                                    produto = Product.objects.get(skuMapeamento=serializer.context['request']['codigo'])
+                                    produto = Product.objects.get(external_id=serializer.context['request']['id'])
                                 skumapeamento = produto.skuMapeamento
                                 idmapeamento = produto.idMapeamento
                                 mapeamentos.append({"idMapeamento": idmapeamento,
