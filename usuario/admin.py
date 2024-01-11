@@ -1,9 +1,24 @@
 from django.contrib import admin
 from .models import UserProfile, Address, UserLoginHistory, UserPageVisit
 
+
+from django.contrib import admin
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+# Desregistra o modelo User padrão
+admin.site.unregister(User)
+
+# Extende a classe UserAdmin padrão para adicionar o ID do usuário
+class UserAdmin(BaseUserAdmin):
+    list_display = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff')  # Adicione 'id' aqui
+    # Se você quiser adicionar o 'id' a outras seções como search_fields, list_filter, etc., também pode fazer isso.
+
+# Registra novamente o modelo User com a nova classe UserAdmin
+admin.site.register(User, UserAdmin)
 # Configuração para UserProfile
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'cpf', 'phone_number', 'whatsapp', 'birth_date', 'age', 'loyalty_points', 'newsletter')
+    list_display = ('id','user', 'cpf', 'phone_number', 'whatsapp', 'birth_date', 'age', 'loyalty_points', 'newsletter')
     search_fields = ('user__username', 'cpf', 'phone_number')
     list_filter = ('gender', 'newsletter')
 

@@ -1,3 +1,5 @@
+import time
+
 from rest_framework import serializers
 from products.models import (
     Product, Category, Department, ProductImage,
@@ -228,9 +230,18 @@ class ProductSerializer(serializers.ModelSerializer):
         try:
             response = self.make_tiny_api_request(url)
             if response['status'] != 'OK':
-                logger.error(f"Erro ao processar kit: {response}")
-                raise APIException(f"Erro na API Tiny: {response}")
-            # Verifique se 'stock' existe na resposta
+                # Check for the specific API blocked error
+                if any(erro.get('erro') == 'API Bloqueada - Excedido o número de acessos a API' for erro in
+                       response.get('erros', [])):
+                    logger.info("API rate limit exceeded, waiting for 1 minute")
+                    time.sleep(60)
+                    response = self.make_tiny_api_request(url)
+                    if response['status'] != 'OK':
+                        logger.error(f"Erro ao processar kit: {response}")
+                        raise APIException(f"Erro na API Tiny: {response}")
+                else:
+                    logger.error(f"Erro ao processar kit: {response}")
+                    raise APIException(f"Erro na API Tiny: {response}")
             if 'saldo' in response['produto']:
                 print('Materia prima',response['produto'])
                 try:

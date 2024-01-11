@@ -22,6 +22,7 @@ from setup.view import home, department_detail, category_detail, search,search_v
 from banners.views import track_click
 from tiny_webhook.view import ProductWebhook
 from tiny_webhook.estoque_tiny import tiny_webhook_stock_update
+from importador.view import upload_csv,upload_csv_for_userprofile, upload_csv_for_address
 
 urlpatterns = [
     path('', home, name='home'),
@@ -37,6 +38,9 @@ urlpatterns = [
 
     path('search/<str:q>', search, name='search'),
     path('search_view/<str:q>', search_view, name='search'),
+    path('importador', upload_csv, name='importador'),
+    path('importador_usuario', upload_csv_for_userprofile, name='importador_usuario'),
+    path('importador_endereco', upload_csv_for_address, name='importador_endereco'),
 
     # path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('department/<slug:slug>/', department_detail, name='department_detail'),

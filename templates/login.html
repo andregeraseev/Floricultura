@@ -111,7 +111,8 @@ button:hover {
     .then(data => {
         console.log('Success:', data);
         // Redirecionar o usuário ou mostrar uma mensagem, dependendo da resposta
-        if (data.success) {
+
+        if (data.success==true) {
             window.location.href = '{% url "home"%}';  // Substitua com o URL correto
         } else {
             alert('Falha no login: ' + data.message);

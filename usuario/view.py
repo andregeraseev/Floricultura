@@ -7,7 +7,7 @@ import logging
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from enviadores.email import enviar_email_confirmacao
@@ -49,12 +49,14 @@ def user_login(request):
         print('username',username)
         print('password',password)
         try:
-         login_with_cart(password, request, username)
-         return JsonResponse({'success': True, 'message': 'Login realizado com sucesso.'})
+            login_response = login_with_cart(password, request, username)
+            return JsonResponse(login_response)
+
         except Exception as e:
             print('erros',e)
             logger.error('erros',e)
             return JsonResponse({'success': False, 'message': f'Erro interno do servidor. {e}'})
+
 
 
     except json.JSONDecodeError:
@@ -66,10 +68,20 @@ def user_login(request):
 
 
 def login_with_cart(password, request, username):
-    user = authenticate(request, username=username, password=password)
+    User = get_user_model()
+    try:
+        user = User.objects.get(email=username)
+    except:
+        try:
+            user = authenticate(request, username=username, password=password)
+        except:
+            return {'success': False, 'message': 'Usuário ou senha inválidos.'}
+
+    user = authenticate(request, username=user.username, password=password)
     if user is None:
+        print(f'{username} user is None')
         logger.info(f'Tentativa de login falhou para o usuário {username}')
-        return JsonResponse({'success': False, 'message': 'Usuário ou senha inválidos.'})
+        return {'success': False, 'message': 'Usuário ou senha inválidos.'}
     else:
         logger.info(f'Usuário {username} autenticado com sucesso')
     # Tenta recuperar a sessão anônima e seu carrinho
@@ -80,9 +92,13 @@ def login_with_cart(password, request, username):
     logger.info(f'Usuário {username} logado com sucesso')
     # Recupera ou cria o carrinho para o usuário logado
     user_cart, created = ShoppingCart.objects.get_or_create(user_profile=user.profile)
-    logger.info('incializando a função trransferir_itens_carrinho_anonimo_carrinho_usuario')
-    trransferir_itens_carrinho_anonimo_carrinho_usuario(session_cart, session_cart_items, user_cart)
-
+    logger.info('incializando a função transferir_itens_carrinho_anonimo_carrinho_usuario')
+    try:
+        trransferir_itens_carrinho_anonimo_carrinho_usuario(session_cart, session_cart_items, user_cart)
+        return {'success': True, 'message': 'Login realizado com sucesso.'}
+    except Exception as e:
+        logger.error(f'Erro ao transferir itens do carrinho: {e}')
+        return {'success': False, 'message': 'Erro ao transferir itens do carrinho.'}
 
 def verifica_carrinho_session(request):
     """""""""

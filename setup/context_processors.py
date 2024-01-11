@@ -46,8 +46,13 @@ def get_cart(request):
 
 def global_context(request):
     if request.user.is_authenticated:
-        wishlist_product_ids = request.user.profile.wishlist.values_list('product_id', flat=True)
-        favorite_counter = request.user.profile.wishlist.count()
+        try:
+            wishlist_product_ids = request.user.profile.wishlist.values_list('product_id', flat=True)
+            favorite_counter = request.user.profile.wishlist.count()
+
+        except:
+            wishlist_product_ids = []
+            favorite_counter = 0
 
     else:
         wishlist_product_ids = []

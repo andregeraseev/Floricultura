@@ -11,7 +11,7 @@ from django.contrib.sessions.models import Session
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    cpf = models.CharField(max_length=14, unique=True)
+    cpf = models.CharField(max_length=14, unique=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     whatsapp = models.CharField(max_length=15, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
@@ -155,20 +155,20 @@ class Address(models.Model):
         # Deleta o endereço
         super().delete(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-        # Verifica se existe um user_profile associado
-        if self.user_profile:
-            # Se o endereço atual deve ser o primário
-            if self.is_primary:
-                # Define todos os outros endereços do mesmo perfil como não primários
-                self.user_profile.addresses.filter(is_primary=True).update(is_primary=False)
-        else:
-            # Se não houver um user_profile, verifica se este é o primeiro endereço a ser salvo
-            # Se for, define-o como primário por padrão
-            if not self.__class__.objects.exists():
-                self.is_primary = True
-
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # Verifica se existe um user_profile associado
+    #     if self.user_profile:
+    #         # Se o endereço atual deve ser o primário
+    #         if self.is_primary:
+    #             # Define todos os outros endereços do mesmo perfil como não primários
+    #             self.user_profile.addresses.filter(is_primary=True).update(is_primary=False)
+    #     else:
+    #         # Se não houver um user_profile, verifica se este é o primeiro endereço a ser salvo
+    #         # Se for, define-o como primário por padrão
+    #         if not self.__class__.objects.exists():
+    #             self.is_primary = True
+    #
+    #     super().save(*args, **kwargs)
 
 
     def toggles_self_primary_and_others_not(self):
