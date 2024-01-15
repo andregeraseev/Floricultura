@@ -259,7 +259,7 @@ class ProductSerializer(serializers.ModelSerializer):
                         logger.error(f"Erro ao processar kit: {response}")
                         raise APIException(f"Erro na API Tiny: {response}")
                 else:
-                    logger.debug(f"Erros da API: {response.get('erros', [])}")
+                    logger.error(f"Erros da API: {response.get('erros', [])}")
                     logger.error(f"Erro ao processar kit: {response}")
                     raise APIException(f"Erro na API Tiny: {response}")
             if 'saldo' in response['produto']:
