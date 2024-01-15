@@ -179,6 +179,8 @@ class ProductSerializer(serializers.ModelSerializer):
             response = self.make_tiny_api_request(url)
             if response['status'] != 'OK':
 
+                logger.debug(f"Resposta da API: {response}")
+
                 if any(erro.get('erro') == 'API Bloqueada - Excedido o número de acessos a API' for erro in
                        response.get('erros', [])):
                     logger.info("API rate limit exceeded, waiting for 1 minute")
@@ -188,6 +190,8 @@ class ProductSerializer(serializers.ModelSerializer):
                         logger.error(f"Erro ao processar kit: {response}")
                         raise APIException(f"Erro na API Tiny: {response}")
                 else:
+
+                    logger.debug(f"Erros da API: {response.get('erros', [])}")
                     logger.error(f"Erro ao processar kit: {response}")
                     raise APIException(f"Erro na API Tiny: {response}")
 
