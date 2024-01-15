@@ -248,7 +248,7 @@ class ProductSerializer(serializers.ModelSerializer):
             response = self.make_tiny_api_request(url)
             if response['status'] != 'OK':
 
-                logger.debug(f"Resposta da API: {response}")
+                logger.error(f"Resposta da API: {response}")
                 # Check for the specific API blocked error
                 if any(erro.get('erro') == 'API Bloqueada - Excedido o número de acessos a API' for erro in
                        response.get('erros', [])):
