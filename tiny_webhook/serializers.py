@@ -181,8 +181,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
                 logger.error(f"Resposta da API: {response}")
 
-                if any(erro.get('erro') == 'API Bloqueada - Excedido o número de acessos a API' for erro in
-                       response.get('erros', [])):
+                codigo_erro_bloqueio_api = 6
+                if response.get('codigo_erro') == codigo_erro_bloqueio_api:
                     logger.info("API rate limit exceeded, waiting for 1 minute")
                     time.sleep(60)
                     response = self.make_tiny_api_request(url)
@@ -250,8 +250,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
                 logger.error(f"Resposta da API: {response}")
                 # Check for the specific API blocked error
-                if any(erro.get('erro') == 'API Bloqueada - Excedido o número de acessos a API' for erro in
-                       response.get('erros', [])):
+                codigo_erro_bloqueio_api = 6
+                if response.get('codigo_erro') == codigo_erro_bloqueio_api:
                     logger.info("API rate limit exceeded, waiting for 1 minute")
                     time.sleep(60)
                     response = self.make_tiny_api_request(url)
