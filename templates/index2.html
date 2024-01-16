@@ -206,7 +206,7 @@
                             <li><i class="fa fa-comment-o"></i> {{ post.comments_count }}</li>
                         </ul>
                         <h5><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h5>
-                        <p>{{ post.content|truncatewords:20 }}</p>
+                        <p>{{ post.content|striptags|truncatewords:20 }}</p>
                     </div>
                 </div>
             </div>
