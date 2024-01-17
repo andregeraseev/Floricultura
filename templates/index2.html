@@ -17,9 +17,11 @@
                 {% for departement in departements %}
                 {% if departement.image_department %}
                 <div class="col-lg-3">
+                    <a href="{{departement.get_absolute_url}}">
                     <div class="categories__item set-bg-cover" data-setbg="{{departement.image_department.url}}">
-                        <h5><a href="{{departement.get_absolute_url}}">{{departement.name}}</a></h5>
+                        <h5>{{departement.name}}</h5>
                     </div>
+                    </a>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -198,12 +200,12 @@
             <div class="col-lg-4 col-md-4 col-sm-6">
                 <div class="blog__item">
                     <div class="blog__item__pic">
-                        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+                        <a href="{{ post.get_absolute_url }}"><img src="{{ post.image.url }}" alt="{{ post.title }}"></a>
                     </div>
                     <div class="blog__item__text">
                         <ul>
-                            <li><i class="fa fa-calendar-o"></i> {{ post.pub_date|date:"M d,Y" }}</li>
-                            <li><i class="fa fa-comment-o"></i> {{ post.comments_count }}</li>
+                            <li><i class="fa fa-calendar-o"></i>{{post.pub_date|date:"M d,Y"}}</li>
+                            <li><i class="fa fa-comment-o"></i>{{post.comments_count }}</li>
                         </ul>
                         <h5><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h5>
                         <p>{{ post.content|striptags|truncatewords:20 }}</p>

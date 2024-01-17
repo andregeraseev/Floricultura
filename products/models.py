@@ -175,6 +175,15 @@ class Product(models.Model):
         else:
             return False
 
+    def remover_stock(self, quantidade):
+        if self.product_materials.all():
+            for material in self.product_materials.all():
+                material.materia_prima.stock -= material.quantity_used * quantidade
+                material.materia_prima.save()
+        else:
+            self.estoqueAtual -= quantidade
+            self.save()
+
 class ProductVariation(models.Model):
     external_id = models.CharField(max_length=255, blank=True, null=True)
     nome = models.CharField(max_length=255, blank=True, null=True)
@@ -269,6 +278,15 @@ class ProductVariation(models.Model):
     class Meta:
         ordering = ['price']
 
+    def remover_stock(self, quantidade):
+        if self.variation_materials.all():
+            for material in self.variation_materials.all():
+                material.materia_prima.stock -= material.quantity_used * quantidade
+                material.materia_prima.save()
+        else:
+            self.estoqueAtual -= quantidade
+            self.save()
+
 
 class MateriaPrima(models.Model):
     external_id = models.CharField(max_length=255, blank=True, null=True)
@@ -282,8 +300,6 @@ class MateriaPrima(models.Model):
 
     def save(self, *args, **kwargs):
         print('save')
-
-
 
         if self.pk:
             old_stock = MateriaPrima.objects.get(pk=self.pk).stock

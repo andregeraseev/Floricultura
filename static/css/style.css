@@ -616,7 +616,14 @@ ol {
 }
 
 .header__cart ul li a i {
+    cursor: pointer;
 	font-size: 18px;
+	color: var(--navbar-icons-color);
+}
+
+.header__cart ul li a i:hover {
+    cursor: pointer;
+	font-size: 20px;
 	color: var(--navbar-icons-color);
 }
 
@@ -1160,7 +1167,7 @@ color: var(--theme-color);
 	text-align: center;
 }
 
-.categories__item h5 a {
+.categories__item h5 {
 	font-size: 18px;
 	color: #1c1c1c;
 	font-weight: 700;

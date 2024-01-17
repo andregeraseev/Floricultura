@@ -150,6 +150,7 @@ class ShoppingCart(models.Model):
         for item in self.items.all():
             try:
                 item.product.add_sells(item.quantity)
+                item.product_or_variation.remover_stock(item.quantity)
             except Exception as e:
                 print(e)
 

@@ -133,7 +133,20 @@
     {% block content %}
     <!-- Conteúdo principal da página -->
     {% endblock %}
+<style>
 
+.footer a {
+    color: #000000;
+    text-decoration: none;
+}
+.footer a:hover,
+.footer a:focus {
+	text-decoration: none;
+	outline: none;
+	color: #000000;
+	font-weight: 600;
+}
+</style>
     <footer>
        <!-- Footer Section Begin -->
 <footer class="footer spad">
@@ -146,8 +159,9 @@
                     </div>
                     <ul>
                         <li>Endereço: {{ footer_info.address }}</li>
-                        <li>Telefone: {{ footer_info.phone }}</li>
-                        <li>Email: {{ footer_info.email }}</li>
+                        <li>Telefone: <a href="tel:{{ footer_info.phone }}">{{ footer_info.phone }}</a></li>
+                        <li>Email: <a href="mailto:{{ footer_info.email }}">{{ footer_info.email }}</a></li>
+
                     </ul>
                 </div>
             </div>
@@ -189,7 +203,7 @@
                             Copyright &copy;<script>document.write(new Date().getFullYear());</script>
                             All rights reserved | Esse site foi feito com <i class="fa fa-heart"
                                                                                 aria-hidden="true"></i> by <a
-                                href="https://colorlib.com" target="_blank">Andre Geraseev</a>
+                                href="https://www.linkedin.com/in/andregeraseev/" target="_blank">Andre Geraseev</a>
                             <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                         </p>
                     </div>
