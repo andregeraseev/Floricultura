@@ -127,6 +127,7 @@ p {
 
 img {
 	max-width: 100%;
+	height: auto;
 }
 
 input:focus,
@@ -2085,7 +2086,7 @@ color: var(--theme-color);
     position: relative;
     z-index: 1;
     margin-top: 0px;
-    bottom: 6%;
+    bottom: 10%;
     padding: 9px 0px;
 
     font-size: 1rem;
@@ -4285,7 +4286,18 @@ display: none;
 	overflow: hidden;
 }
 
-
+	h1 {
+	font-size: 2.8rem;
+}
+.product__controls ul li {
+    list-style: none;
+    font-size: .8rem;
+    color: #1c1c1c;
+    display: inline-block;
+    margin-right: 25px;
+    position: relative;
+    cursor: pointer;
+}
 
 
 
@@ -4343,6 +4355,10 @@ display: none;
 		font-size: 24px;
 	}
 
+	h1 {
+	font-size: 2rem;
+}
+
 
 
 	.hero__banners {
@@ -4377,4 +4393,23 @@ display: none;
 	position: relative;
 	overflow: hidden;
 }
+
+.product__controls ul li {
+    font-size: .6rem;
 }
+
+
+.product__pagination a,
+.blog__pagination a {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	margin-right: 10px
+
+}
+
+
+}
+
+

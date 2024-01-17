@@ -286,3 +286,85 @@ def upload_csv_for_address(request):
 # Adapte conforme a necessidade do seu modelo de dados e regras de negócio.
 
 
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.db import transaction
+import pandas as pd
+from usuario.models import UserProfile
+from pedidos.models import Order  # Substitua 'seu_app' pelo nome do seu app Django
+from django.db import transaction, IntegrityError
+
+def upload_csv_for_orders(request):
+    if request.method != "POST":
+        return render(request, "importador/importador_pedidos.html")
+
+    csv_file = request.FILES.get('file')
+    if not csv_file or not csv_file.name.endswith('.csv'):
+        return HttpResponse("O arquivo não é um CSV.")
+
+    df = pd.read_csv(csv_file)
+    error_log = []
+    success_count = 0
+
+    for index, row in df.iterrows():
+        if pd.isna(row['user_id']):
+            error_log.append(f"Registro {index}: ID do usuário está vazio.")
+            continue
+
+        try:
+            with transaction.atomic():
+                user = User.objects.get(id=row['user_id'])
+                user_profile = UserProfile.objects.get(user=user)
+                order, created = Order.objects.get_or_create(id=row['id'], user_profile=user_profile)
+
+                # Mapeamento dos campos
+
+                order.total = row['total']
+                order.status = row['status']
+                order.tipo_frete = row['frete']
+                order.valor_frete = row['valor_frete']
+                order.payment_method = row['metodo_de_pagamento']
+                order.subtotal = row['subtotal']
+                order.coupon = row['cupom_id']
+                order.discount = row['desconto']
+                order.destinatario = user.get_full_name()
+                order.email_pedido = user.email
+                order.cpf_destinatario = user_profile.cpf
+                order.rua = row['rua']
+                order.numero = row['numero']
+                order.bairro = row['bairro']
+                order.cidade = row['cidade']
+                order.complemento = row.get('complemento', '')
+                order.estado = row['estado']
+                order.cep = row['cep']
+                order.id_tiny = row['numero_pedido_tiny']
+                order.mercadopago_link = row['link_mercado_pago']
+                order.mercado_pago_id = row['mercado_pago_id']
+                order.rastreio = None if pd.isna(row['rastreamento']) else row['rastreamento']
+                order.em_producao = row['producao']
+                order.observacoes = None if pd.isna(row['observacoes']) else row['observacoes']
+                order.is_primary = True if row['status'] == 'Enviado' or row['status'] == 'pago' or  row['status'] == 'Pago' else False
+                order.save()
+                success_count += 1
+
+
+        except IntegrityError as e:
+
+            error_log.append(f"Registro {index}: Erro de integridade - {str(e)}")
+
+        except User.DoesNotExist:
+
+            error_log.append(f"Registro {index}: Usuário não encontrado.")
+
+        except Exception as e:  # Para outros erros inesperados
+
+            error_log.append(f"Registro {index}: Erro inesperado - {str(e)}")
+
+        response_message = f"Importação concluída. {success_count} pedidos salvos com sucesso. "
+
+        if error_log:
+            response_message += f"Erros encontrados em {len(error_log)} registros: {error_log}"
+
+    return HttpResponse(response_message)
+
+    return render(request, "importador/importador_pedidos.html")

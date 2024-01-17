@@ -1,5 +1,6 @@
 from carrinho.models import ShoppingCart
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 import json
 import logging
@@ -356,4 +357,20 @@ class PedidoUserDetailView(View):
         context = {'pedido': pedido}
         return render(request, 'usuario/detalhes_pedido.html', context)
 
+
+def verificar_email(request):
+    # print('verificando email')
+    if request.method == 'POST':
+        # print('Verificação email metodo POST')
+
+        email = request.POST.get('email', None)
+        # print(email)
+        if email:
+            if User.objects.filter(email=email).exists():
+
+                return JsonResponse({'success':True, 'existe': True})
+            else:
+
+                return JsonResponse({'success':True,'existe': False})
+    return JsonResponse({'existe': False})
 

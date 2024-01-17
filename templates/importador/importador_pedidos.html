@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Importar de Pedidos</title>
+</head>
+<body>
+    <h1>Importar de Pedidos</h1>
+    <form action="{% url 'importador_pedidos' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <label for="file-input">Selecione o arquivo CSV:</label>
+            <input type="file" id="file-input" name="file" required>
+        </div>
+        <button type="submit">Importar</button>
+    </form>
+
+    {% if messages %}
+        <div>
+            <h2>Mensagens</h2>
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</body>
+</html>

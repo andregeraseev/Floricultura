@@ -22,7 +22,9 @@ from setup.view import home, department_detail, category_detail, search,search_v
 from banners.views import track_click
 from tiny_webhook.view import ProductWebhook
 from tiny_webhook.estoque_tiny import tiny_webhook_stock_update
-from importador.view import upload_csv,upload_csv_for_userprofile, upload_csv_for_address
+from importador.view import upload_csv,upload_csv_for_userprofile, upload_csv_for_address,upload_csv_for_orders
+from django.contrib.auth import views as auth_views
+from usuario.view import verificar_email
 
 urlpatterns = [
     path('', home, name='home'),
@@ -41,12 +43,15 @@ urlpatterns = [
     path('importador', upload_csv, name='importador'),
     path('importador_usuario', upload_csv_for_userprofile, name='importador_usuario'),
     path('importador_endereco', upload_csv_for_address, name='importador_endereco'),
+    path('importador_pedidos', upload_csv_for_orders, name='importador_pedidos'),
 
     # path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('department/<slug:slug>/', department_detail, name='department_detail'),
     path('category/<slug:slug>/', category_detail, name='category_detail'),
     # path('add_to_cart/', add_to_cart, name='add_to_cart'),
     # path('delete_item_cart/', delete_item_cart, name='delete_item_cart'),
+
+
 
 
 
@@ -58,6 +63,14 @@ urlpatterns = [
 
 #     TRACKING BANNER
     path('track-click/<int:banner_id>/<str:banner_type>/', track_click, name='track-click'),
+
+# resetpassword
+    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('usuario/', include('django.contrib.auth.urls')),
+    path('verificar_email/', verificar_email, name='verificar_email'),
 
 ]
 if settings.DEBUG:
