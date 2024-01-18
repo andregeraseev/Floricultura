@@ -12,6 +12,7 @@ mercadopago = MercadoPagoView.as_view()
 urlpatterns = [
     path('', pedido_view, name='checkout'),
     path('mudar_endereco', mudar_endereco, name='mudar_endereco'),
+    path('remover-cupom/', PedidoView.as_view(), name='remover_cupom'),
 
 
     path('orders_view/', orders_view, name='orders_view'),

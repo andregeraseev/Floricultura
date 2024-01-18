@@ -1,4 +1,4 @@
-from carrinho.models import ShoppingCart
+from carrinho.models import ShoppingCart, Cupom
 from django import forms
 from .models import Order
 from pedidos.correios import cotacao_frete_correios
@@ -29,7 +29,7 @@ class CheckoutForm(forms.Form):
         label='Frete'
 
     )
-    coupon = forms.CharField(required=False, label='Cupom de Desconto')
+
 
     def clean(self):
         cleaned_data = super().clean()
@@ -72,7 +72,7 @@ class CheckoutForm(forms.Form):
         return cleaned_data
 
     def clean_frete(self):
-        print('clean_frete')
+        # print('clean_frete')
         frete = self.cleaned_data.get('frete')
         if not frete:
             raise forms.ValidationError('Por favor, escolha uma opção de frete.')
@@ -80,23 +80,23 @@ class CheckoutForm(forms.Form):
         # Divide o valor do frete em código do serviço e valor
         codigo_servico, valor_frete_enviado = frete.split('-')
         valor_frete_enviado = float(valor_frete_enviado)
-        print(codigo_servico, valor_frete_enviado)
+        # print(codigo_servico, valor_frete_enviado)
 
         # Verificar se o frete enviado corresponde a uma das opções válidas
         opcoes_validas = dict(self.fields['frete'].choices)
-        print(opcoes_validas)
+        # print(opcoes_validas)
         if frete not in opcoes_validas:
             raise forms.ValidationError('A opção de frete selecionada é inválida.')
 
         return frete
 
     def __init__(self, *args, **kwargs):
-        print('initial')
-        print(kwargs, args)
+        # print('initial')
+        # print(kwargs, args)
         frete_choices = kwargs.pop('frete_choices', [])
         super(CheckoutForm, self).__init__(*args, **kwargs)
         self.fields['frete'].choices = frete_choices
-        print(kwargs,args)
+        # print(kwargs,args)
         try:
             user = kwargs.get('initial').get('user')
         except:

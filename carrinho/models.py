@@ -7,6 +7,7 @@ from usuario.models import UserProfile
 from pedidos.models import Order, OrderItem
 from django.utils.translation import gettext_lazy as _
 import logging
+from decimal import Decimal
 logger = logging.getLogger('carrinho')
 
 class ShoppingCart(models.Model):
@@ -14,6 +15,25 @@ class ShoppingCart(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    cupom = models.ForeignKey('Cupom', on_delete=models.SET_NULL, null=True, blank=True)
+
+    @property
+    def desconto(self):
+        if self.cupom:
+            # Desconto fixo
+            if self.cupom.desconto_fixo:
+                # Garante que o desconto não seja maior que o total do pedido
+                return min(self.cupom.desconto_fixo, self.total)
+
+            # Desconto percentual
+            elif self.cupom.desconto_percentual:
+                desconto_percentual = self.cupom.desconto_percentual / Decimal(100)
+                desconto_calculado = (Decimal(desconto_percentual * self.total)).quantize(Decimal('0.01'))
+                # Garante que o desconto não seja negativo
+                return max(desconto_calculado, Decimal(0))
+
+        # Caso não haja cupom ou nenhum tipo de desconto
+        return Decimal(0)  # Retorna 0 em vez de False para manter consistência no tipo de retorno
 
     def __str__(self):
         return f"Carrinho de {self.user_profile.user.username if self.user_profile else 'Anonymous'} 'ID' { self.user_profile.id if self.user_profile else 'Anonymous'} Cart ID{self.id}"
@@ -29,6 +49,9 @@ class ShoppingCart(models.Model):
     def total(self):
         return sum(item.product_or_variation.price_or_promocional_price * item.quantity for item in self.items.all())
 
+    @property
+    def total_com_desconto(self):
+        return self.total - self.desconto
     def verifica_estoque_suficiente_para_adicao(self,product, variation, quantidade_adicional):
         print('verificandoestoque')
         if product.has_variations():
@@ -137,6 +160,7 @@ class ShoppingCart(models.Model):
     def clear(self):
         self.items.all().delete()
 
+
     @property
     def count_items_quantity(self):
         return sum(item.quantity for item in self.items.all())
@@ -161,6 +185,9 @@ class ShoppingCart(models.Model):
                 quantity=item.quantity,
                 price=item.product_or_variation.price_or_promocional_price
             )
+        order.cupom = self.cupom
+        order.discount = self.desconto
+
         self.clear()
         return order
 

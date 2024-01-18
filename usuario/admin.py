@@ -11,7 +11,7 @@ admin.site.unregister(User)
 
 # Extende a classe UserAdmin padrão para adicionar o ID do usuário
 class UserAdmin(BaseUserAdmin):
-    list_display = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff')  # Adicione 'id' aqui
+    list_display = ('id', 'username', 'profile', 'email', 'first_name', 'last_name', 'is_staff')  # Adicione 'id' aqui
     # Se você quiser adicionar o 'id' a outras seções como search_fields, list_filter, etc., também pode fazer isso.
 
 # Registra novamente o modelo User com a nova classe UserAdmin

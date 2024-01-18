@@ -20,6 +20,7 @@ cart_view = CartView.as_view()
 
 urlpatterns = [
     path('', cart_view, name='cart'),
+
     # path('add_to_cart/', cart_view, name='add_to_cart'),
     # path('delete_item_cart/', cart_view, name='delete_item_cart'),
     # path('cart_counter_items/', cart_view, name='cart_counter_items'),

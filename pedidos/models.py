@@ -53,6 +53,7 @@ class Order(models.Model):
 
     # Cupom de desconto
     coupon = models.CharField(max_length=100)
+    cupom = models.ForeignKey('carrinho.Cupom', on_delete=models.SET_NULL, null=True, blank=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     observacoes = models.TextField(blank=True, null=True)
     em_producao = models.BooleanField(default=False)

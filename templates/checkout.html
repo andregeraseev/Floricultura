@@ -129,6 +129,28 @@
 
                         </div>
                     </form>
+
+                    {% if cart.cupom %}
+    <div class="cupom-aplicado">
+        <p>Cupom aplicado: <strong>{{ cart.cupom.codigo }}</strong></p>
+        <form method="post" action="{% url 'remover_cupom' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="remover_cupom">
+            <button type="submit" class="site-btn">Remover Cupom</button>
+        </form>
+    </div>
+{% else %}
+    <form id="cupom-form" method="post">
+        <div class="form-group">
+            {% csrf_token %}
+            <input type="hidden" name="user" value="{{ request.user }}">
+            <input type="hidden" name="cart_id" value="{{ cart.id }}">
+            <input type="hidden" name="form_type" value="cupom">
+            {% crispy form_cupom %}
+            <button type="submit" class="site-btn">Aplicar Cupom</button>
+        </div>
+    </form>
+{% endif %}
                     {% endif %}
                 </div>
 
@@ -144,9 +166,11 @@
                             {% endfor %}
 
                         </ul>
-                        <div class="checkout__order__subtotal">Subtotal <span id="valor_subtotal">R${{cart.total}}</span></div>
+
+                        <div class="checkout__order__shipping">Subtotal <span id="valor_subtotal">R${{cart.total}}</span></div>
                         <div class="checkout__order__shipping">Frete <span id="valor_frete">R${{cart.frete|default:0.00}}</span></div>
-                        <div class="checkout__order__total">Total <span id="valor_total">R${{cart.total}}</span></div>
+                        <div class="checkout__order__shipping">Desconto <span id="valor_desconto">R${{cart.desconto|default:0.00}}</span></div>
+                        <div class="checkout__order__total">Total <span id="valor_total">R${{cart.total_com_desconto}}</span></div>
 
                         {% if adress %}
                         <button type="submit" id="order-submit" class="site-btn" form="order-form">FINALIZAR PEDIDO</button>
@@ -387,10 +411,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function atualizarTotal() {
     // Obter valores do subtotal e do frete
+    var desconto = parseFloat(document.getElementById('valor_desconto').textContent.replace('R$', ''));
     var subtotal = parseFloat(document.getElementById('valor_subtotal').textContent.replace('R$', ''));
     var frete = parseFloat(document.getElementById('valor_frete').textContent.replace('R$', ''));
     // Calcular o total
-    var total = subtotal + frete;
+    var total = subtotal + frete - desconto
     // Atualizar o valor total na página
     document.getElementById('valor_total').textContent = 'R$' + total.toFixed(2);
 }

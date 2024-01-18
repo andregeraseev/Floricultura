@@ -1,4 +1,5 @@
 from carrinho.models import ShoppingCart, ShoppingCartItem
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from enviadores.email import enviar_email_pedido_criado, enviar_email_rastreio
@@ -18,6 +19,7 @@ from usuario.models import Address
 from pedidos.forms import CheckoutForm, ComprovanteForm
 from pedidos.correios import cotacao_frete_correios
 from mercadopago_pagamento.mercadopago_preference import cria_preferencia
+from carrinho.forms import CupomForm
 logger = logging.getLogger('pedido')
 
 def adicionar_rastreio(request):
@@ -114,12 +116,13 @@ class PedidoView(View):
     adicionar itens, remover itens e renderizar o carrinho.
     """
 
+
+
     def get(self, request, *args, **kwargs):
         request.GET.get('cart')
         cart = get_user_cart(request)
         kwargs = {'user': request.user}
         kwargs['cart_id'] = cart.id
-        form = AddressForm(initial=kwargs)
 
         if request.user.is_authenticated:
             adress = request.user.profile.addresses.filter(is_primary=True).first()
@@ -127,31 +130,18 @@ class PedidoView(View):
             session = Session.objects.get(session_key=request.session.session_key)
             adress = Address.objects.filter(session=session, is_primary=True).first()
 
-
-        if adress:
-            # print(get_user_cart(request))
-            # print('adress',adress.cep)
-            try:
-                response = cotacao_frete_correios(request, get_user_cart(request), adress)
-            except Exception as e:
-                print('erros cotacao_frete_correios', e)
-                return render(request, 'checkout.html', {'form': form, 'adress': adress, })
-            # print('response',response)
-            data = json.loads(response.content.decode('utf-8'))
-            frete_choices = [
-                (f"{item['codigo']}-{item['valor']}", f"{item['codigo']} - {item['valor']} - {item['prazodeentrega']}") for
-                item in
-                data.get('results', [])]
-
-            form_pedido = CheckoutForm( initial=kwargs, frete_choices=frete_choices)
-
-        else:
-            form_pedido = CheckoutForm(initial=kwargs)
-
-        return render(request, 'checkout.html', {'form': form , 'adress':adress, 'form_pedido':form_pedido})
+        form, form_cupom, form_pedido = self.create_forms(request, adress)
+        return render(request, 'checkout.html', {
+            'form': form,
+            'adress': adress,
+            'form_pedido': form_pedido,
+            "form_cupom": form_cupom
+        })
 
     def post(self, request, *args, **kwargs):
+
         form_type = request.POST.get('form_type')
+        form_cupom = CupomForm()
         if request.user.is_authenticated:
             adress = request.user.profile.addresses.filter(is_primary=True).first()
             session = None
@@ -159,14 +149,19 @@ class PedidoView(View):
             session = Session.objects.get(session_key=request.session.session_key)
             adress = Address.objects.filter(session=session, is_primary=True).first()
 
+        if form_type == 'remover_cupom':
+            return self.remover_cupom(request)
         if form_type == 'address':
-            return self.formulario_endereco(request,session,adress)
+            return self.formulario_endereco(request, session, adress)
         elif form_type == 'order':
-            return self.fomulario_pedido(request,session,adress)
+            return self.fomulario_pedido(request, session, adress)
+        elif form_type == 'cupom':
+            return self.fomulario_cupom(request, session, adress, **kwargs)
         else:
             return JsonResponse({'success': False, 'error': 'Formulário inválido'}, status=400)
 
     def fomulario_pedido(self, request,session,adress):
+        form_cupom = CupomForm()
         response = cotacao_frete_correios(request, get_user_cart(request), adress)
         data = json.loads(
             response.content.decode('utf-8'))
@@ -178,6 +173,8 @@ class PedidoView(View):
         form_pedido = CheckoutForm(request.POST, frete_choices=frete_choices)
 
         if form_pedido.is_valid():
+
+
             # Crie a ordem aqui com as informações do formulário e do carrinho
             if request.user.is_authenticated:
                 user = request.user.profile
@@ -192,13 +189,31 @@ class PedidoView(View):
                 anonimo = True
                 adress = Address.objects.filter(session=session, is_primary=True).first()
             cart = get_user_cart(request)
+
+            if cart.cupom != None:
+
+                print('request.POST', request.POST)
+                cupom = {'cupom': cart.cupom.codigo}
+                form_cupom = CupomForm(cupom, initial={'user': user.user, 'total_pedido': cart.total, })
+                if form_cupom.is_valid():
+                    print('form_cupom valido')
+                    pass
+                else:
+                    print('form_cupom invalido')
+                    print('cart.cupom', cart.cupom)
+                    cart.cupom = None
+                    cart.save()
+                    return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,'form_cupom': form_cupom,})
+
+
             try:
                 order = cart.finalize_purchase()  # Converte os itens do carrinho em itens da ordem
             except Exception as e:
                 print('erros finalize_purchase', e)
-                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})
+                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,'form_cupom':form_cupom})
 
             try:
+
                 codigo_servico, valor_frete = form_pedido.cleaned_data['frete'].split('-')
                 order.tipo_frete = codigo_servico
                 order.valor_frete = float(valor_frete)
@@ -226,7 +241,9 @@ class PedidoView(View):
                     enviar_email_pedido_criado(order.email_pedido, order.destinatario, order)
                 except Exception as e:
                     print('erros enviar_email_pedido_criado', e)
-
+                if cart.cupom != None:
+                    cart.cupom = None
+                    cart.save()
                 if order.payment_method == 'mercado_pago':
                     return redirect(mercadopagolink)
                 else :
@@ -234,12 +251,13 @@ class PedidoView(View):
 
             except Exception as e:
                 print('erros', e)
-                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,})
+                return render(request, 'checkout.html', {'form_pedido': form_pedido,'adress':adress,'form_cupom': form_cupom,})
             return redirect('home')
         else:
-            return render(request, 'checkout.html', {'form_pedido': form_pedido, 'adress':adress,})
+            return render(request, 'checkout.html', {'form_pedido': form_pedido, 'adress':adress,'form_cupom': form_cupom,})
 
     def formulario_endereco(self, request,session,adress):
+        form_cupom = CupomForm()
         form = AddressForm(request.POST)
         if form.is_valid():
             print('Adressform valido')
@@ -264,9 +282,69 @@ class PedidoView(View):
                 return redirect('checkout')
             except Exception as e:
                 print('erros', e)
-                return render(request, 'checkout.html', {'form': form})
+                return render(request, 'checkout.html', {'form': form, 'form_cupom':form_cupom})
         print('Adressform invalido')
         return render(request, 'checkout.html', {'form': form})
+
+    def fomulario_cupom(self, request, session, adress, **kwargs):
+        # Obtém as opções de frete sem alterações
+        frete_choices = self.get_frete_choices(request, adress)
+        print('request',request.POST)
+        # Instancia o form_pedido sem passar o request.POST
+        form_pedido = CheckoutForm(None, frete_choices=frete_choices)
+        cart = get_user_cart(request)
+        user = request.user
+        total_pedido = cart.total
+        # Tratamento do form_cupom permanece o mesmo
+        form_cupom = CupomForm(request.POST, initial={'user': user, 'total_pedido': total_pedido})
+        if form_cupom.is_valid():
+            try:
+                cart.cupom = form_cupom.cleaned_data['cupom']
+                cart.save()
+                return redirect('checkout')
+            except Exception as e:
+                print('erros', e)
+
+        # Renderiza a resposta com form_pedido não validado
+        return render(request, 'checkout.html', {
+            'form_cupom': form_cupom,
+            'adress': adress,
+            'form_pedido': form_pedido
+        })
+
+    def create_forms(self, request, adress):
+        # Lógica comum para criar e preencher formulários
+        kwargs = {'user': request.user}
+        if adress:
+            kwargs['cart_id'] = get_user_cart(request).id
+            form = AddressForm(initial=kwargs)
+            form_cupom = CupomForm()
+            frete_choices = self.get_frete_choices(request, adress)
+            form_pedido = CheckoutForm(initial=kwargs, frete_choices=frete_choices)
+        else:
+            form = AddressForm(initial=kwargs)
+            form_cupom = CupomForm()
+            form_pedido = CheckoutForm(initial=kwargs)
+
+        return form, form_cupom, form_pedido
+
+    def get_frete_choices(self, request, adress):
+        # Lógica para obter frete_choices
+        try:
+            response = cotacao_frete_correios(request, get_user_cart(request), adress)
+            data = json.loads(response.content.decode('utf-8'))
+            return [(f"{item['codigo']}-{item['valor']}",
+                     f"{item['codigo']} - {item['valor']} - {item['prazodeentrega']}")
+                    for item in data.get('results', [])]
+        except Exception as e:
+            print('erros cotacao_frete_correios', e)
+            return []
+
+    def remover_cupom(self, request):
+        cart = get_user_cart(request)
+        cart.cupom = None
+        cart.save()
+        return redirect('checkout')
 
     def delete(self, request):
         """
@@ -352,7 +430,7 @@ class PedidoView(View):
 from django.http import JsonResponse
 from .models import Order
 
-
+@staff_member_required
 def orders_view(request):
     # Aqui você pode adicionar qualquer contexto adicional necessário
     context = {}
@@ -525,7 +603,7 @@ def visualizar_pedido(request, order_id):
 
     return render(request, 'dashboard_admin/visualizar_pedido.html', {'order': order,'items_por_localizacao':items_por_localizacao})
 
-
+@staff_member_required
 def imprimir_selecionados(request):
     order_ids = request.GET.get('ids')
 

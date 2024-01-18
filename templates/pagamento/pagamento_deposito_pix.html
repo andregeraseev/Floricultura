@@ -140,7 +140,10 @@ form {
 
                             </ul>
                             <div class="checkout__order__subtotal">Subtotal <span id="valor_subtotal">R${{order.subtotal}}</span></div>
-                            <div class="checkout__order__shipping">Frete <span id="valor_frete">R${{order.valor_frete|default:0.00}}</span></div>
+                            {% if order.cupom %}
+                            <div class="checkout__order__subtotal">Desconto <span id="valor_desconto">R${{order.discount}}</span></div>
+                            {% endif %}
+                            <div class="checkout__order__subtotal">Frete <span id="valor_frete">R${{order.valor_frete|default:0.00}}</span></div>
                             <div class="checkout__order__total">Total <span id="valor_total">R${{order.total}}</span></div>
 
 
