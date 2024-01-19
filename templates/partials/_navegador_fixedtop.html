@@ -16,7 +16,7 @@
 }
 .products-search {
 
-    border: 1px solid #dc3545;
+    border: 1px solid {{site_setting.theme_color}};
     align-content: center;
     background: white;
     max-height: 300px;
@@ -47,7 +47,7 @@
 
 /* Estiliza o manipulador da barra de rolagem */
 .products-search::-webkit-scrollbar-thumb {
-  background-color: #dc3545; /* Cor do manipulador */
+  background-color: {{site_setting.theme_color}}; /* Cor do manipulador */
 
   border: 3px solid rgba(0, 0, 0, 0); /* Cor da borda do manipulador */
 }
@@ -136,7 +136,7 @@ margin-bottom: 10px
 
 .search-results-bar {
     width: 100%;
-    background-color: #dc3545;
+    background-color: {{site_setting.theme_color}};
     color: white;
     padding: 10px;
     display: flex;
