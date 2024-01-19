@@ -150,7 +150,10 @@ ol {
 	margin: 0;
 }
 
-
+.breadcrumb-section {
+    /* Exemplo de gradiente de azul para verde */
+    background: linear-gradient(to right, var(--theme-color), var(--header-secundario-color));
+}
 
 /*---------------------
   Helper CSS
@@ -905,7 +908,7 @@ ol {
     width: 100%;
     padding: 0.25rem 1.5rem;
     clear: both;
-    color: #212529;
+    color: #ffffff75;
     text-align: inherit;
     white-space: nowrap;
     background-color: transparent;
@@ -2078,7 +2081,7 @@ color: var(--theme-color);
 }
 
 .add-to-cart-btn:hover {
-    background-color: #f56472;
+    filter: brightness(1.2);
 }
 
 .close-btn {
@@ -3307,7 +3310,7 @@ color: var(--theme-color);
 -----------------------*/
 
 .footer {
-	background: #F3F6FA;
+	background: var(--footer-bg-color);
 	padding-top: 70px;
 	padding-bottom: 0;
 }

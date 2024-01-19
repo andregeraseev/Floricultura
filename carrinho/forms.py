@@ -128,7 +128,7 @@ class CupomForm(forms.Form):
 
             if not self.check_minimo_compra(cupom):
                 print('check_minimo_compra')
-                raise forms.ValidationError('O valor mínimo de compra para este cupom não foi atingido.')
+                raise forms.ValidationError(f'O valor mínimo de compra R${cupom.minimo_compra} para este cupom não foi atingido.')
 
             # Adicione outras validações conforme necessário.
 
