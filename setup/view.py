@@ -1,6 +1,9 @@
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from pedidos.models import Order
 
 from products.models import Product, Department, Category, ProductVariation, ProductMaterial
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -9,6 +12,7 @@ from blog.models import Post
 from django.db.models import Case, When, Value, F, Min, DecimalField
 from django.db.models.functions import Coalesce
 from django.db.models import Case, When, Value, BooleanField, F, Q, Exists, OuterRef
+from rest_framework.utils import json
 
 
 def product_with_stock_order(base_query):
@@ -100,6 +104,146 @@ def product_with_stock_filter(base_query):
 
     return products_with_stock
 
+from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
+
+def get_active_users_with_session_start_formatted():
+    active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
+    user_sessions = {}
+
+    # Obtendo a duração da sessão em segundos
+    session_duration = settings.SESSION_COOKIE_AGE
+
+    # Duração padrão de uma sessão em Django (modifique conforme sua configuração)
+    session_duration = timedelta(seconds=session_duration)  # Exemplo: 1 hora
+
+    for session in active_sessions:
+        session_data = session.get_decoded()
+        uid = session_data.get('_auth_user_id')
+        if uid:
+            try:
+                user = User.objects.get(id=uid)
+                # Estimativa do início da sessão
+                session_start = session.expire_date - session_duration
+                session_start_formatted = session_start.strftime("%d/%m/%Y")
+                user_sessions[user] = session_start_formatted
+            except User.DoesNotExist:
+                continue
+    print('user_sessions',user_sessions)
+    return user_sessions
+
+
+
+from django.db.models import Count
+from django.db.models.functions import TruncDay
+from datetime import timedelta
+from django.utils import timezone
+from django.contrib.auth.models import User  # Substitua caso esteja usando um modelo de usuário customizado
+
+def get_daily_user_registrations():
+    # Calculando a data de início para os últimos 60 dias
+    start_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=7)
+    print('start_date',start_date)
+    # Selecionando todos os perfis de usuário desde a data de início
+    all_profiles = User.objects.filter(date_joined__gte=start_date)
+
+    # Contando os registros de usuário por dia
+    registration_data = all_profiles.annotate(day=TruncDay('date_joined')) \
+                                    .values('day') \
+                                    .annotate(daily_count=Count('id')) \
+                                    .order_by('day')
+
+    # Convertendo os dados em uma lista de contagens diárias
+    daily_registrations_list = [(reg['day'], reg['daily_count']) for reg in registration_data]
+
+    # Garantindo que todos os dias estejam representados
+    daily_registrations_list = [(reg['day'].strftime("%d/%b"), reg['daily_count']) for reg in registration_data]
+    daily_registrations_dict = {reg[0]: reg[1] for reg in daily_registrations_list}
+    for day in (start_date + timedelta(days=n) for n in range(7)):
+        formatted_day = day.strftime("%d/%b")
+        daily_registrations_dict.setdefault(formatted_day, 0)
+
+    return list(daily_registrations_dict.values()), list(daily_registrations_dict.keys())
+
+
+from django.db.models import Count, Q
+from pedidos.models import Order, OrderItem
+
+def get_top_selling_products():
+    produtos_mais_vendidos = Product.objects.all().order_by('-sells')[:10]
+    produtos_mais_vendidos_dic = [{'nome': product.name, 'primeiraQuantidade': product.sells, 'segundaQuantidade': product.quantidade_em_estoque} for product in produtos_mais_vendidos]
+
+    produtos_mais_vendidos_json = json.dumps(produtos_mais_vendidos_dic)
+
+    return produtos_mais_vendidos_json
+
+
+from products.models import Product  # Substitua por seu modelo de vendas
+
+from pedidos.models import Order
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db.models import Sum, Count
+def get_monthly_sales():
+    # Mapeamento de número do mês para nome do mês
+    month_names = {
+        1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+        5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+        9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+    }
+
+    # Calculando a data de início para os últimos 12 meses
+    start_date = timezone.now().replace(day=1) - timedelta(days=365)
+
+    # Selecionando todas as ordens desde a data de início
+    all_orders = Order.objects.filter(created_at__gte=start_date)
+
+    # Agrupando as vendas por mês e somando os totais
+    sales_data = all_orders.annotate(month=TruncMonth('created_at')) \
+                           .values('month') \
+                           .annotate(total_sales=Sum('total'), total_orders=Count('id')) \
+                           .order_by('month')
+
+    # Criando um dicionário com os totais de vendas por nome do mês
+    monthly_sales_dict = {month_names[sale['month'].month]: int(sale['total_sales']) for sale in sales_data}
+    monthly_orders_dict = {month_names[sale['month'].month]: sale['total_orders'] for sale in sales_data}
+    # Garantindo que todos os meses estejam representados no dicionário
+    for month in range(1, 13):
+        monthly_sales_dict.setdefault(month_names[month], 0)
+        monthly_orders_dict.setdefault(month_names[month], 0)
+
+    print('monthly_sales_dict', monthly_sales_dict.values())
+
+    return list(monthly_sales_dict.values()), list(monthly_sales_dict.keys()), list(monthly_orders_dict.values())
+
+def dashboard(request):
+    vendas, meses, vendas_mensais = get_monthly_sales()
+    usuarios_cadastrados, meses_cadastro = get_daily_user_registrations()
+    produtos_mais_vendidos = get_top_selling_products()
+    usuarios_ativos = get_active_users_with_session_start_formatted()
+    # print('meses', meses)
+    # print('vendas', vendas)
+    # print('meses_cadastro_numero_de_usuarioos', usuarios_cadastrados)
+    # print('meses_cadastro', meses_cadastro)
+    #
+    # print('vendas', vendas)
+
+    context = {
+    'produtos_mais_vendidos': produtos_mais_vendidos,
+    'usuarios_ativos': usuarios_ativos,
+    'meses_cadastro': meses_cadastro,
+    'usuarios_cadastrados': usuarios_cadastrados,
+    'vendas_mensais': vendas_mensais,
+    'meses': meses,
+    'vendas': vendas,
+    }
+
+    return render(request, 'dashboard_admin/home/index.html',context)
+
 def home(request):
 
 
@@ -116,7 +260,9 @@ def home(request):
     best_sellers_products = produtos.order_by('-sells')[:3]
     # Buscar 10 produtos com mais avaliações
     review_products = produtos[:10]  # Similar para 'Review'
+
     context = {
+
     'hero_banners': hero_banners,
     'secondary_banners': secondary_banners,
     'posts': posts,

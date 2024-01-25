@@ -318,7 +318,8 @@ def upload_csv_for_orders(request):
                 order, created = Order.objects.get_or_create(id=row['id'], user_profile=user_profile)
 
                 # Mapeamento dos campos
-
+                order.created_at = parse_date(row['data_pedido'])
+                order.updated_at = parse_date(row['data_atualizacao'])
                 order.total = row['total']
                 order.status = row['status']
                 order.tipo_frete = row['frete']

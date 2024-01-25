@@ -165,6 +165,19 @@ class Product(models.Model):
                 return True
             return False
 
+
+    @property
+    def quantidade_em_estoque(self):
+        if self.variations.all():
+            for variation in self.variations.all():
+                return variation.estoqueAtual
+
+        elif self.product_materials.all():
+            for material in self.product_materials.all():
+                return material.materia_prima.stock
+        else:
+            return self.estoqueAtual
+
     @property
     def lista_avise(self):
         from avise.models import AviseItem

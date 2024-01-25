@@ -96,6 +96,17 @@ class UserProfile(models.Model):
     def primary_address(self):
         return self.addresses.filter(is_primary=True).first()
 
+    @property
+    def cidade_estado(self):
+        return f"{self.primary_address.cidade} - {self.primary_address.estado}"
+
+
+
+    @property
+    def pedidos_count(self):
+        from pedidos.models import Order
+        return Order.objects.filter(user_profile=self).count()
+
     def get_cart(self, request):
         from carrinho.models import ShoppingCart
 
