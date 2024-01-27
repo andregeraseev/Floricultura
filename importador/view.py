@@ -404,6 +404,7 @@ def upload_csv_for_order_items(csv_filepath):
                 print(f"Pedido encontrado: {pedido.id}")
                 print(f"Produto ID: {int(row['product_id'])}")
                 produto = Product.objects.get(external_id=int(row['product_id']))
+                print(f"Produto encontrado: {produto.name}")
                 print(f"Variation Id: {int(row['variation_id'])}")
                 variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
                 print(f"Produto encontrado para pedido {pedido}: {produto.name} - {variation.name if variation else ''}")
