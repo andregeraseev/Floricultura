@@ -408,7 +408,7 @@ def upload_csv_for_order_items(csv_filepath):
                 except Product.DoesNotExist:
                     print(f"Produto não encontrado: {int(row['product_id'])}")
                 print(f"Produto encontrado: {produto.name}")
-                if pd.isna(row['variacao_id']):
+                if not pd.isna(row['variation_id']):
                     print(f"Variation Id: {int(row['variation_id'])}")
                     variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
                 else:
