@@ -148,6 +148,29 @@ class Product(models.Model):
                 return False
 
     @property
+    def stock_alert(self):
+        if self.variations.all():
+            for variation in self.variations.all():
+                if variation.stock_alert == False:
+                    continue
+
+                else:
+                    return True
+
+        else:
+            if self.product_materials.all():
+                for material in self.product_materials.all():
+                    if material.materia_prima.stock >= self.estoqueMinimo:
+                        return False
+                    else:
+                        return True
+            else:
+                if self.estoqueAtual >= self.estoqueMinimo:
+                    return False
+                else:
+                    return True
+
+    @property
     def has_stock(self):
         if self.variations.all():
             for variation in self.variations.all():
@@ -170,7 +193,7 @@ class Product(models.Model):
     def quantidade_em_estoque(self):
         if self.variations.all():
             for variation in self.variations.all():
-                return variation.estoqueAtual
+                return variation.quantidade_em_stock
 
         elif self.product_materials.all():
             for material in self.product_materials.all():
@@ -214,6 +237,27 @@ class ProductVariation(models.Model):
     @property
     def name(self):
         return self.product.nome
+    @property
+    def stock_alert(self):
+        if self.product.estoqueMinimo:
+            self.product.estoqueMinimo = self.product.estoqueMinimo
+        else:
+            self.product.estoqueMinimo = 10
+        if self.variation_materials.all():
+            for material in self.variation_materials.all():
+                if material.materia_prima.stock >= self.product.estoqueMinimo:
+                    return False
+                else:
+                    return True
+        else:
+
+            if self.estoqueAtual >= self.product.estoqueMinimo:
+
+                print('estoque estoqueAtual', self.estoqueAtual)
+                return False
+            else:
+                return True
+
 
     def stock_suficiente(self, quantidade):
         if self.has_stock:
@@ -238,6 +282,17 @@ class ProductVariation(models.Model):
             if self.estoqueAtual > 0:
                 return True
             return False
+
+    @property
+    def quantidade_em_stock(self):
+        if self.variation_materials.all():
+            for material in self.variation_materials.all().distinct():
+                return material.materia_prima.stock
+
+        else:
+            return self.estoqueAtual
+
+
 
 
 

@@ -109,6 +109,49 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 
+
+
+
+def product_with_minimum_stock_filter(base_query):
+    # Condição para variação abaixo do estoque mínimo
+    variation_min_stock_condition = Exists(
+        ProductVariation.objects.filter(
+            product_id=OuterRef('pk'),
+            estoqueAtual__lte=F('estoqueMinimo')
+        )
+    )
+
+    # Condição para produto com matéria-prima abaixo do mínimo necessário
+    material_min_stock_condition = Exists(
+        ProductMaterial.objects.filter(
+            product_id=OuterRef('pk'),
+            materia_prima__stock__lt=F('quantity_used')
+        )
+    )
+
+    # Anotação para verificar o estoque mínimo
+    products_with_min_stock = base_query.annotate(
+        below_min_stock_query=Case(
+            When(variations__isnull=False, then=variation_min_stock_condition),
+            When(product_materials__isnull=False, then=material_min_stock_condition),
+            default=Case(
+                When(estoqueAtual__lte=F('estoqueMinimo'), then=Value(True)),
+                default=Value(False)
+            ),
+            output_field=BooleanField()
+        )
+    ).filter(below_min_stock_query=True).distinct()
+
+    return products_with_min_stock
+def products_stock_alert():
+    products = Product.objects.all()
+    lista_de_produtos_alerta_estoque = [{'nome' :product.name, 'quantidade_em_estoque' : product.quantidade_em_estoque,'vendas' : product.sells,} for product in products if product.stock_alert == True]
+    lista_de_produtos_alerta_estoque = sorted(lista_de_produtos_alerta_estoque, key=lambda x: x['vendas'], reverse=True)[:10]
+
+    print('products',lista_de_produtos_alerta_estoque)
+    return lista_de_produtos_alerta_estoque
+
+
 def get_active_users_with_session_start_formatted():
     active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
     user_sessions = {}
@@ -177,7 +220,13 @@ def get_top_selling_products():
 
     produtos_mais_vendidos_json = json.dumps(produtos_mais_vendidos_dic)
 
-    return produtos_mais_vendidos_json
+    # Obter a lista de vendas
+    lista_de_vendas = produtos_mais_vendidos.values_list('sells', flat=True)
+
+    # Somar a quantidade de vendas
+    quantidade_de_vendas = sum(lista_de_vendas)
+    print('quantidade_de_vendas',quantidade_de_vendas)
+    return produtos_mais_vendidos_json, quantidade_de_vendas
 
 
 from products.models import Product  # Substitua por seu modelo de vendas
@@ -223,8 +272,10 @@ def get_monthly_sales():
 def dashboard(request):
     vendas, meses, vendas_mensais = get_monthly_sales()
     usuarios_cadastrados, meses_cadastro = get_daily_user_registrations()
-    produtos_mais_vendidos = get_top_selling_products()
+    produtos_mais_vendidos, quantidade_de_vendas = get_top_selling_products()
     usuarios_ativos = get_active_users_with_session_start_formatted()
+    alerta_estoque = products_stock_alert()
+    print('alerta_estoque',alerta_estoque)
     # print('meses', meses)
     # print('vendas', vendas)
     # print('meses_cadastro_numero_de_usuarioos', usuarios_cadastrados)
@@ -233,6 +284,8 @@ def dashboard(request):
     # print('vendas', vendas)
 
     context = {
+    'quantidade_de_vendas': quantidade_de_vendas,
+    'alertas_estoque': alerta_estoque,
     'produtos_mais_vendidos': produtos_mais_vendidos,
     'usuarios_ativos': usuarios_ativos,
     'meses_cadastro': meses_cadastro,
