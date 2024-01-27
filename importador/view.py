@@ -418,7 +418,7 @@ def upload_csv_for_order_items(csv_filepath):
                 item, created = OrderItem.objects.get_or_create(
                     id=row['pedidoitem_id'], product=produto,
                     order=pedido, quantity=row['quantity'],
-                    price=row['preco'], variation=variation
+                    price=row['price'], variation=variation
                 )
                 if created:
                     print(f"Item criado: {item.product.name} - {item.quantity}")
