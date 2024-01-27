@@ -145,7 +145,8 @@ def product_with_minimum_stock_filter(base_query):
 
     return products_with_min_stock
 def products_stock_alert():
-    products = Product.objects.all()
+    products = Product.objects.all().prefetch_related('variations', 'product_materials',
+                                                      'product_materials__materia_prima')
     lista_de_produtos_alerta_estoque = [{'nome' :product.name, 'quantidade_em_estoque' : product.quantidade_em_estoque,'vendas' : product.sells,} for product in products if product.stock_alert == True]
     lista_de_produtos_alerta_estoque = sorted(lista_de_produtos_alerta_estoque, key=lambda x: x['vendas'], reverse=True)[:10]
 
