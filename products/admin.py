@@ -19,7 +19,7 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['external_id','name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'is_featured','skuMapeamento', 'idMapeamento']
+    list_display = ['external_id','name', 'image_thumbnail_tag', 'price', 'promotion_active', 'is_available', 'is_featured','skuMapeamento', 'idMapeamento', 'alerta_estoque',]
     list_filter = ('is_available', 'promotion_active', 'is_featured',)
     list_editable = ('is_available', 'promotion_active', 'is_featured',)
     search_fields = ('name',)

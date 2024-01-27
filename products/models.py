@@ -55,6 +55,7 @@ class Product(models.Model):
     estoqueMaximo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     estoqueAtual = models.IntegerField(default=0)
     sobEncomenda = models.CharField(max_length=1, blank=True, null=True)
+    alerta_estoque = models.BooleanField(default=False)
 
     # Informações Adicionais
     obs = models.TextField(blank=True, null=True)
@@ -93,6 +94,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def stock_alert_save(self):
+        if self.stock_alert:
+            self.alerta_estoque = True
+        else:
+            self.alerta_estoque = False
 
     def add_sells(self, quantidade):
         self.sells += quantidade
@@ -187,6 +194,8 @@ class Product(models.Model):
             if self.estoqueAtual > 0:
                 return True
             return False
+
+
 
 
     @property
@@ -366,6 +375,9 @@ class MateriaPrima(models.Model):
     def __str__(self):
         return self.name
 
+
+
+
     def save(self, *args, **kwargs):
         print('save')
 
@@ -381,6 +393,8 @@ class MateriaPrima(models.Model):
             update_stock_history(self, old_stock, self.stock)
         else:
             print('not update_stock_history')
+
+
 
 class ProductMaterial(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_materials')
