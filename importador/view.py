@@ -399,15 +399,20 @@ def upload_csv_for_order_items(csv_filepath):
 
         try:
             with transaction.atomic():
+                print(f"Processando registro {index}...")
                 pedido = Order.objects.get(id=row['pedido_id'])
-                produto = Product.objects.get(id=row['produto_id'])
-                variation = ProductVariation.objects.get(id=row['variacao_id']) if not pd.isna(row['variacao_id']) else None
 
+                produto = Product.objects.get(id=row['product_id'])
+                variation = ProductVariation.objects.get(id=row['variation_id']) if not pd.isna(row['variacao_id']) else None
+                print(f"Produto encontrado para pedido {pedido}: {produto.name} - {variation.name if variation else ''}")
                 item, created = OrderItem.objects.get_or_create(
                     id=row['pedidoitem_id'], product=produto,
                     order=pedido, quantity=row['quantidade'],
                     price=row['preco'], variation=variation
                 )
+                if created:
+                    print(f"Item criado: {item.product.name} - {item.quantity}")
+
                 success_count += 1
 
         except IntegrityError as e:
