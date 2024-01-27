@@ -408,8 +408,11 @@ def upload_csv_for_order_items(csv_filepath):
                 except Product.DoesNotExist:
                     print(f"Produto não encontrado: {int(row['product_id'])}")
                 print(f"Produto encontrado: {produto.name}")
-                print(f"Variation Id: {int(row['variation_id'])}")
-                variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
+                if pd.isna(row['variacao_id']):
+                    print(f"Variation Id: {int(row['variation_id'])}")
+                    variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
+                else:
+                    variation = None
                 print(f"Produto encontrado para pedido {pedido}: {produto.name} - {variation.name if variation else ''}")
                 item, created = OrderItem.objects.get_or_create(
                     id=row['pedidoitem_id'], product=produto,
