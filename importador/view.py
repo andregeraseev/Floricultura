@@ -9,6 +9,9 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from datetime import datetime
 
+from products.models import Product, ProductVariation
+
+
 def upload_csv(request):
     if request.method == "POST":
         csv_file = request.FILES['file']
@@ -291,7 +294,7 @@ from django.http import HttpResponse
 from django.db import transaction
 import pandas as pd
 from usuario.models import UserProfile
-from pedidos.models import Order  # Substitua 'seu_app' pelo nome do seu app Django
+from pedidos.models import Order, OrderItem  # Substitua 'seu_app' pelo nome do seu app Django
 from django.db import transaction, IntegrityError
 
 def upload_csv_for_orders(request):
@@ -369,3 +372,54 @@ def upload_csv_for_orders(request):
     return HttpResponse(response_message)
 
     return render(request, "importador/importador_pedidos.html")
+
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.db import transaction
+import pandas as pd
+from usuario.models import UserProfile
+from pedidos.models import Order  # Substitua 'seu_app' pelo nome do seu app Django
+from django.db import transaction, IntegrityError
+
+import pandas as pd
+from django.db import transaction, IntegrityError
+from pedidos.models import Order, OrderItem
+from products.models import Product, ProductVariation
+
+def upload_csv_for_order_items(csv_filepath):
+    df = pd.read_csv(csv_filepath)
+    error_log = []
+    success_count = 0
+
+    for index, row in df.iterrows():
+        if pd.isna(row['id']):
+            error_log.append(f"Registro {index}: ID do usuário está vazio.")
+            continue
+
+        try:
+            with transaction.atomic():
+                pedido = Order.objects.get(id=row['pedido_id'])
+                produto = Product.objects.get(id=row['produto_id'])
+                variation = ProductVariation.objects.get(id=row['variacao_id']) if not pd.isna(row['variacao_id']) else None
+
+                item, created = OrderItem.objects.get_or_create(
+                    id=row['pedidoitem_id'], product=produto,
+                    order=pedido, quantity=row['quantidade'],
+                    price=row['preco'], variation=variation
+                )
+                success_count += 1
+
+        except IntegrityError as e:
+            error_log.append(f"Registro {index}: Erro de integridade - {str(e)}")
+        except Order.DoesNotExist:
+            error_log.append(f"Registro {index}: Pedido não encontrado.")
+        except Product.DoesNotExist:
+            error_log.append(f"Registro {index}: Produto não encontrado.")
+        except Exception as e:  # Para outros erros inesperados
+            error_log.append(f"Registro {index}: Erro inesperado - {str(e)}")
+
+    response_message = f"Importação concluída. {success_count} pedidos salvos com sucesso. "
+    if error_log:
+        response_message += f"Erros encontrados em {len(error_log)} registros: {error_log}"
+    return response_message
