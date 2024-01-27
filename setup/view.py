@@ -270,7 +270,7 @@ def get_monthly_sales():
 
     return list(monthly_sales_dict.values()), list(monthly_sales_dict.keys()), list(monthly_orders_dict.values())
 
-def dashboard(request):
+def dashboard_graficos(request):
     logger.info('dashboard')
     vendas, meses, vendas_mensais = get_monthly_sales()
     usuarios_cadastrados, meses_cadastro = get_daily_user_registrations()

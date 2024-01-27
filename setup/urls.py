@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from setup.view import home, department_detail, category_detail, search, search_view, dashboard
+from setup.view import home, department_detail, category_detail, search, search_view, dashboard_graficos
 from banners.views import track_click
 from tiny_webhook.view import ProductWebhook
 from tiny_webhook.estoque_tiny import tiny_webhook_stock_update
@@ -73,7 +73,7 @@ urlpatterns = [
     path('verificar_email/', verificar_email, name='verificar_email'),
 
 #dashboard
-    path('painel/', dashboard, name='dashboard'),
+    path('painel/', dashboard_graficos, name='dashboard_graficos'),
 
 ]
 if settings.DEBUG:
