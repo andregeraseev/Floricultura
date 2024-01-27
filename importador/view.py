@@ -410,7 +410,7 @@ def upload_csv_for_order_items(csv_filepath):
                 print(f"Produto encontrado: {produto.name}")
                 if not pd.isna(row['variation_id']):
                     print(f"Variation Id: {int(row['variation_id'])}")
-                    variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
+                    variation = ProductVariation.objects.get(external_id=int(row['variation_id'])) if not pd.isna(row['variation_id']) else None
                 else:
                     variation = None
                 print(f"Produto encontrado para pedido {pedido}: {produto.name} - {variation.name if variation else ''}")
