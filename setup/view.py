@@ -13,7 +13,8 @@ from django.db.models import Case, When, Value, F, Min, DecimalField
 from django.db.models.functions import Coalesce
 from django.db.models import Case, When, Value, BooleanField, F, Q, Exists, OuterRef
 from rest_framework.utils import json
-
+import logging
+logger = logging.getLogger('usuarios')
 
 def product_with_stock_order(base_query):
     # Condição para variação com estoque
@@ -148,7 +149,7 @@ def products_stock_alert():
     lista_de_produtos_alerta_estoque = [{'nome' :product.name, 'quantidade_em_estoque' : product.quantidade_em_estoque,'vendas' : product.sells,} for product in products if product.stock_alert == True]
     lista_de_produtos_alerta_estoque = sorted(lista_de_produtos_alerta_estoque, key=lambda x: x['vendas'], reverse=True)[:10]
 
-    print('products',lista_de_produtos_alerta_estoque)
+    logger.info(f'lista_de_produtos_alerta_estoque{lista_de_produtos_alerta_estoque}')
     return lista_de_produtos_alerta_estoque
 
 

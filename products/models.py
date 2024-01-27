@@ -528,3 +528,15 @@ def update_stock_history(instance, old_stock, new_stock):
         old_stock=old_stock,
         new_stock=new_stock
     )
+
+
+from pedidos.models import Order
+from products.models import Product
+def update_product_sells():
+    for order in Order.objects.all():
+        for item in order.items.all():
+            product = item.product
+            product.add_sells(item.quantity)
+            product.save()
+            print(f"Produto: {item.product}, Quantidade:{item.quantity}, Numero de vendas:{product.sells}")
+    print("Atualização de vendas concluída!")
