@@ -401,9 +401,11 @@ def upload_csv_for_order_items(csv_filepath):
             with transaction.atomic():
                 print(f"Processando registro {index}...")
                 pedido = Order.objects.get(id=row['pedido_id'])
-
-                produto = Product.objects.get(id=row['product_id'])
-                variation = ProductVariation.objects.get(id=row['variation_id']) if not pd.isna(row['variacao_id']) else None
+                print(f"Pedido encontrado: {pedido.id}")
+                print(f"Produto ID: {int(row['product_id'])}")
+                produto = Product.objects.get(id=int(row['product_id']))
+                print(f"Variation Id: {int(row['variation_id'])}")
+                variation = ProductVariation.objects.get(id=int(row['variation_id'])) if not pd.isna(row['variacao_id']) else None
                 print(f"Produto encontrado para pedido {pedido}: {produto.name} - {variation.name if variation else ''}")
                 item, created = OrderItem.objects.get_or_create(
                     id=row['pedidoitem_id'], product=produto,
