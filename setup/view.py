@@ -270,14 +270,36 @@ def get_monthly_sales():
 
     return list(monthly_sales_dict.values()), list(monthly_sales_dict.keys()), list(monthly_orders_dict.values())
 
+
+import time
 def dashboard_graficos(request):
     logger.info('dashboard')
+
+    # Iniciar o cronômetro para get_monthly_sales
+    start_time = time.time()
     vendas, meses, vendas_mensais = get_monthly_sales()
+    logger.info(f"get_monthly_sales executado em {time.time() - start_time} segundos")
+
+    # Iniciar o cronômetro para get_daily_user_registrations
+    start_time = time.time()
     usuarios_cadastrados, meses_cadastro = get_daily_user_registrations()
+    logger.info(f"get_daily_user_registrations executado em {time.time() - start_time} segundos")
+
+    # Iniciar o cronômetro para get_top_selling_products
+    start_time = time.time()
     produtos_mais_vendidos, quantidade_de_vendas = get_top_selling_products()
+    logger.info(f"get_top_selling_products executado em {time.time() - start_time} segundos")
+
+    # Iniciar o cronômetro para get_active_users_with_session_start_formatted
+    start_time = time.time()
     usuarios_ativos = get_active_users_with_session_start_formatted()
+    logger.info(f"get_active_users_with_session_start_formatted executado em {time.time() - start_time} segundos")
+
+    # Iniciar o cronômetro para products_stock_alert
+    start_time = time.time()
     alerta_estoque = products_stock_alert()
-    print('alerta_estoque',alerta_estoque)
+    logger.info(f"products_stock_alert executado em {time.time() - start_time} segundos")
+
     # print('meses', meses)
     # print('vendas', vendas)
     # print('meses_cadastro_numero_de_usuarioos', usuarios_cadastrados)
